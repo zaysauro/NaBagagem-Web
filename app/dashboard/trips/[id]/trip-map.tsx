@@ -14,6 +14,7 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
   const ref=useRef<HTMLDivElement>(null);
   const mapRef=useRef<L.Map|null>(null);
   const poiLayers=useRef<Record<string,L.LayerGroup>>({});
+  const eventLayer=useRef<L.LayerGroup|null>(null);
   const [activeLayers,setActiveLayers]=useState<Record<string,boolean>>({attractions:false,restaurants:false,transit:false});
   const [day,setDay]=useState(0);
   const [poiMessage,setPoiMessage]=useState("");
@@ -69,10 +70,25 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
   },[activeLayers,locations]);
 
   useEffect(()=>{
-    const map=mapRef.current;if(!map)return;
-    map.eachLayer(layer=>{if(layer instanceof L.Polyline&&!((layer as any).options?.attribution)){/* base route layers remain managed by Leaflet */}});
-  },[day]);
-
+    const map=mapRef.current;
+    if(!map)return;
+    if(eventLayer.current){eventLayer.current.remove();eventLayer.current=null;}
+    const group=L.layerGroup().addTo(map);
+    eventLayer.current=group;
+    const visible=events.filter(e=>day===0||e.day_index===day).filter(e=>e.latitude!=null&&e.longitude!=null) as Array<EventPoint&{latitude:number;longitude:number}>;
+    const byDay=new Map<number,Array<EventPoint&{latitude:number;longitude:number}>>();
+    visible.forEach(e=>{const list=byDay.get(e.day_index)||[];list.push(e);byDay.set(e.day_index,list);});
+    byDay.forEach((items,dayNumber)=>{
+      const coords=items.map(e=>[e.latitude,e.longitude] as [number,number]);
+      if(coords.length>1)L.polyline(coords,{weight:5,color:items[0].color||"#111827",opacity:.75,dashArray:"8 7"}).addTo(group);
+      items.forEach((e,index)=>{
+        const color=/^#[0-9a-f]{6}$/i.test(e.color)?e.color:"#111827";
+        const icon=L.divIcon({className:"",html:'<div style="width:24px;height:24px;border-radius:50%;background:'+color+';border:2px solid white;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.35)">'+(index+1)+'</div>',iconSize:[24,24],iconAnchor:[12,12]});
+        L.marker([e.latitude,e.longitude],{icon}).addTo(group).bindPopup("<strong>"+escapeHtml(e.title)+"</strong><br/>Dia "+e.day_index+" · "+escapeHtml(e.status));
+      });
+    });
+    return()=>{group.remove();};
+  },[events,day]);
   function toggle(category:string){
     setActiveLayers(current=>({...current,[category]:!current[category]}));
   }
