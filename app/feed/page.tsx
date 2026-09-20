@@ -27,6 +27,9 @@ export default function FeedPage() {
   const [body,setBody]=useState("");
   const [visibility,setVisibility]=useState("public");
   const [loading,setLoading]=useState(true);
+  const [loadingMore,setLoadingMore]=useState(false);
+  const [page,setPage]=useState(0);
+  const [hasMore,setHasMore]=useState(false);
   const [message,setMessage]=useState("");
   const [pendingImage,setPendingImage]=useState<File|null>(null);
   const [editing,setEditing]=useState<string|null>(null);
@@ -35,25 +38,31 @@ export default function FeedPage() {
   const [editVisibility,setEditVisibility]=useState("public");
   const fileRef=useRef<HTMLInputElement>(null);
 
-  async function load(){
-    const r=await fetch("/api/feed");
+  async function load(reset = true){
+    const targetPage = reset ? 0 : page + 1;
+    if (!reset) setLoadingMore(true);
+    const r=await fetch("/api/feed?page="+targetPage+"&pageSize=20",{cache:"no-store"});
     const d=await r.json();
-    if(r.ok)setPosts(d.posts||[]);
-    else setMessage(d.error||"Não foi possível carregar o feed.");
+    if(r.ok){
+      setPosts(current => reset ? (d.posts||[]) : [...current, ...(d.posts||[])]);
+      setPage(targetPage);
+      setHasMore(!!d.hasMore);
+    } else setMessage(d.error||"Não foi possível carregar o feed.");
     setLoading(false);
+    setLoadingMore(false);
   }
 
   useEffect(()=>{
-    load();
+    load(true);
     fetch("/api/trips").then(async r=>{const d=await r.json();if(r.ok)setTrips(d.trips||[]);}).catch(()=>{});
     const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if(!url||!key)return;
     const supabase=createClient();
     const channel=supabase.channel("na-bagagem-feed")
-      .on("postgres_changes",{event:"*",schema:"public",table:"feed_posts"},load)
-      .on("postgres_changes",{event:"*",schema:"public",table:"feed_likes"},load)
-      .on("postgres_changes",{event:"*",schema:"public",table:"feed_comments"},load)
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_posts"},()=>load(true))
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_likes"},()=>load(true))
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_comments"},()=>load(true))
       .subscribe();
     return()=>{supabase.removeChannel(channel);};
   },[]);
@@ -71,7 +80,7 @@ export default function FeedPage() {
     }
     setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImage(null);
     if(fileRef.current)fileRef.current.value="";
-    await load();
+    await load(true);
   }
 
   async function bookmark(post:Post){
@@ -209,6 +218,7 @@ export default function FeedPage() {
                     </div>
                   </div>)}
                 </div>}
+      {!loading && hasMore && <button disabled={loadingMore} onClick={()=>load(false)} className="mt-6 w-full rounded-2xl border bg-white px-5 py-3 text-sm font-semibold shadow-sm disabled:opacity-50">{loadingMore ? "Carregando..." : "Carregar mais publicações"}</button>}
               </>
             }
           </article>
