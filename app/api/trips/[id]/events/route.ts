@@ -18,7 +18,7 @@ function normalizeColor(value: unknown) {
   return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#111827";
 }
 
-function normalizeDay(value: unknown) {
+function normalizeReminder(value: unknown) {\n  const minutes = Number(value);\n  return Number.isInteger(minutes) && minutes >= 0 && minutes <= 10080 ? minutes : null;\n}\n\nfunction normalizeUrl(value: unknown) {\n  const raw = String(value || "").trim();\n  if (!raw) return null;\n  try { const url = new URL(raw); return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null; } catch { return null; }\n}\n\nfunction normalizeDay(value: unknown) {
   const day = Number(value);
   return Number.isInteger(day) && day >= 1 ? day : 1;
 }
@@ -73,7 +73,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.location_id !== undefined) updates.location_id = body.location_id || null;
   if (body.day_index !== undefined) updates.day_index = normalizeDay(body.day_index);
   if (body.status !== undefined) updates.status = normalizeStatus(body.status);
-  if (body.color !== undefined) updates.color = normalizeColor(body.color);
+  if (body.color !== undefined) updates.color = normalizeColor(body.color);\n  if (body.reservation_name !== undefined) updates.reservation_name = String(body.reservation_name || "").trim() || null;\n  if (body.confirmation_code !== undefined) updates.confirmation_code = String(body.confirmation_code || "").trim() || null;\n  if (body.reservation_url !== undefined) updates.reservation_url = normalizeUrl(body.reservation_url);\n  if (body.reminder_minutes !== undefined) updates.reminder_minutes = normalizeReminder(body.reminder_minutes);
 
   const { data, error } = await supabase.from("trip_events").update(updates).eq("id", eventId).eq("trip_id", id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
