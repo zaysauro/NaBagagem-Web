@@ -11,6 +11,7 @@ type Member = {
 
 export default function TripCollaboration({ tripId }: { tripId: string }) {
   const [members, setMembers] = useState<Member[]>([]);
+  const [owner, setOwner] = useState<Member["profiles"] | null>(null);
   const [canManage, setCanManage] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [username, setUsername] = useState("");
@@ -23,6 +24,7 @@ export default function TripCollaboration({ tripId }: { tripId: string }) {
     const data = await response.json();
     if (!response.ok) { setMessage(data.error || "Não foi possível carregar os colaboradores."); setLoading(false); return; }
     setMembers(data.members || []);
+    setOwner(data.owner || null);
     setCanManage(Boolean(data.canManage));
     setCurrentUserId(data.currentUserId || "");
     setLoading(false);
@@ -76,7 +78,8 @@ export default function TripCollaboration({ tripId }: { tripId: string }) {
       <button className="rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white">Adicionar</button>
     </form>}
     {loading ? <p className="mt-5 text-sm text-neutral-500">Carregando colaboradores...</p> : <div className="mt-5 space-y-2">
-      {members.length === 0 ? <p className="text-sm text-neutral-500">Nenhum colaborador além de você.</p> : members.map((member) => <div key={member.id} className="flex flex-col gap-3 rounded-2xl bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+      {owner && <div className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3">{owner.avatar_url ? <img src={owner.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white">{(owner.display_name || owner.username || "U").slice(0,1).toUpperCase()}</div>}<div><p className="font-semibold">{owner.display_name || "Viajante"}</p><p className="text-xs text-neutral-500">@{owner.username || "sem username"}</p></div></div><span className="rounded-full bg-neutral-950 px-2.5 py-1 text-xs font-semibold text-white">Proprietário</span></div>}
+      {members.length === 0 ? <p className="text-sm text-neutral-500">Nenhum colaborador além do proprietário.</p> : members.map((member) => <div key={member.id} className="flex flex-col gap-3 rounded-2xl bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           {member.profiles?.avatar_url ? <img src={member.profiles.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white">{(member.profiles?.display_name || member.profiles?.username || "U").slice(0,1).toUpperCase()}</div>}
           <div><p className="font-semibold">{member.profiles?.display_name || "Viajante"}</p><p className="text-xs text-neutral-500">@{member.profiles?.username || "sem username"}</p></div>
