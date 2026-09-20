@@ -103,7 +103,7 @@ create policy "trips_update_members"
 on public.trips for update
 to authenticated
 using (public.can_edit_trip(id, auth.uid()))
-with check (public.is_trip_owner(id, auth.uid()));
+with check (public.can_edit_trip(id, auth.uid()));
 
 drop policy if exists "trip_locations_select_members" on public.trip_locations;
 create policy "trip_locations_select_members"
