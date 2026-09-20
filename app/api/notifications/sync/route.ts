@@ -7,47 +7,170 @@ function dayDiff(a: string, b: string) {
   return Math.round((x - y) / 86400000);
 }
 
-export async function POST() {
+function shiftDate(date: string, days: number) {
+  const d = new Date(date + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+function normalizeTime(value: string | null) {
+  if (!value) return null;
+  const match = value.match(/^(\d{2}):(\d{2})/);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+function currentMinutes(value: string | undefined) {
+  if (!value) return null;
+  const match = value.match(/T(\d{2}):(\d{2})/);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+
+export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
-  const today = new Date();
-  const todayKey = today.toISOString().slice(0, 10);
-  const until = new Date(today.getTime() + 7 * 86400000).toISOString().slice(0, 10);
+  let body: { localDate?: string; localTime?: string } = {};
+  try {
+    body = await request.json();
+  } catch {
+    // Backwards-compatible: the endpoint also works without a request body.
+  }
 
-  const [{ data: trips }, { data: events }] = await Promise.all([
-    supabase.from("trips").select("id,title,start_date,end_date")
-      .eq("user_id", user.id).gte("start_date", todayKey).lte("start_date", until).order("start_date"),
-    supabase.from("trip_events").select("id,trip_id,title,event_date,start_time")
-      .eq("event_date", todayKey).order("start_time")
-  ]);
+  const now = new Date();
+  const fallbackDate = now.toISOString().slice(0, 10);
+  const fallbackTime = now.toISOString().slice(11, 16);
+  const todayKey = body.localDate?.match(/^\d{4}-\d{2}-\d{2}$/)?.[0] || fallbackDate;
+  const nowMinutes = currentMinutes(body.localTime ? `T${body.localTime}` : undefined) ??
+    now.getUTCHours() * 60 + now.getUTCMinutes();
+  const until = shiftDate(todayKey, 7);
 
-  const tripIds = new Set((trips || []).map((trip) => trip.id));
-  const ownEvents = (events || []).filter((event) => tripIds.has(event.trip_id));
+  const { data: trips, error: tripsError } = await supabase
+    .from("trips")
+    .select("id,title,start_date,end_date")
+    .eq("user_id", user.id)
+    .order("start_date");
+
+  if (tripsError) return NextResponse.json({ error: tripsError.message }, { status: 400 });
+
+  const tripIds = (trips || []).map((trip) => trip.id);
+  let events: Array<{
+    id: string;
+    trip_id: string;
+    title: string;
+    event_date: string | null;
+    start_time: string | null;
+    reservation_name: string | null;
+    confirmation_code: string | null;
+    reminder_minutes: number | null;
+  }> = [];
+
+  if (tripIds.length) {
+    const { data, error } = await supabase
+      .from("trip_events")
+      .select("id,trip_id,title,event_date,start_time,reservation_name,confirmation_code,reminder_minutes")
+      .in("trip_id", tripIds)
+      .gte("event_date", todayKey)
+      .lte("event_date", until)
+      .order("event_date")
+      .order("start_time");
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    events = data || [];
+  }
+
   const rows: Array<Record<string, string | null>> = [];
 
   for (const trip of trips || []) {
     if (!trip.start_date) continue;
     const days = dayDiff(trip.start_date, todayKey);
-    const when = days === 0 ? "começa hoje" : days === 1 ? "começa amanhã" : "começa em " + days + " dias";
+
+    if (days < 0 || days > 7) continue;
+
+    const when = days === 0
+      ? "começa hoje"
+      : days === 1
+        ? "começa amanhã"
+        : "começa em " + days + " dias";
+
     rows.push({
-      user_id: user.id, type: "trip_reminder", title: "Sua viagem " + when, body: trip.title,
-      href: "/dashboard/trips/" + trip.id, dedupe_key: "trip:" + trip.id + ":" + trip.start_date + ":" + days, actor_id: null
+      user_id: user.id,
+      type: "trip_reminder",
+      title: "Sua viagem " + when,
+      body: trip.title,
+      href: "/dashboard/trips/" + trip.id,
+      dedupe_key: "trip:" + trip.id + ":" + trip.start_date + ":" + days,
+      actor_id: null
     });
   }
 
-  for (const event of ownEvents) {
+  for (const event of events) {
+    if (!event.event_date) continue;
+
+    const eventTime = normalizeTime(event.start_time);
+    const reminderMinutes = Number.isInteger(event.reminder_minutes)
+      ? event.reminder_minutes
+      : null;
+
+    if (event.event_date === todayKey && eventTime !== null) {
+      rows.push({
+        user_id: user.id,
+        type: "trip_reminder",
+        title: "Atividade hoje às " + String(Math.floor(eventTime / 60)).padStart(2, "0") + ":" +
+          String(eventTime % 60).padStart(2, "0"),
+        body: event.title,
+        href: "/dashboard/trips/" + event.trip_id,
+        dedupe_key: "event:" + event.id + ":" + todayKey,
+        actor_id: null
+      });
+    }
+
+    if (reminderMinutes === null || eventTime === null) continue;
+
+    const reminderAt = eventTime - reminderMinutes;
+    const dayOffset = Math.floor(reminderAt / 1440);
+    const reminderMinuteOfDay = ((reminderAt % 1440) + 1440) % 1440;
+    const reminderDate = shiftDate(event.event_date, dayOffset);
+
+    let due = false;
+    if (reminderDate < todayKey) {
+      due = true;
+    } else if (reminderDate === todayKey && nowMinutes >= reminderMinuteOfDay) {
+      due = true;
+    }
+
+    if (!due) continue;
+
+    const reservation = event.reservation_name
+      ? "Reserva: " + event.reservation_name
+      : "Reserva vinculada ao itinerário.";
+
+    const code = event.confirmation_code
+      ? " Código: " + event.confirmation_code
+      : "";
+
     rows.push({
-      user_id: user.id, type: "trip_reminder",
-      title: event.start_time ? "Atividade hoje às " + event.start_time.slice(0, 5) : "Atividade hoje",
-      body: event.title, href: "/dashboard/trips/" + event.trip_id,
-      dedupe_key: "event:" + event.id + ":" + todayKey, actor_id: null
+      user_id: user.id,
+      type: "trip_reminder",
+      title: "Lembrete: " + event.title,
+      body: reservation + code,
+      href: "/dashboard/trips/" + event.trip_id,
+      dedupe_key: "reservation:" + event.id + ":" + event.event_date + ":" +
+        (event.start_time || "") + ":" + reminderMinutes,
+      actor_id: null
     });
   }
 
   if (rows.length) {
-    const { error } = await supabase.from("notifications").upsert(rows, { onConflict: "dedupe_key", ignoreDuplicates: true });
+    const { error } = await supabase
+      .from("notifications")
+      .upsert(rows, { onConflict: "dedupe_key", ignoreDuplicates: true });
+
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
