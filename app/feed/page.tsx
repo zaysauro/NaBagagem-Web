@@ -14,7 +14,7 @@ type Post = {
   id:string; user_id:string; title:string; body:string|null; created_at:string;
   isMine:boolean;
   trip_id:string|null; visibility:string; likedByMe:boolean; likes:number;
-  comments:Comment[]; profiles:any; media:Media[];
+  comments:Comment[]; profiles:any; media:Media[]; bookmarkedByMe:boolean;
 };
 
 const visibilityLabels:Record<string,string>={public:"Público",followers:"Seguidores",private:"Somente eu"};
@@ -72,6 +72,12 @@ export default function FeedPage() {
     setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImage(null);
     if(fileRef.current)fileRef.current.value="";
     await load();
+  }
+
+  async function bookmark(post:Post){
+    const action=post.bookmarkedByMe?"unbookmark":"bookmark";
+    const r=await fetch("/api/feed/"+post.id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action})});
+    if(r.ok)setPosts(x=>x.map(p=>p.id===post.id?{...p,bookmarkedByMe:!post.bookmarkedByMe}:p));
   }
 
   async function like(post:Post){
@@ -188,6 +194,7 @@ export default function FeedPage() {
                 <div className="mt-5 flex flex-wrap gap-4 text-sm">
                   <button onClick={()=>like(p)} className="font-semibold">{p.likedByMe?"Curtido":"Curtir"} · {p.likes}</button>
                   <button onClick={()=>comment(p)} className="font-semibold">Comentar · {p.comments.length}</button>
+                  <button onClick={()=>bookmark(p)} className="font-semibold">{p.bookmarkedByMe?"Salvo":"Salvar"}</button>
                   {p.isMine&&<button onClick={()=>removePost(p.id)} className="text-red-600">Excluir</button>}
                   {p.trip_id&&<Link href={"/dashboard/trips/"+p.trip_id} className="font-semibold">Abrir viagem</Link>}
                 </div>
