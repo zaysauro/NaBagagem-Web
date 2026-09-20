@@ -12,7 +12,10 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
   const { data: trip } = await supabase.from("trips").select("*").eq("id", id).eq("user_id", user.id).single();
   if (!trip) notFound();
 
-  const { data: locations } = await supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at");
+  const [{ data: locations }, { data: events }] = await Promise.all([
+    supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
+    supabase.from("trip_events").select("*").eq("trip_id", id).order("event_date").order("start_time"),
+  ]);
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-8">
@@ -24,7 +27,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           <p className="mt-2 text-neutral-600">{trip.description || "Adicione uma descrição para essa viagem."}</p>
           <p className="mt-4 text-sm text-neutral-500">{trip.start_date || "Sem data de início"}{trip.end_date ? " → " + trip.end_date : ""}</p>
         </div>
-        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} />
+        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
       </div>
     </main>
   );
