@@ -35,6 +35,18 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
     if(error)return NextResponse.json({error:error.message},{status:400});
     return NextResponse.json({comment:data,pending:true},{status:201});
   }
+  if(action==="bookmark" || action==="unbookmark"){
+    const {data:post}=await supabase.from("feed_posts").select("id").eq("id",id).maybeSingle();
+    if(!post)return NextResponse.json({error:"Publicação não encontrada."},{status:404});
+    if(action==="bookmark"){
+      const {error}=await supabase.from("feed_bookmarks").upsert({post_id:id,user_id:user.id});
+      if(error)return NextResponse.json({error:error.message},{status:400});
+      return NextResponse.json({bookmarked:true});
+    }
+    const {error}=await supabase.from("feed_bookmarks").delete().eq("post_id",id).eq("user_id",user.id);
+    if(error)return NextResponse.json({error:error.message},{status:400});
+    return NextResponse.json({bookmarked:false});
+  }
   if(action==="report"){
     const reason=String(body.reason||"").trim();
     if(!reason)return NextResponse.json({error:"Informe o motivo da denúncia."},{status:400});
