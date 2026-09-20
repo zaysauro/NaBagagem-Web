@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import TripDetailClient from "./trip-detail-client";
 import TripMap from "./trip-map";
 import TripTools from "./trip-tools";
+import TripWeather from "./trip-weather";
+import TripCurrency from "./trip-currency";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -40,6 +42,18 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
         <TripTools tripId={trip.id} />
+        <div className="mt-7 grid gap-7 lg:grid-cols-2">
+          <TripCurrency />
+          <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold">Resumo rápido</h2>
+            <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-2xl bg-neutral-50 p-4"><b className="text-2xl">{(locations ?? []).length}</b><p className="text-xs text-neutral-500">destinos</p></div>
+              <div className="rounded-2xl bg-neutral-50 p-4"><b className="text-2xl">{(events ?? []).length}</b><p className="text-xs text-neutral-500">atividades</p></div>
+              <div className="rounded-2xl bg-neutral-50 p-4"><b className="text-2xl">{(events ?? []).filter((e:any)=>e.status==="completed").length}</b><p className="text-xs text-neutral-500">concluídas</p></div>
+            </div>
+          </div>
+        </div>
+        <TripWeather locations={locations ?? []} />
       </div>
     </main>
   );
