@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripDetailClient from "./trip-detail-client";
+import TripMap from "./trip-map";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,7 +20,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-8">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <Link href="/dashboard" className="text-sm font-semibold text-neutral-500 hover:text-neutral-950">← Minhas viagens</Link>
         <div className="mt-5 rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Viagem</p>
@@ -27,6 +28,15 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           <p className="mt-2 text-neutral-600">{trip.description || "Adicione uma descrição para essa viagem."}</p>
           <p className="mt-4 text-sm text-neutral-500">{trip.start_date || "Sem data de início"}{trip.end_date ? " → " + trip.end_date : ""}</p>
         </div>
+
+        <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div><h2 className="text-xl font-bold text-neutral-950">Mapa da viagem</h2><p className="mt-1 text-sm text-neutral-500">Os destinos geocodificados aparecem aqui na ordem do roteiro.</p></div>
+            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">{(locations ?? []).filter((l:any)=>l.latitude != null && l.longitude != null).length} pontos no mapa</span>
+          </div>
+          <TripMap locations={locations ?? []} />
+        </section>
+
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
       </div>
     </main>
