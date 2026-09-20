@@ -7,6 +7,7 @@ import TripTools from "./trip-tools";
 import TripWeather from "./trip-weather";
 import TripCurrency from "./trip-currency";
 import TripShareTools from "./trip-share-tools";
+import TripCollaboration from "./trip-collaboration";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,23 +15,34 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: trip } = await supabase.from("trips").select("*").eq("id", id).eq("user_id", user.id).single();
+  const { data: trip } = await supabase.from("trips").select("*").eq("id", id).maybeSingle();
   if (!trip) notFound();
 
-  const [{ data: locations }, { data: events }] = await Promise.all([
+  const [{ data: locations }, { data: events }, { data: member }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
     supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("event_date").order("start_time"),
+    supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle(),
   ]);
+
+  const isOwner = trip.user_id === user.id;
+  const canEdit = isOwner || member?.role === "editor";
 
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-8">
       <div className="mx-auto max-w-6xl">
         <Link href="/dashboard" className="text-sm font-semibold text-neutral-500 hover:text-neutral-950">← Minhas viagens</Link>
         <div className="mt-5 rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Viagem</p>
-          <h1 className="mt-2 text-3xl font-bold text-neutral-950">{trip.title}</h1>
-          <p className="mt-2 text-neutral-600">{trip.description || "Adicione uma descrição para essa viagem."}</p>
-          <p className="mt-4 text-sm text-neutral-500">{trip.start_date || "Sem data de início"}{trip.end_date ? " → " + trip.end_date : ""}</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Viagem</p>
+              <h1 className="mt-2 text-3xl font-bold text-neutral-950">{trip.title}</h1>
+              <p className="mt-2 text-neutral-600">{trip.description || "Adicione uma descrição para essa viagem."}</p>
+              <p className="mt-4 text-sm text-neutral-500">{trip.start_date || "Sem data de início"}{trip.end_date ? " → " + trip.end_date : ""}</p>
+            </div>
+            <span className="rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-600">
+              {isOwner ? "Proprietário" : canEdit ? "Colaborador · Editor" : "Colaborador · Visualizador"}
+            </span>
+          </div>
         </div>
 
         <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -41,7 +53,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           <TripMap locations={locations ?? []} events={(events ?? []).map((event:any) => { const location=(locations ?? []).find((item:any)=>item.id===event.location_id); return { ...event, latitude:event.latitude ?? location?.latitude ?? null, longitude:event.longitude ?? location?.longitude ?? null }; })} />
         </section>
 
-        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
+        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
         <TripTools tripId={trip.id} />
         <div className="mt-7 grid gap-7 lg:grid-cols-2">
           <TripCurrency />
@@ -56,6 +68,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
         </div>
         <TripWeather locations={locations ?? []} />
         <TripShareTools tripId={trip.id} />
+        <TripCollaboration tripId={trip.id} />
       </div>
     </main>
   );
