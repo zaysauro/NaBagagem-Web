@@ -33,7 +33,7 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-neutral-50 px-6 py-8">
       <div className="mx-auto max-w-5xl">
-        <a href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</a>
+        <div className="flex justify-between"><a href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</a><a href="/dashboard/perfil/editar" className="rounded-xl border px-4 py-2 text-sm font-semibold">Editar perfil</a></div>
         <section className="mt-5 rounded-3xl border bg-white p-7 shadow-sm">
           <div className="flex items-center gap-5">
             {data.profile?.avatar_url
