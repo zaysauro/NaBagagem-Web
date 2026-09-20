@@ -34,8 +34,12 @@ export default function TripMap({ locations }: { locations: Point[] }) {
       }
     }
 
-    setTimeout(() => map.invalidateSize(), 100);
-    return () => map.remove();
+    const timer = window.setTimeout(() => map.invalidateSize(), 100);
+
+    return () => {
+      window.clearTimeout(timer);
+      map.remove();
+    };
   }, [locations]);
 
   return <div ref={ref} className="h-[420px] w-full overflow-hidden rounded-2xl" />;
