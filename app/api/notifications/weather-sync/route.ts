@@ -121,7 +121,7 @@ export async function POST(request: Request) {
   }
 
   const fallbackToday = new Date().toISOString().slice(0, 10);
-  const today = body.localDate?.match(/^\\d{4}-\\d{2}-\\d{2}$/)?.[0] || fallbackToday;
+  const today = body.localDate?.match(/^\d{4}-\d{2}-\d{2}$/)?.[0] || fallbackToday;
   const inSevenDays = new Date(today + "T12:00:00Z");
   inSevenDays.setUTCDate(inSevenDays.getUTCDate() + 7);
   const until = inSevenDays.toISOString().slice(0, 10);
