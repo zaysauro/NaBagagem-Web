@@ -1,1 +1,31 @@
-{"name":"na-bagagem-web","version":"0.1.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start","lint":"next lint"},"dependencies":{"@supabase/ssr":"latest","@supabase/supabase-js":"latest","leaflet":"latest","lucide-react":"latest","next":"latest","react":"latest","react-dom":"latest"},"devDependencies":{"@tailwindcss/postcss":"latest","@types/leaflet":"latest","@types/node":"latest","@types/react":"latest","@types/react-dom":"latest","tailwindcss":"latest","typescript":"latest"}}
+{
+  "name": "na-bagagem-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "leaflet": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-simple-maps": "latest",
+    "topojson-client": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "latest",
+    "@types/leaflet": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest"
+  }
+}
