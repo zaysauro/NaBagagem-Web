@@ -9,6 +9,20 @@ async function getOwnedTrip(id: string) {
   return { supabase, user, trip };
 }
 
+function normalizeStatus(value: unknown) {
+  return value === "completed" || value === "in_progress" || value === "future" ? value : "future";
+}
+
+function normalizeColor(value: unknown) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "#111827";
+}
+
+function normalizeDay(value: unknown) {
+  const day = Number(value);
+  return Number.isInteger(day) && day >= 1 ? day : 1;
+}
+
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, user, trip } = await getOwnedTrip(id);
@@ -27,10 +41,43 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     event_date: body.event_date || null,
     start_time: body.start_time || null,
     end_time: body.end_time || null,
+    day_index: normalizeDay(body.day_index),
+    status: normalizeStatus(body.status),
+    color: normalizeColor(body.color),
   }).select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ event: data }, { status: 201 });
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { supabase, user, trip } = await getOwnedTrip(id);
+  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  if (!trip) return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
+
+  const eventId = new URL(request.url).searchParams.get("eventId");
+  if (!eventId) return NextResponse.json({ error: "Evento inválido." }, { status: 400 });
+
+  const body = await request.json();
+  const updates: Record<string, unknown> = {};
+  if (body.title !== undefined) {
+    const title = String(body.title || "").trim();
+    if (!title) return NextResponse.json({ error: "Informe o título do evento." }, { status: 400 });
+    updates.title = title;
+  }
+  if (body.description !== undefined) updates.description = String(body.description || "").trim() || null;
+  if (body.event_date !== undefined) updates.event_date = body.event_date || null;
+  if (body.start_time !== undefined) updates.start_time = body.start_time || null;
+  if (body.end_time !== undefined) updates.end_time = body.end_time || null;
+  if (body.location_id !== undefined) updates.location_id = body.location_id || null;
+  if (body.day_index !== undefined) updates.day_index = normalizeDay(body.day_index);
+  if (body.status !== undefined) updates.status = normalizeStatus(body.status);
+  if (body.color !== undefined) updates.color = normalizeColor(body.color);
+
+  const { data, error } = await supabase.from("trip_events").update(updates).eq("id", eventId).eq("trip_id", id).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ event: data });
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
