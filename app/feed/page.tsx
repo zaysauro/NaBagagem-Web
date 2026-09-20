@@ -12,6 +12,7 @@ type Comment = {
 type Trip = { id: string; title: string; start_date: string | null; end_date: string | null };
 type Post = {
   id:string; user_id:string; title:string; body:string|null; created_at:string;
+  isMine:boolean;
   trip_id:string|null; visibility:string; likedByMe:boolean; likes:number;
   comments:Comment[]; profiles:any; media:Media[];
 };
