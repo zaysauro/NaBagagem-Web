@@ -9,6 +9,7 @@ type Comment = {
   id:string; user_id:string; body:string; approved:boolean; created_at:string;
   profiles?: {display_name?:string; username?:string}|null;
 };
+type Trip = { id: string; title: string; start_date: string | null; end_date: string | null };
 type Post = {
   id:string; user_id:string; title:string; body:string|null; created_at:string;
   trip_id:string|null; visibility:string; likedByMe:boolean; likes:number;
@@ -19,6 +20,8 @@ const visibilityLabels:Record<string,string>={public:"Público",followers:"Segui
 
 export default function FeedPage() {
   const [posts,setPosts]=useState<Post[]>([]);
+  const [trips,setTrips]=useState<Trip[]>([]);
+  const [tripId,setTripId]=useState("");
   const [title,setTitle]=useState("");
   const [body,setBody]=useState("");
   const [visibility,setVisibility]=useState("public");
@@ -41,6 +44,7 @@ export default function FeedPage() {
 
   useEffect(()=>{
     load();
+    fetch("/api/trips").then(async r=>{const d=await r.json();if(r.ok)setTrips(d.trips||[]);}).catch(()=>{});
     const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if(!url||!key)return;
@@ -56,7 +60,7 @@ export default function FeedPage() {
   async function publish(e:React.FormEvent){
     e.preventDefault(); setMessage("");
     const r=await fetch("/api/feed",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({title,body,visibility})});
+      body:JSON.stringify({title,body,visibility,trip_id:tripId||null})});
     const d=await r.json();
     if(!r.ok){setMessage(d.error||"Erro ao publicar.");return;}
     if(pendingImage){
@@ -64,7 +68,7 @@ export default function FeedPage() {
       const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
       if(!upload.ok){const error=await upload.json();setMessage("Publicação criada, mas a imagem não foi enviada: "+(error.error||"erro"));}
     }
-    setTitle("");setBody("");setVisibility("public");setPendingImage(null);
+    setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImage(null);
     if(fileRef.current)fileRef.current.value="";
     await load();
   }
@@ -139,6 +143,10 @@ export default function FeedPage() {
         <input required value={title} onChange={e=>setTitle(e.target.value)} placeholder="Título da publicação" className="w-full rounded-xl border p-3"/>
         <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Conte sobre sua viagem..." rows={3} className="mt-3 w-full rounded-xl border p-3"/>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <select value={tripId} onChange={e=>setTripId(e.target.value)} className="rounded-xl border p-3">
+            <option value="">Sem viagem vinculada</option>
+            {trips.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}
+          </select>
           <select value={visibility} onChange={e=>setVisibility(e.target.value)} className="rounded-xl border p-3">
             <option value="public">Público</option><option value="followers">Seguidores</option><option value="private">Somente eu</option>
           </select>
