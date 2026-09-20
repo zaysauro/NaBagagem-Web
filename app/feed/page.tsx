@@ -170,7 +170,7 @@ export default function FeedPage() {
                     <p className="text-xs text-neutral-400">{p.profiles?.username?<Link href={"/perfil/"+p.profiles.username} className="font-semibold hover:underline">{p.profiles.display_name||"Viajante"}</Link>:p.profiles?.display_name||"Viajante"} · {new Date(p.created_at).toLocaleString("pt-BR")} · {visibilityLabels[p.visibility]||p.visibility}</p>
                   </div>
                   <div className="flex shrink-0 gap-2 text-xs">
-                    {p.user_id===p.profiles?.id&&<button onClick={()=>startEdit(p)} className="font-semibold">Editar</button>}
+                    {p.isMine&&<button onClick={()=>startEdit(p)} className="font-semibold">Editar</button>}
                     <button onClick={()=>report(p)} className="text-red-600">Denunciar</button>
                   </div>
                 </div>
@@ -179,7 +179,7 @@ export default function FeedPage() {
                 <div className="mt-5 flex flex-wrap gap-4 text-sm">
                   <button onClick={()=>like(p)} className="font-semibold">{p.likedByMe?"Curtido":"Curtir"} · {p.likes}</button>
                   <button onClick={()=>comment(p)} className="font-semibold">Comentar · {p.comments.length}</button>
-                  {p.user_id===p.profiles?.id&&<button onClick={()=>removePost(p.id)} className="text-red-600">Excluir</button>}
+                  {p.isMine&&<button onClick={()=>removePost(p.id)} className="text-red-600">Excluir</button>}
                   {p.trip_id&&<Link href={"/dashboard/trips/"+p.trip_id} className="font-semibold">Abrir viagem</Link>}
                 </div>
                 {p.comments.length>0&&<div className="mt-4 space-y-2 border-t pt-4">
