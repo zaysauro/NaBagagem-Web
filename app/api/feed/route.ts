@@ -7,7 +7,7 @@ export async function GET() {
   if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});
 
   const {data:posts,error}=await supabase.from("feed_posts")
-    .select("id,user_id,trip_id,title,body,visibility,created_at,profiles(display_name,username,avatar_url),feed_likes(user_id),feed_comments(id,user_id,body,approved,created_at,profiles(display_name,username))")
+    .select("id,user_id,trip_id,title,body,visibility,created_at,profiles(display_name,username,avatar_url),feed_likes(user_id),feed_comments(id,user_id,body,approved,created_at,profiles(display_name,username)),feed_post_media(id,public_url,storage_path,created_at)")
     .order("created_at",{ascending:false}).limit(50);
 
   if(error)return NextResponse.json({error:error.message},{status:400});
@@ -16,7 +16,8 @@ export async function GET() {
     ...p,
     likes:(p.feed_likes||[]).length,
     likedByMe:(p.feed_likes||[]).some((x:any)=>x.user_id===user.id),
-    comments:(p.feed_comments||[]).filter((x:any)=>x.approved||x.user_id===user.id)
+    comments:(p.feed_comments||[]).filter((x:any)=>x.approved||x.user_id===user.id),
+    media:p.feed_post_media||[]
   }));
   return NextResponse.json({posts:normalized});
 }
