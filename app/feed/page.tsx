@@ -5,146 +5,196 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 type Media = { id: string; public_url: string };
+type Comment = {
+  id:string; user_id:string; body:string; approved:boolean; created_at:string;
+  profiles?: {display_name?:string; username?:string}|null;
+};
 type Post = {
-  id: string; title: string; body: string | null; created_at: string; trip_id: string | null;
-  likedByMe: boolean; likes: number; comments: any[]; profiles: any; media: Media[];
+  id:string; user_id:string; title:string; body:string|null; created_at:string;
+  trip_id:string|null; visibility:string; likedByMe:boolean; likes:number;
+  comments:Comment[]; profiles:any; media:Media[];
 };
 
-export default function FeedPage() {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-  const [pendingImage, setPendingImage] = useState<File | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+const visibilityLabels:Record<string,string>={public:"Público",followers:"Seguidores",private:"Somente eu"};
 
-  async function load() {
-    const r = await fetch("/api/feed");
-    const d = await r.json();
-    if (r.ok) setPosts(d.posts || []);
-    else setMessage(d.error || "Não foi possível carregar o feed.");
+export default function FeedPage() {
+  const [posts,setPosts]=useState<Post[]>([]);
+  const [title,setTitle]=useState("");
+  const [body,setBody]=useState("");
+  const [visibility,setVisibility]=useState("public");
+  const [loading,setLoading]=useState(true);
+  const [message,setMessage]=useState("");
+  const [pendingImage,setPendingImage]=useState<File|null>(null);
+  const [editing,setEditing]=useState<string|null>(null);
+  const [editTitle,setEditTitle]=useState("");
+  const [editBody,setEditBody]=useState("");
+  const [editVisibility,setEditVisibility]=useState("public");
+  const fileRef=useRef<HTMLInputElement>(null);
+
+  async function load(){
+    const r=await fetch("/api/feed");
+    const d=await r.json();
+    if(r.ok)setPosts(d.posts||[]);
+    else setMessage(d.error||"Não foi possível carregar o feed.");
     setLoading(false);
   }
 
-  useEffect(() => {
+  useEffect(()=>{
     load();
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) return;
-    const supabase = createClient();
-    const channel = supabase.channel("na-bagagem-feed")
-      .on("postgres_changes", { event: "*", schema: "public", table: "feed_posts" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "feed_likes" }, load)
-      .on("postgres_changes", { event: "*", schema: "public", table: "feed_comments" }, load)
+    const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if(!url||!key)return;
+    const supabase=createClient();
+    const channel=supabase.channel("na-bagagem-feed")
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_posts"},load)
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_likes"},load)
+      .on("postgres_changes",{event:"*",schema:"public",table:"feed_comments"},load)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, []);
+    return()=>{supabase.removeChannel(channel);};
+  },[]);
 
-  async function publish(e: React.FormEvent) {
-    e.preventDefault();
-    setMessage("");
-    const r = await fetch("/api/feed", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, body, visibility: "public" })
-    });
-    const d = await r.json();
-    if (!r.ok) { setMessage(d.error || "Erro ao publicar."); return; }
-
-    let newPost = { ...d.post, likes: 0, likedByMe: false, comments: [], profiles: null, media: [] };
-    if (pendingImage) {
-      const form = new FormData();
-      form.append("post_id", d.post.id);
-      form.append("file", pendingImage);
-      const upload = await fetch("/api/feed/upload", { method: "POST", body: form });
-      if (!upload.ok) {
-        const error = await upload.json();
-        setMessage("Publicação criada, mas a imagem não foi enviada: " + (error.error || "erro"));
-      }
+  async function publish(e:React.FormEvent){
+    e.preventDefault(); setMessage("");
+    const r=await fetch("/api/feed",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({title,body,visibility})});
+    const d=await r.json();
+    if(!r.ok){setMessage(d.error||"Erro ao publicar.");return;}
+    if(pendingImage){
+      const form=new FormData(); form.append("post_id",d.post.id); form.append("file",pendingImage);
+      const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
+      if(!upload.ok){const error=await upload.json();setMessage("Publicação criada, mas a imagem não foi enviada: "+(error.error||"erro"));}
     }
-    setTitle("");
-    setBody("");
-    setPendingImage(null);
-    if (fileRef.current) fileRef.current.value = "";
-    setPosts(x => [newPost, ...x]);
+    setTitle("");setBody("");setVisibility("public");setPendingImage(null);
+    if(fileRef.current)fileRef.current.value="";
     await load();
   }
 
-  async function like(post: Post) {
-    const action = post.likedByMe ? "unlike" : "like";
-    const r = await fetch("/api/feed/" + post.id, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action })
-    });
-    if (r.ok) setPosts(x => x.map(p => p.id === post.id ? {
-      ...p, likedByMe: !post.likedByMe, likes: p.likes + (post.likedByMe ? -1 : 1)
-    } : p));
+  async function like(post:Post){
+    const action=post.likedByMe?"unlike":"like";
+    const r=await fetch("/api/feed/"+post.id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action})});
+    if(r.ok)setPosts(x=>x.map(p=>p.id===post.id?{...p,likedByMe:!post.likedByMe,likes:p.likes+(post.likedByMe?-1:1)}:p));
   }
 
-  async function comment(post: Post) {
-    const text = window.prompt("Comentário");
-    if (!text?.trim()) return;
-    const r = await fetch("/api/feed/" + post.id, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "comment", body: text })
-    });
-    const d = await r.json();
-    if (r.ok) setPosts(x => x.map(p => p.id === post.id ? { ...p, comments: [...p.comments, d.comment] } : p));
+  async function comment(post:Post){
+    const text=window.prompt("Comentário");
+    if(!text?.trim())return;
+    const r=await fetch("/api/feed/"+post.id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"comment",body:text})});
+    const d=await r.json();
+    if(r.ok){
+      setPosts(x=>x.map(p=>p.id===post.id?{...p,comments:[...p.comments,d.comment]}:p));
+      setMessage("Comentário enviado. O autor precisa aprová-lo para aparecer publicamente.");
+    }else setMessage(d.error||"Não foi possível comentar.");
   }
 
-  async function report(post: Post) {
-    const reason = window.prompt("Motivo da denúncia");
-    if (!reason?.trim()) return;
-    const r = await fetch("/api/feed/" + post.id, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "report", reason })
-    });
-    if (r.ok) setMessage("Denúncia registrada.");
+  function startEdit(post:Post){
+    setEditing(post.id);setEditTitle(post.title);setEditBody(post.body||"");setEditVisibility(post.visibility);
   }
 
-  return <main className="min-h-screen bg-neutral-50 px-6 py-8">
+  async function saveEdit(id:string){
+    const r=await fetch("/api/feed/"+id,{method:"PATCH",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({title:editTitle,body:editBody,visibility:editVisibility})});
+    const d=await r.json();
+    if(!r.ok){setMessage(d.error||"Não foi possível editar.");return;}
+    setPosts(x=>x.map(p=>p.id===id?{...p,...d.post}:p));setEditing(null);
+  }
+
+  async function removePost(id:string){
+    if(!window.confirm("Excluir esta publicação? Essa ação não pode ser desfeita."))return;
+    const r=await fetch("/api/feed/"+id,{method:"DELETE"});
+    const d=await r.json();
+    if(!r.ok){setMessage(d.error||"Não foi possível excluir.");return;}
+    setPosts(x=>x.filter(p=>p.id!==id));
+  }
+
+  async function moderateComment(commentId:string,approved:boolean,postId:string){
+    const r=await fetch("/api/feed/comments",{method:"PATCH",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({comment_id:commentId,approved})});
+    if(r.ok)setPosts(x=>x.map(p=>p.id===postId?{...p,comments:p.comments.map(c=>c.id===commentId?{...c,approved}:c)}:p));
+    else{const d=await r.json();setMessage(d.error||"Não foi possível moderar.");}
+  }
+
+  async function deleteComment(commentId:string,postId:string){
+    if(!window.confirm("Excluir comentário?"))return;
+    const r=await fetch("/api/feed/comments?id="+encodeURIComponent(commentId),{method:"DELETE"});
+    if(r.ok)setPosts(x=>x.map(p=>p.id===postId?{...p,comments:p.comments.filter(c=>c.id!==commentId)}:p));
+  }
+
+  async function report(post:Post){
+    const reason=window.prompt("Motivo da denúncia");
+    if(!reason?.trim())return;
+    const r=await fetch("/api/feed/"+post.id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"report",reason})});
+    if(r.ok)setMessage("Denúncia registrada.");else setMessage("Não foi possível registrar a denúncia.");
+  }
+
+  return <main className="min-h-screen bg-neutral-50 px-4 py-8 sm:px-6">
     <div className="mx-auto max-w-3xl">
-      <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</Link>
+        <Link href="/dashboard/perfil" className="text-sm font-semibold">Meu perfil</Link>
+      </div>
       <h1 className="mt-5 text-3xl font-bold">Feed</h1>
-      <p className="mt-1 text-neutral-500">Compartilhe viagens e descubra roteiros.</p>
+      <p className="mt-1 text-neutral-500">Compartilhe viagens, siga viajantes e descubra roteiros.</p>
 
-      <form onSubmit={publish} className="mt-6 rounded-3xl border bg-white p-6 shadow-sm">
-        <input required value={title} onChange={e => setTitle(e.target.value)}
-          placeholder="Título da publicação" className="w-full rounded-xl border p-3" />
-        <textarea value={body} onChange={e => setBody(e.target.value)}
-          placeholder="Conte sobre sua viagem..." rows={3} className="mt-3 w-full rounded-xl border p-3" />
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <input ref={fileRef} type="file" accept="image/*" onChange={e => setPendingImage(e.target.files?.[0] || null)}
-            className="block w-full text-sm" />
-          <button className="rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar</button>
+      <form onSubmit={publish} className="mt-6 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
+        <input required value={title} onChange={e=>setTitle(e.target.value)} placeholder="Título da publicação" className="w-full rounded-xl border p-3"/>
+        <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Conte sobre sua viagem..." rows={3} className="mt-3 w-full rounded-xl border p-3"/>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <select value={visibility} onChange={e=>setVisibility(e.target.value)} className="rounded-xl border p-3">
+            <option value="public">Público</option><option value="followers">Seguidores</option><option value="private">Somente eu</option>
+          </select>
+          <input ref={fileRef} type="file" accept="image/*" onChange={e=>setPendingImage(e.target.files?.[0]||null)} className="block w-full rounded-xl border p-2 text-sm"/>
         </div>
+        {pendingImage&&<p className="mt-2 text-xs text-neutral-500">Imagem: {pendingImage.name}</p>}
+        <button className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar</button>
       </form>
 
-      {message && <p className="mt-3 text-sm text-neutral-600">{message}</p>}
-      {loading ? <p className="mt-6 text-sm text-neutral-500">Carregando feed...</p> :
-        <div className="mt-6 space-y-4">{posts.map(p =>
-          <article key={p.id} className="rounded-3xl border bg-white p-6 shadow-sm">
-            <div className="flex justify-between gap-4">
-              <div><h2 className="text-lg font-bold">{p.title}</h2>
-                <p className="text-xs text-neutral-400">{p.profiles?.display_name || "Viajante"} · {new Date(p.created_at).toLocaleString("pt-BR")}</p>
+      {message&&<p className="mt-3 rounded-xl bg-white p-3 text-sm text-neutral-600">{message}</p>}
+
+      {loading?<p className="mt-6 text-sm text-neutral-500">Carregando feed...</p>:
+        <div className="mt-6 space-y-4">{posts.map(p=>
+          <article key={p.id} className="rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
+            {editing===p.id?
+              <div className="space-y-3">
+                <input value={editTitle} onChange={e=>setEditTitle(e.target.value)} className="w-full rounded-xl border p-3"/>
+                <textarea value={editBody} onChange={e=>setEditBody(e.target.value)} rows={4} className="w-full rounded-xl border p-3"/>
+                <select value={editVisibility} onChange={e=>setEditVisibility(e.target.value)} className="rounded-xl border p-3">
+                  <option value="public">Público</option><option value="followers">Seguidores</option><option value="private">Somente eu</option>
+                </select>
+                <div className="flex gap-2"><button onClick={()=>saveEdit(p.id)} className="rounded-xl bg-neutral-950 px-4 py-2 text-sm font-semibold text-white">Salvar</button><button onClick={()=>setEditing(null)} className="rounded-xl border px-4 py-2 text-sm">Cancelar</button></div>
               </div>
-              {p.trip_id && <Link href={"/dashboard/trips/" + p.trip_id} className="text-xs font-semibold">Abrir viagem</Link>}
-            </div>
-            {p.body && <p className="mt-4 whitespace-pre-wrap text-neutral-700">{p.body}</p>}
-            {p.media?.length > 0 && <div className="mt-4 grid gap-2 sm:grid-cols-2">
-              {p.media.map(m => <img key={m.id} src={m.public_url} alt="" className="max-h-80 w-full rounded-2xl object-cover" />)}
-            </div>}
-            <div className="mt-5 flex gap-4 text-sm">
-              <button onClick={() => like(p)} className="font-semibold">{p.likedByMe ? "Curtido" : "Curtir"} · {p.likes}</button>
-              <button onClick={() => comment(p)} className="font-semibold">Comentar · {p.comments.length}</button>
-              <button onClick={() => report(p)} className="text-red-600">Denunciar</button>
-            </div>
-            {p.comments.length > 0 && <div className="mt-4 space-y-2 border-t pt-4">
-              {p.comments.map(c => <div key={c.id} className="rounded-xl bg-neutral-50 p-3 text-sm">
-                <b>{c.profiles?.display_name || "Viajante"}</b><p>{c.body}</p>
-              </div>)}
-            </div>}
+              :
+              <>
+                <div className="flex justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-bold">{p.title}</h2>
+                    <p className="text-xs text-neutral-400">{p.profiles?.username?<Link href={"/perfil/"+p.profiles.username} className="font-semibold hover:underline">{p.profiles.display_name||"Viajante"}</Link>:p.profiles?.display_name||"Viajante"} · {new Date(p.created_at).toLocaleString("pt-BR")} · {visibilityLabels[p.visibility]||p.visibility}</p>
+                  </div>
+                  <div className="flex shrink-0 gap-2 text-xs">
+                    {p.user_id===p.profiles?.id&&<button onClick={()=>startEdit(p)} className="font-semibold">Editar</button>}
+                    <button onClick={()=>report(p)} className="text-red-600">Denunciar</button>
+                  </div>
+                </div>
+                {p.body&&<p className="mt-4 whitespace-pre-wrap text-neutral-700">{p.body}</p>}
+                {p.media?.length>0&&<div className="mt-4 grid gap-2 sm:grid-cols-2">{p.media.map(m=><img key={m.id} src={m.public_url} alt="" className="max-h-80 w-full rounded-2xl object-cover"/>)}</div>}
+                <div className="mt-5 flex flex-wrap gap-4 text-sm">
+                  <button onClick={()=>like(p)} className="font-semibold">{p.likedByMe?"Curtido":"Curtir"} · {p.likes}</button>
+                  <button onClick={()=>comment(p)} className="font-semibold">Comentar · {p.comments.length}</button>
+                  {p.user_id===p.profiles?.id&&<button onClick={()=>removePost(p.id)} className="text-red-600">Excluir</button>}
+                  {p.trip_id&&<Link href={"/dashboard/trips/"+p.trip_id} className="font-semibold">Abrir viagem</Link>}
+                </div>
+                {p.comments.length>0&&<div className="mt-4 space-y-2 border-t pt-4">
+                  {p.comments.map(c=><div key={c.id} className={"rounded-xl p-3 text-sm "+(c.approved?"bg-neutral-50":"border border-dashed bg-amber-50")}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div><b>{c.profiles?.display_name||"Viajante"}</b><p className="mt-1">{c.body}</p>{!c.approved&&<span className="text-xs text-amber-700">Aguardando aprovação</span>}</div>
+                      <div className="flex shrink-0 gap-2 text-xs">
+                        {p.user_id===c.user_id&&<button onClick={()=>moderateComment(c.id,!c.approved,p.id)} className="font-semibold">{c.approved?"Ocultar":"Aprovar"}</button>}
+                        <button onClick={()=>deleteComment(c.id,p.id)} className="text-red-600">Excluir</button>
+                      </div>
+                    </div>
+                  </div>)}
+                </div>}
+              </>
+            }
           </article>
         )}</div>}
     </div>
