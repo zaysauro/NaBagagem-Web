@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type Location = { id: string; name: string; city: string | null; country: string | null; visited_at: string | null; notes: string | null; latitude: number | null; longitude: number | null };
 type Status = "completed" | "in_progress" | "future";
@@ -8,7 +9,7 @@ type Event = { id: string; title: string; description: string | null; event_date
 
 const statusLabel: Record<Status, string> = { completed: "Concluído", in_progress: "Em andamento", future: "Planejado" };
 
-export default function TripDetailClient({ tripId, initialLocations, initialEvents = [] }: { tripId: string; initialLocations: Location[]; initialEvents?: Event[] }) {
+export default function TripDetailClient({ tripId, initialLocations, initialEvents = [], canEdit = true }: { tripId: string; initialLocations: Location[]; initialEvents?: Event[]; canEdit?: boolean }) {
   const [locations, setLocations] = useState(initialLocations);
   const [events, setEvents] = useState(initialEvents);
   const [locationForm, setLocationForm] = useState({ name: "", city: "", country: "", visited_at: "", notes: "" });
@@ -16,6 +17,40 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
   const [locationLoading, setLocationLoading] = useState(false);
   const [eventLoading, setEventLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    let supabase: ReturnType<typeof createClient> | null = null;
+
+    async function refreshFromServer() {
+      try {
+        const response = await fetch("/api/trips/" + tripId, { cache: "no-store" });
+        if (!response.ok || !active) return;
+        const data = await response.json();
+        if (active) {
+          setLocations(data.locations || []);
+          setEvents(data.events || []);
+        }
+      } catch {}
+    }
+
+    try {
+      supabase = createClient();
+      const channel = supabase
+        .channel("trip-collaboration-" + tripId)
+        .on("postgres_changes", { event: "*", schema: "public", table: "trip_locations", filter: "trip_id=eq." + tripId }, refreshFromServer)
+        .on("postgres_changes", { event: "*", schema: "public", table: "trip_events", filter: "trip_id=eq." + tripId }, refreshFromServer)
+        .on("postgres_changes", { event: "*", schema: "public", table: "trips", filter: "id=eq." + tripId }, refreshFromServer)
+        .subscribe();
+
+      return () => {
+        active = false;
+        if (supabase) supabase.removeChannel(channel);
+      };
+    } catch {
+      return () => { active = false; };
+    }
+  }, [tripId]);
 
   const groupedEvents = useMemo(() => {
     const groups = new Map<number, Event[]>();
@@ -71,7 +106,8 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
 
   return (
     <section className="mt-7 space-y-7">
-      <div className="grid gap-7 lg:grid-cols-2">
+      {!canEdit && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Você está como visualizador. As alterações desta viagem estão bloqueadas para sua conta.</div>}
+      {canEdit && <div className="grid gap-7 lg:grid-cols-2">
         <form onSubmit={addLocation} className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-bold text-neutral-950">Destinos</h2>
           <p className="mt-1 text-sm text-neutral-500">Ao salvar, o NaBagagem tenta localizar automaticamente o ponto no mapa.</p>
@@ -89,7 +125,7 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
             {locations.map((item,index)=>
               <div key={item.id} className="flex items-center justify-between rounded-xl bg-neutral-50 p-3">
                 <div><b>{index+1}. {item.name}</b><p className="text-xs text-neutral-500">{[item.city,item.country].filter(Boolean).join(", ")}</p><p className="mt-1 text-[11px] text-neutral-400">{item.latitude != null ? "Localizado no mapa" : "Sem coordenadas"}</p></div>
-                <button type="button" onClick={()=>removeLocation(item.id)} className="text-xs font-semibold text-red-600">Remover</button>
+                {canEdit && <button type="button" onClick={()=>removeLocation(item.id)} className="text-xs font-semibold text-red-600">Remover</button>}
               </div>
             )}
           </div>
@@ -111,11 +147,11 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
           </div>
           <button disabled={eventLoading} className="mt-4 w-full rounded-xl bg-neutral-950 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50">{eventLoading ? "Adicionando..." : "Adicionar atividade"}</button>
         </form>
-      </div>
+      </div>}
 
       <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="text-xl font-bold text-neutral-950">Roteiro por dia</h2>
-        {groupedEvents.length === 0 ? <p className="mt-4 text-sm text-neutral-500">Nenhuma atividade cadastrada ainda.</p> : <div className="mt-5 space-y-6">{groupedEvents.map(([day, dayEvents])=><div key={day}><div className="mb-3 flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-950 text-sm font-bold text-white">{day}</div><h3 className="font-bold text-neutral-950">Dia {day}</h3><span className="text-xs text-neutral-400">{dayEvents.length} atividade{dayEvents.length === 1 ? "" : "s"}</span></div><div className="grid gap-3 md:grid-cols-2">{dayEvents.map((item)=><div key={item.id} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4" style={{ borderLeftWidth: 5, borderLeftColor: item.color }}><div className="flex justify-between gap-3"><div><p className="font-bold text-neutral-950">{item.title}</p><p className="mt-1 text-xs text-neutral-500">{item.event_date || "Data não definida"}{item.start_time ? " · " + item.start_time : ""}{item.end_time ? "–" + item.end_time : ""}</p></div><button onClick={()=>removeEvent(item.id)} className="text-xs font-semibold text-red-600">Remover</button></div><div className="mt-3 flex flex-wrap gap-2"><select value={item.status} onChange={(e)=>updateEvent(item.id,{status:e.target.value as Status})} className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs">{Object.entries(statusLabel).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><input aria-label="Cor da atividade" type="color" value={item.color} onChange={(e)=>updateEvent(item.id,{color:e.target.value})} className="h-8 w-10 cursor-pointer rounded-md border border-neutral-300 bg-white p-1" /></div>{item.location_id && <p className="mt-2 text-xs text-neutral-600">Destino: {locations.find((l)=>l.id===item.location_id)?.name || "Destino removido"}</p>}{item.reservation_name && <div className="mt-3 rounded-xl bg-white p-3 text-xs"><p className="font-semibold">Reserva: {item.reservation_name}</p>{item.confirmation_code&&<p className="mt-1 text-neutral-500">Código: {item.confirmation_code}</p>}{item.reminder_minutes!=null&&<p className="mt-1 text-neutral-500">Lembrete: {item.reminder_minutes} min antes</p>}{item.reservation_url&&<a href={item.reservation_url} target="_blank" rel="noreferrer" className="mt-2 inline-block font-semibold underline">Abrir reserva</a>}</div>}{item.description && <p className="mt-2 text-sm text-neutral-600">{item.description}</p>}</div>)}</div></div>)}</div>}
+        {groupedEvents.length === 0 ? <p className="mt-4 text-sm text-neutral-500">Nenhuma atividade cadastrada ainda.</p> : <div className="mt-5 space-y-6">{groupedEvents.map(([day, dayEvents])=><div key={day}><div className="mb-3 flex items-center gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-950 text-sm font-bold text-white">{day}</div><h3 className="font-bold text-neutral-950">Dia {day}</h3><span className="text-xs text-neutral-400">{dayEvents.length} atividade{dayEvents.length === 1 ? "" : "s"}</span></div><div className="grid gap-3 md:grid-cols-2">{dayEvents.map((item)=><div key={item.id} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4" style={{ borderLeftWidth: 5, borderLeftColor: item.color }}><div className="flex justify-between gap-3"><div><p className="font-bold text-neutral-950">{item.title}</p><p className="mt-1 text-xs text-neutral-500">{item.event_date || "Data não definida"}{item.start_time ? " · " + item.start_time : ""}{item.end_time ? "–" + item.end_time : ""}</p></div>{canEdit && <button onClick={()=>removeEvent(item.id)} className="text-xs font-semibold text-red-600">Remover</button>}</div><div className="mt-3 flex flex-wrap gap-2">{canEdit && <><select value={item.status} onChange={(e)=>updateEvent(item.id,{status:e.target.value as Status})} className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs">{Object.entries(statusLabel).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><input aria-label="Cor da atividade" type="color" value={item.color} onChange={(e)=>updateEvent(item.id,{color:e.target.value})} className="h-8 w-10 cursor-pointer rounded-md border border-neutral-300 bg-white p-1" /></>}</div>{item.location_id && <p className="mt-2 text-xs text-neutral-600">Destino: {locations.find((l)=>l.id===item.location_id)?.name || "Destino removido"}</p>}{item.reservation_name && <div className="mt-3 rounded-xl bg-white p-3 text-xs"><p className="font-semibold">Reserva: {item.reservation_name}</p>{item.confirmation_code&&<p className="mt-1 text-neutral-500">Código: {item.confirmation_code}</p>}{item.reminder_minutes!=null&&<p className="mt-1 text-neutral-500">Lembrete: {item.reminder_minutes} min antes</p>}{item.reservation_url&&<a href={item.reservation_url} target="_blank" rel="noreferrer" className="mt-2 inline-block font-semibold underline">Abrir reserva</a>}</div>}{item.description && <p className="mt-2 text-sm text-neutral-600">{item.description}</p>}</div>)}</div></div>)}</div>}
       </div>
       {message && <p className="text-sm text-neutral-700">{message}</p>}
     </section>
