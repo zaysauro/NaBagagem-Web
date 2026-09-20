@@ -1,14 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase=await createClient();
   const {data:{user}}=await supabase.auth.getUser();
   if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});
 
+  const url = new URL(request.url);
+  const page = Math.max(0, Number(url.searchParams.get("page") || "0"));
+  const pageSize = Math.min(30, Math.max(5, Number(url.searchParams.get("pageSize") || "20")));
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
   const {data:posts,error}=await supabase.from("feed_posts")
     .select("id,user_id,trip_id,title,body,visibility,created_at,profiles(id,display_name,username,avatar_url),feed_likes(user_id),feed_comments(id,user_id,body,approved,created_at,profiles(display_name,username)),feed_bookmarks(user_id),feed_post_media(id,public_url,storage_path,created_at)")
-    .order("created_at",{ascending:false}).limit(50);
+    .order("created_at",{ascending:false}).range(from, to);
 
   if(error)return NextResponse.json({error:error.message},{status:400});
 
@@ -21,7 +27,7 @@ export async function GET() {
     bookmarkedByMe:(p.feed_bookmarks||[]).some((x:any)=>x.user_id===user.id),
     media:p.feed_post_media||[]
   }));
-  return NextResponse.json({posts:normalized});
+  return NextResponse.json({ posts: normalized, page, pageSize, hasMore: (posts || []).length === pageSize });
 }
 
 export async function POST(request:Request){
