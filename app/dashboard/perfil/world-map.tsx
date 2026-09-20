@@ -31,7 +31,7 @@ export default function WorldMap({ countries }: Props) {
                     default: { fill: visited ? "#111827" : "#d4d4d4", outline: "none" },
                     hover: { fill: visited ? "#111827" : "#a3a3a3", outline: "none" },
                     pressed: { fill: "#111827", outline: "none" },
-                  }}
+                  } as any}
                 />
               );
             })}
