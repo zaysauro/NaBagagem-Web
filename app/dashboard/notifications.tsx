@@ -31,11 +31,18 @@ export default function Notifications() {
         String(now.getHours()).padStart(2, "0") + ":" +
         String(now.getMinutes()).padStart(2, "0");
 
-      await fetch("/api/notifications/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ localDate, localTime })
-      });
+      await Promise.all([
+        fetch("/api/notifications/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ localDate, localTime })
+        }),
+        fetch("/api/notifications/weather-sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ localDate })
+        })
+      ]);
 
       const r = await fetch("/api/notifications");
       const d = await r.json();
