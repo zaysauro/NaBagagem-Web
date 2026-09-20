@@ -10,7 +10,7 @@ export default function Notifications(){
   const [open,setOpen]=useState(false);
   const [error,setError]=useState("");
 
-  const load=async()=>{try{const r=await fetch("/api/notifications");const d=await r.json();if(!r.ok)throw new Error(d.error);setItems(d.notifications||[])}catch(e){setError(e instanceof Error?e.message:"Erro")}};
+  const load=async()=>{try{await fetch("/api/notifications/sync",{method:"POST"});const r=await fetch("/api/notifications");const d=await r.json();if(!r.ok)throw new Error(d.error);setItems(d.notifications||[])}catch(e){setError(e instanceof Error?e.message:"Erro")}};
   useEffect(()=>{load();const env=typeof window!=="undefined"&&process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;if(!env)return;const sb=createClient();const ch=sb.channel("notifications-live").on("postgres_changes",{event:"INSERT",schema:"public",table:"notifications"},()=>load()).subscribe();return()=>{sb.removeChannel(ch)}},[]);
 
   const unread=items.filter(x=>!x.read_at).length;
