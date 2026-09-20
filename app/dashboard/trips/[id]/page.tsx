@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripDetailClient from "./trip-detail-client";
 import TripMap from "./trip-map";
+import TripTools from "./trip-tools";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,7 +16,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   const [{ data: locations }, { data: events }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
-    supabase.from("trip_events").select("*").eq("trip_id", id).order("event_date").order("start_time"),
+    supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("event_date").order("start_time"),
   ]);
 
   return (
@@ -31,13 +32,14 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
         <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-end justify-between gap-4">
-            <div><h2 className="text-xl font-bold text-neutral-950">Mapa da viagem</h2><p className="mt-1 text-sm text-neutral-500">Os destinos geocodificados aparecem aqui na ordem do roteiro.</p></div>
+            <div><h2 className="text-xl font-bold text-neutral-950">Mapa da viagem</h2><p className="mt-1 text-sm text-neutral-500">Destinos localizados automaticamente aparecem aqui na ordem do roteiro.</p></div>
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">{(locations ?? []).filter((l:any)=>l.latitude != null && l.longitude != null).length} pontos no mapa</span>
           </div>
           <TripMap locations={locations ?? []} />
         </section>
 
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
+        <TripTools tripId={trip.id} />
       </div>
     </main>
   );
