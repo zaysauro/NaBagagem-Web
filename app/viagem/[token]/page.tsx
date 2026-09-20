@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import SharedTripActions from "../shared-trip-actions";
 
 export default async function SharedTripPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -16,7 +17,7 @@ export default async function SharedTripPage({ params }: { params: Promise<{ tok
     <section className="mt-5 rounded-3xl border bg-white p-7 shadow-sm">
       <h1 className="text-3xl font-bold">{trip.title}</h1>
       {trip.description && <p className="mt-2 text-neutral-600">{trip.description}</p>}
-      <p className="mt-3 text-sm text-neutral-400">{trip.start_date || "Data não definida"}{trip.end_date ? " → " + trip.end_date : ""}</p>
+      <p className="mt-3 text-sm text-neutral-400">{trip.start_date || "Data não definida"}{trip.end_date ? " → " + trip.end_date : ""}</p><SharedTripActions token={token}/>
     </section>
     <section className="mt-5 rounded-3xl border bg-white p-7 shadow-sm"><h2 className="text-xl font-bold">Destinos</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">{(locations || []).map(l => <div key={l.id} className="rounded-2xl bg-neutral-50 p-4"><b>{l.name}</b><p className="text-sm text-neutral-500">{[l.city,l.country].filter(Boolean).join(", ")}</p></div>)}</div>
