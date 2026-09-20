@@ -89,7 +89,7 @@ async function fetchForecast(latitude: number, longitude: number) {
   })) as WeatherDay[];
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -113,23 +113,36 @@ export async function POST() {
     return NextResponse.json({ ok: true, skipped: "weather_alerts_disabled", created: 0 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const inSevenDays = new Date();
+  let body: { localDate?: string } = {};
+  try {
+    body = await request.json();
+  } catch {
+    // The endpoint also works without a request body.
+  }
+
+  const fallbackToday = new Date().toISOString().slice(0, 10);
+  const today = body.localDate?.match(/^\\d{4}-\\d{2}-\\d{2}$/)?.[0] || fallbackToday;
+  const inSevenDays = new Date(today + "T12:00:00Z");
   inSevenDays.setUTCDate(inSevenDays.getUTCDate() + 7);
   const until = inSevenDays.toISOString().slice(0, 10);
 
-  const { data: trips, error: tripsError } = await supabase
+  const { data: allTrips, error: tripsError } = await supabase
     .from("trips")
     .select("id,title,start_date,end_date")
     .eq("user_id", user.id)
-    .lte("start_date", until)
-    .gte("end_date", today);
+    .order("start_date");
 
   if (tripsError) {
     return NextResponse.json({ error: tripsError.message }, { status: 400 });
   }
 
-  if (!trips?.length) {
+  const trips = ((allTrips || []) as Trip[]).filter((trip) => {
+    if (trip.end_date && trip.end_date < today) return false;
+    if (trip.start_date && trip.start_date > until) return false;
+    return true;
+  });
+
+  if (!trips.length) {
     return NextResponse.json({ ok: true, created: 0 });
   }
 
