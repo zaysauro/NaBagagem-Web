@@ -87,7 +87,7 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
     const data = await response.json(); setEventLoading(false);
     if (!response.ok) { setMessage(data.error || "Não foi possível adicionar a atividade."); return; }
     setEvents((current) => [...current, data.event]);
-    setEventForm({ title: "", description: "", event_date: "", start_time: "", end_time: "", location_id: "", day_index: "1", status: "future", color: "#111827" });
+    setEventForm({ title: "", description: "", event_date: "", start_time: "", end_time: "", location_id: "", day_index: "1", status: "future", color: "#111827", reservation_name: "", confirmation_code: "", reservation_url: "", reminder_minutes: "" });
     setMessage("Atividade adicionada ao itinerário.");
   }
 
