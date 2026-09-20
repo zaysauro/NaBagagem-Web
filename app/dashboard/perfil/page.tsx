@@ -97,7 +97,7 @@ export default function ProfilePage(){
           </div>
         </section>
 
-        <div className="mt-6 flex gap-3"><a href="/dashboard" className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Minhas viagens</a><a href="/dashboard/configuracoes" className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Configurações</a></div>
+        <div className="mt-6 flex gap-3"><a href="/dashboard" className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Minhas viagens</a><a href="/favoritos" className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Favoritos</a><a href="/dashboard/configuracoes" className="rounded-xl border bg-white px-4 py-2 text-sm font-semibold">Configurações</a></div>
       </div>
     </main>
   );
