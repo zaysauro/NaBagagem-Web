@@ -38,7 +38,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
             <div><h2 className="text-xl font-bold text-neutral-950">Mapa da viagem</h2><p className="mt-1 text-sm text-neutral-500">Destinos localizados automaticamente aparecem aqui na ordem do roteiro.</p></div>
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">{(locations ?? []).filter((l:any)=>l.latitude != null && l.longitude != null).length} pontos no mapa</span>
           </div>
-          <TripMap locations={locations ?? []} />
+          <TripMap locations={locations ?? []} events={(events ?? []).map((event:any) => { const location=(locations ?? []).find((item:any)=>item.id===event.location_id); return { ...event, latitude:event.latitude ?? location?.latitude ?? null, longitude:event.longitude ?? location?.longitude ?? null }; })} />
         </section>
 
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} />
