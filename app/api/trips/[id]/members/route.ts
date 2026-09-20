@@ -21,8 +21,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     .order("created_at");
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  const { data: ownerProfile } = await supabase.from("profiles").select("id,display_name,username,avatar_url").eq("id", trip.user_id).maybeSingle();
   return NextResponse.json({
-    owner: { id: trip.user_id },
+    owner: ownerProfile || { id: trip.user_id },
     members: members ?? [],
     currentUserId: user.id,
     canManage: trip.user_id === user.id,
