@@ -8,6 +8,7 @@ import TripWeather from "./trip-weather";
 import TripCurrency from "./trip-currency";
 import TripShareTools from "./trip-share-tools";
 import TripCollaboration from "./trip-collaboration";
+import TripReservations from "./trip-reservations";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -67,6 +68,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           </div>
         </div>
         <TripWeather locations={locations ?? []} />
+        <TripReservations tripId={trip.id} />
         <TripShareTools tripId={trip.id} />
         <TripCollaboration tripId={trip.id} />
       </div>
