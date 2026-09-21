@@ -9,6 +9,7 @@ import TripCurrency from "./trip-currency";
 import TripShareTools from "./trip-share-tools";
 import TripCollaboration from "./trip-collaboration";
 import TripReservations from "./trip-reservations";
+import TripSummary from "./trip-summary";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -56,6 +57,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
         <TripTools tripId={trip.id} canEdit={canEdit} />
+        <TripSummary tripId={trip.id} initialEvents={events ?? []} />
         <div className="mt-7 grid gap-7 lg:grid-cols-2">
           <TripCurrency />
           <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
