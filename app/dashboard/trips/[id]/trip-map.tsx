@@ -18,6 +18,7 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
   const [activeLayers,setActiveLayers]=useState<Record<string,boolean>>({attractions:false,restaurants:false,transit:false});
   const [day,setDay]=useState(0);
   const [poiMessage,setPoiMessage]=useState("");
+  const [routeInfo,setRouteInfo]=useState<{distanceKm:number;durationMinutes:number}|null>(null);
 
   const days=useMemo(()=>[...new Set(events.map(e=>e.day_index).filter(Number.isFinite))].sort((a,b)=>a-b),[events]);
 
@@ -35,7 +36,23 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
       points.forEach((p,index)=>{
         L.marker([p.latitude,p.longitude]).addTo(map).bindPopup("<strong>"+escapeHtml(String(index+1)+". "+p.name)+"</strong><br/>"+escapeHtml([p.city,p.country].filter(Boolean).join(", ")));
       });
-      if(points.length>1)L.polyline(points.map(p=>[p.latitude,p.longitude] as [number,number]),{weight:4}).addTo(route);
+      if(points.length>1){
+        fetch("/api/route?points="+encodeURIComponent(JSON.stringify(points.map((p)=>({latitude:p.latitude,longitude:p.longitude})))),{cache:"no-store"})
+          .then(async(response)=>{
+            if(!response.ok) throw new Error("rota");
+            return response.json();
+          })
+          .then((data)=>{
+            if(Array.isArray(data.geometry)){
+              L.polyline(data.geometry as [number,number][],{weight:5,opacity:.8}).addTo(route);
+              setRouteInfo({distanceKm:Number(data.distanceKm||0),durationMinutes:Number(data.durationMinutes||0)});
+            }
+          })
+          .catch(()=>{
+            L.polyline(points.map(p=>[p.latitude,p.longitude] as [number,number]),{weight:4,dashArray:"8 8",opacity:.65}).addTo(route);
+            setRouteInfo(null);
+          });
+      }else setRouteInfo(null);
     }else map.setView([20,0],2);
 
     const timer=window.setTimeout(()=>map.invalidateSize(),100);
@@ -51,14 +68,20 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
       if(!points.length)return;
       for(const category of Object.keys(activeLayers)){
         if(!activeLayers[category])continue;
-        const center=points[0];
         setPoiMessage("Carregando "+layerLabels[category as keyof typeof layerLabels].toLowerCase()+"...");
         try{
-          const r=await fetch("/api/places?lat="+center.latitude+"&lng="+center.longitude+"&category="+category);
-          const d=await r.json();
-          if(!r.ok)throw new Error(d.error||"erro");
+          const responses=await Promise.all(points.map((point)=>
+            fetch("/api/places?lat="+point.latitude+"&lng="+point.longitude+"&category="+category+"&radius=10000")
+              .then(async(response)=>{
+                const data=await response.json();
+                if(!response.ok) throw new Error(data.error||"erro");
+                return data.places as POI[];
+              })
+          ));
+          const unique=new Map<string,POI>();
+          responses.flat().forEach((place)=>unique.set(place.id,place));
           const group=L.layerGroup();
-          (d.places as POI[]).forEach(p=>{
+          [...unique.values()].forEach(p=>{
             const icon=L.divIcon({className:"",html:'<div style="width:14px;height:14px;border-radius:50%;background:#111827;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>',iconSize:[14,14],iconAnchor:[7,7]});
             L.marker([p.latitude,p.longitude],{icon}).addTo(group).bindPopup("<strong>"+escapeHtml(p.name)+"</strong><br/><span>"+escapeHtml(layerLabels[category as keyof typeof layerLabels])+"</span>");
           });
@@ -104,6 +127,9 @@ export default function TripMap({locations,events=[]}:{locations:Point[];events?
       {days.map(d=><button key={d} type="button" onClick={()=>setDay(d)} className={"rounded-lg px-3 py-1.5 text-xs font-semibold "+(day===d?"bg-neutral-950 text-white":"")}>Dia {d}</button>)}
     </div>}
     {poiMessage&&<div className="absolute right-3 top-3 z-[1000] rounded-xl bg-white px-3 py-2 text-xs shadow">{poiMessage}</div>}
+    {routeInfo&&<div className="absolute right-3 bottom-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow">
+      <span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min
+    </div>}
     {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">
       {visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}
     </div>}
