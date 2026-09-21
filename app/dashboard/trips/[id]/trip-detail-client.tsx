@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { readOfflineTrip, saveOfflineTrip } from "@/lib/offline-trip-cache";
 
 type Location = { id: string; name: string; city: string | null; country: string | null; visited_at: string | null; notes: string | null; latitude: number | null; longitude: number | null };
 type Status = "completed" | "in_progress" | "future";
@@ -17,6 +18,8 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
   const [locationLoading, setLocationLoading] = useState(false);
   const [eventLoading, setEventLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isOffline, setIsOffline] = useState(false);
+  const [cachedAt, setCachedAt] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -25,14 +28,49 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
     async function refreshFromServer() {
       try {
         const response = await fetch("/api/trips/" + tripId, { cache: "no-store" });
-        if (!response.ok || !active) return;
+        if (!response.ok) throw new Error("offline");
         const data = await response.json();
-        if (active) {
-          setLocations(data.locations || []);
-          setEvents(data.events || []);
+        if (!active) return;
+        const nextLocations = data.locations || [];
+        const nextEvents = data.events || [];
+        setLocations(nextLocations);
+        setEvents(nextEvents);
+        setIsOffline(false);
+        setCachedAt(Date.now());
+        saveOfflineTrip(tripId, { trip: data.trip || null, locations: nextLocations, events: nextEvents });
+      } catch {
+        if (!active) return;
+        const cached = readOfflineTrip(tripId);
+        if (cached) {
+          setLocations(cached.locations as Location[]);
+          setEvents(cached.events as Event[]);
+          setCachedAt(cached.cachedAt);
+          setIsOffline(true);
+          setMessage("Modo offline: exibindo os dados salvos no último acesso.");
+        } else {
+          setIsOffline(true);
         }
-      } catch {}
+      }
     }
+
+    const handleOffline = () => {
+      if (!active) return;
+      setIsOffline(true);
+      const cached = readOfflineTrip(tripId);
+      if (cached) {
+        setLocations(cached.locations as Location[]);
+        setEvents(cached.events as Event[]);
+        setCachedAt(cached.cachedAt);
+      }
+    };
+
+    const handleOnline = () => {
+      if (active) void refreshFromServer();
+    };
+
+    void refreshFromServer();
+    window.addEventListener("offline", handleOffline);
+    window.addEventListener("online", handleOnline);
 
     try {
       supabase = createClient();
@@ -45,10 +83,16 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
 
       return () => {
         active = false;
+        window.removeEventListener("offline", handleOffline);
+        window.removeEventListener("online", handleOnline);
         if (supabase) supabase.removeChannel(channel);
       };
     } catch {
-      return () => { active = false; };
+      return () => {
+        active = false;
+        window.removeEventListener("offline", handleOffline);
+        window.removeEventListener("online", handleOnline);
+      };
     }
   }, [tripId]);
 
@@ -106,6 +150,11 @@ export default function TripDetailClient({ tripId, initialLocations, initialEven
 
   return (
     <section className="mt-7 space-y-7">
+      {isOffline && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="font-semibold">Modo offline</div>
+        <p className="mt-1">{cachedAt ? "Você está vendo o último roteiro salvo neste dispositivo." : "Sem conexão e sem uma cópia local desta viagem."}</p>
+        {cachedAt && <p className="mt-1 text-xs text-amber-700">Última sincronização: {new Date(cachedAt).toLocaleString("pt-BR")}</p>}
+      </div>}
       {!canEdit && <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Você está como visualizador. As alterações desta viagem estão bloqueadas para sua conta.</div>}
       {canEdit && <div className="grid gap-7 lg:grid-cols-2">
         <form onSubmit={addLocation} className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
