@@ -10,6 +10,8 @@ export default function TripTools({tripId,canEdit=true}:{tripId:string;canEdit?:
  const [expense,setExpense]=useState({title:"",category:"other",amount:"",currency:"BRL",expense_date:"",notes:""});
  const [item,setItem]=useState({title:"",category:"general"}); const [message,setMessage]=useState("");
  const total=useMemo(()=>expenses.reduce((sum,e)=>sum+Number(e.amount),0),[expenses]);
+ const completedItems=useMemo(()=>items.filter(i=>i.completed).length,[items]);
+ const checklistProgress=items.length?Math.round(completedItems/items.length*100):0;
  async function load(){const[a,b]=await Promise.all([fetch("/api/trips/"+tripId+"/expenses"),fetch("/api/trips/"+tripId+"/checklist")]);if(a.ok)setExpenses((await a.json()).expenses);if(b.ok)setItems((await b.json()).items);}
  useEffect(()=>{load()},[]);
  async function addExpense(e:React.FormEvent){e.preventDefault();const r=await fetch("/api/trips/"+tripId+"/expenses",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(expense)});const d=await r.json();if(!r.ok){setMessage(d.error||"Erro ao adicionar despesa.");return;}setExpenses(x=>[d.expense,...x]);setExpense({title:"",category:"other",amount:"",currency:"BRL",expense_date:"",notes:""});}
@@ -24,7 +26,7 @@ export default function TripTools({tripId,canEdit=true}:{tripId:string;canEdit?:
   </div>
   <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm"><h2 className="text-xl font-bold">Checklist</h2><p className="text-sm text-neutral-500">Coisas para fazer ou levar nesta viagem.</p>
    {canEdit && <form onSubmit={addItem} className="mt-5 flex gap-2"><input required placeholder="Ex.: Passaporte" value={item.title} onChange={e=>setItem({...item,title:e.target.value})} className="min-w-0 flex-1 rounded-xl border p-2.5"/><button className="rounded-xl bg-neutral-950 px-4 font-semibold text-white">Adicionar</button></form>}
-   <div className="mt-5 space-y-2">{items.map(i=><div key={i.id} className="flex items-center gap-3 rounded-xl bg-neutral-50 p-3"><input type="checkbox" checked={i.completed} disabled={!canEdit} onChange={()=>toggle(i)} className="h-4 w-4"/><span className={i.completed?"flex-1 text-sm text-neutral-400 line-through":"flex-1 text-sm"}>{i.title}</span>{canEdit && <button onClick={()=>removeItem(i.id)} className="text-xs text-red-600">Remover</button>}</div>)}</div>
+   <div className="mt-4 h-2 overflow-hidden rounded-full bg-neutral-100"><div className="h-full bg-neutral-950 transition-all" style={{width:checklistProgress+"%"}} /></div><p className="mt-2 text-xs text-neutral-500">{completedItems} de {items.length} concluídos · {checklistProgress}%</p><div className="mt-5 space-y-2">{items.map(i=><div key={i.id} className="flex items-center gap-3 rounded-xl bg-neutral-50 p-3"><input type="checkbox" checked={i.completed} disabled={!canEdit} onChange={()=>toggle(i)} className="h-4 w-4"/><span className={i.completed?"flex-1 text-sm text-neutral-400 line-through":"flex-1 text-sm"}>{i.title}</span>{canEdit && <button onClick={()=>removeItem(i.id)} className="text-xs text-red-600">Remover</button>}</div>)}</div>
   </div>
   {message&&<p className="text-sm text-red-600 lg:col-span-2">{message}</p>}
  </section>
