@@ -8,7 +8,7 @@ function esc(value: unknown) {
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const format = new URL(request.url).searchParams.get("format")?.toLowerCase() || "gpx";
-  if (!["gpx", "kml"].includes(format)) return NextResponse.json({ error: "Formato inválido." }, { status: 400 });
+  if (!["gpx", "kml", "json"].includes(format)) return NextResponse.json({ error: "Formato inválido." }, { status: 400 });
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -16,6 +16,23 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
   const { data: trip, error } = await supabase.from("trips").select("id,title,description").eq("id", id).eq("user_id", user.id).single();
   if (error || !trip) return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
+
+  if (format === "json") {
+    const [{ data: locations }, { data: events }, { data: expenses }, { data: checklist }] = await Promise.all([
+      supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
+      supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("event_date").order("start_time"),
+      supabase.from("trip_expenses").select("*").eq("trip_id", id).order("expense_date").order("created_at"),
+      supabase.from("trip_checklist_items").select("*").eq("trip_id", id).order("created_at")
+    ]);
+    const backup = JSON.stringify({ version: 1, exported_at: new Date().toISOString(), trip, locations: locations || [], events: events || [], expenses: expenses || [], checklist: checklist || [] }, null, 2);
+    const filename = trip.title.replace(/[^a-z0-9_-]+/gi, "_") || "viagem";
+    return new NextResponse(backup, {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}.json"`
+      }
+    });
+  }
 
   const { data: locations } = await supabase.from("trip_locations")
     .select("name,city,country,latitude,longitude,notes,order_index").eq("trip_id", id).order("order_index").order("created_at");
