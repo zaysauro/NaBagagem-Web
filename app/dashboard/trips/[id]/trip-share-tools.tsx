@@ -17,7 +17,7 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
     catch { setMessage("Link público gerado."); }
   }
 
-  function exportFile(format: "gpx" | "kml") {
+  function exportFile(format: "gpx" | "kml" | "json") {
     window.location.href = "/api/trips/" + tripId + "/export?format=" + format;
   }
 
@@ -37,6 +37,7 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
       <button onClick={share} className="rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white">Gerar link público</button>
       <button onClick={() => exportFile("gpx")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Exportar GPX</button>
       <button onClick={() => exportFile("kml")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Exportar KML</button>
+      <button onClick={() => exportFile("json")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Backup JSON</button>
       <label className="cursor-pointer rounded-xl border px-4 py-2.5 text-sm font-semibold">
         Importar GPX/KML
         <input ref={input} type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" className="hidden"
