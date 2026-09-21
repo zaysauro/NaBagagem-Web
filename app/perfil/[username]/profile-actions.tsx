@@ -8,7 +8,10 @@ export default function ProfileActions({ username }: { username: string }) {
   useEffect(()=>{load()},[username]);
   async function action(path:string, method:string){
     setMessage("");
-    const r=await fetch(path,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify({username})});
+    const target=data?.profile?.id;
+    if(!target)return;
+    const actionName=method==="DELETE" ? (path.includes("/block") ? "unblock" : "unfollow") : (path.includes("/block") ? "block" : "follow");
+    const r=await fetch(path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:target,action:actionName})});
     const d=await r.json(); if(!r.ok){setMessage(d.error||"Não foi possível concluir.");return;} await load();
   }
   if(!data)return <div className="mt-4 text-sm text-neutral-500">Carregando conexões...</div>;
