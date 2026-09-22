@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState } from "react";\nimport TripQr from "./trip-qr";
 
 export default function TripShareTools({ tripId }: { tripId: string }) {
   const [shareUrl, setShareUrl] = useState("");
@@ -37,14 +37,14 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
       <button onClick={share} className="rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white">Gerar link público</button>
       <button onClick={() => exportFile("gpx")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Exportar GPX</button>
       <button onClick={() => exportFile("kml")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Exportar KML</button>
-      <button onClick={() => exportFile("json")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Backup JSON</button>
+      <button onClick={() => exportFile("json")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Backup JSON</button>\n      <button onClick={() => exportFile("ics")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Calendário .ics</button>
       <label className="cursor-pointer rounded-xl border px-4 py-2.5 text-sm font-semibold">
         Importar GPX/KML
         <input ref={input} type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" className="hidden"
           onChange={e => { const file = e.target.files?.[0]; if (file) importFile(file); }} />
       </label>
     </div>
-    {shareUrl && <input readOnly ref={input} value={shareUrl} onFocus={e => e.currentTarget.select()} className="mt-4 w-full rounded-xl border bg-neutral-50 px-3 py-2 text-sm" />}
+    {shareUrl && <><input readOnly value={shareUrl} onFocus={e => e.currentTarget.select()} className="mt-4 w-full rounded-xl border bg-neutral-50 px-3 py-2 text-sm" /><TripQr shareUrl={shareUrl} /></>}
     {message && <p className="mt-3 text-sm text-neutral-600">{message}</p>}
   </section>;
 }
