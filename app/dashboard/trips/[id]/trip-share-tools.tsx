@@ -39,8 +39,8 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
       <button onClick={() => exportFile("kml")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Exportar KML</button>
       <button onClick={() => exportFile("json")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Backup JSON</button>\n      <button onClick={() => exportFile("ics")} className="rounded-xl border px-4 py-2.5 text-sm font-semibold">Calendário .ics</button>
       <label className="cursor-pointer rounded-xl border px-4 py-2.5 text-sm font-semibold">
-        Importar GPX/KML
-        <input ref={input} type="file" accept=".gpx,.kml,application/gpx+xml,application/vnd.google-earth.kml+xml" className="hidden"
+        Importar GPX/KML/JSON
+        <input ref={input} type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json" className="hidden"
           onChange={e => { const file = e.target.files?.[0]; if (file) importFile(file); }} />
       </label>
     </div>
