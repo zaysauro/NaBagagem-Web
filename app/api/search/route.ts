@@ -18,12 +18,14 @@ export async function GET(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
-  const pattern = "%" + q.replace(/[%_]/g, "") + "%";
+  const normalizedQuery = q.replace(/^@+/, "").trim();
+  const safeQuery = normalizedQuery.replace(/[%_]/g, "");
+  const pattern = "%" + safeQuery + "%";
 
   // Nome e @username são buscas parciais. E-mail é aceito como correspondência exata,
   // mas nunca é devolvido ao navegador.
   const { data: rpcUsers, error: rpcError } = await supabase.rpc("search_profiles", {
-    search_term: q,
+    search_term: normalizedQuery,
   });
 
   // Fallback para instalações em que a nova função SQL ainda não foi aplicada.
@@ -35,7 +37,18 @@ export async function GET(request: Request) {
         .limit(20)
     : { data: null, error: null };
 
-  const users: SearchUser[] = (rpcError ? profileUsers || [] : rpcUsers || []) as SearchUser[];
+  let users: SearchUser[] = (rpcError ? profileUsers || [] : rpcUsers || []) as SearchUser[];
+
+  // Se a função RPC existir mas ainda não enxergar perfis (por exemplo, após uma
+  // migração parcial), tenta diretamente a tabela pública de perfis.
+  if (!users.length && !profileUsers) {
+    const { data: fallbackUsers } = await supabase
+      .from("profiles")
+      .select("id,display_name,username,avatar_url,bio")
+      .or("username.ilike." + pattern + ",display_name.ilike." + pattern)
+      .limit(20);
+    users = (fallbackUsers || []) as SearchUser[];
+  }
 
   if (rpcError && profileError && !users.length) {
     return NextResponse.json({ error: profileError.message }, { status: 400 });
