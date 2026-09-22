@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SiteHeader from "@/app/components/site-header";
 
 type Post={id:string;user_id:string;trip_id:string|null;title:string;body:string|null;created_at:string;profiles:any;media:{id:string;public_url:string}[]};
 
@@ -17,7 +18,7 @@ export default function FavoritesPage(){
    const r=await fetch("/api/feed/"+id,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"unbookmark"})});
    if(r.ok)setPosts(x=>x.filter(p=>p.id!==id)); else setMessage("Não foi possível remover dos favoritos.");
  }
- return <main className="min-h-screen bg-neutral-50 px-4 py-8 sm:px-6"><div className="mx-auto max-w-4xl">
+ return <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader /><div className="mx-auto max-w-4xl">
   <div className="flex items-center justify-between"><Link href="/feed" className="text-sm font-semibold text-neutral-500">← Feed</Link><Link href="/dashboard/perfil" className="text-sm font-semibold">Meu perfil</Link></div>
   <h1 className="mt-5 text-3xl font-bold">Favoritos</h1><p className="mt-1 text-neutral-500">Publicações que você salvou para rever depois.</p>
   {message&&<p className="mt-4 rounded-xl bg-white p-3 text-sm text-red-600">{message}</p>}
