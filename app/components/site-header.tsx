@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";\nimport Notifications from "@/app/dashboard/notifications";
+import { useEffect, useState } from "react";
+import Notifications from "@/app/dashboard/notifications";
 
 const items=[["/dashboard","Início"],["/buscar","Buscar"],["/feed","Feed"],["/favoritos","Favoritos"],["/dashboard/perfil","Perfil"],["/dashboard/configuracoes","Configurações"]] as const;
 
@@ -26,7 +27,8 @@ export default function SiteHeader({name="NaBagagem"}:{name?:string}){
      <nav className="ml-1 flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
        {items.map(([href,label])=><Link key={href} href={href} className={"shrink-0 rounded-xl px-3 text-xs font-semibold text-neutral-600 transition hover:bg-neutral-100 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-white "+(compact?"py-1.5":"py-2")}>{label}</Link>)}
      </nav>
-     <Notifications />\n     <button type="button" onClick={toggleTheme} aria-label={dark?"Ativar modo claro":"Ativar modo noturno"} title={dark?"Modo claro":"Modo noturno"} className={"flex shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 "+(compact?"h-8 w-8 text-sm":"h-10 w-10 text-base")}>{dark?"☀":"☾"}</button>
+     <Notifications />
+     <button type="button" onClick={toggleTheme} aria-label={dark?"Ativar modo claro":"Ativar modo noturno"} title={dark?"Modo claro":"Modo noturno"} className={"flex shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white font-semibold text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 "+(compact?"h-8 w-8 text-sm":"h-10 w-10 text-base")}>{dark?"☀":"☾"}</button>
    </div>
  </header>;
 }
