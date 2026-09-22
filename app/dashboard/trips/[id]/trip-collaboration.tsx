@@ -69,7 +69,7 @@ export default function TripCollaboration({ tripId }: { tripId: string }) {
 
   return <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
     <div>
-      <h2 className="text-xl font-bold text-neutral-950">Colaboração</h2>
+      <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Equipe</p><h2 className="mt-1 text-xl font-bold text-neutral-950">Colaboração</h2>
       <p className="mt-1 text-sm text-neutral-500">Convide outros viajantes para consultar ou editar esta viagem.</p>
     </div>
     {canManage && <form onSubmit={addMember} className="mt-5 grid gap-2 md:grid-cols-[1fr_auto_auto]">
@@ -78,14 +78,14 @@ export default function TripCollaboration({ tripId }: { tripId: string }) {
       <button className="rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white">Adicionar</button>
     </form>}
     {loading ? <p className="mt-5 text-sm text-neutral-500">Carregando colaboradores...</p> : <div className="mt-5 space-y-2">
-      {owner && <div className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3">{owner.avatar_url ? <img src={owner.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white">{(owner.display_name || owner.username || "U").slice(0,1).toUpperCase()}</div>}<div><p className="font-semibold">{owner.display_name || "Viajante"}</p><p className="text-xs text-neutral-500">@{owner.username || "sem username"}</p></div></div><span className="rounded-full bg-neutral-950 px-2.5 py-1 text-xs font-semibold text-white">Proprietário</span></div>}
+      {owner && <div className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3">{owner.avatar_url ? <img src={owner.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white">{(owner.display_name || owner.username || "U").slice(0,1).toUpperCase()}</div>}<div><p className="font-semibold">{owner.display_name || "Viajante"}</p><p className="text-xs text-neutral-500">@{owner.username || "sem username"}</p></div></div><span className="rounded-full bg-neutral-950 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">Proprietário</span></div>}
       {members.length === 0 ? <p className="text-sm text-neutral-500">Nenhum colaborador além do proprietário.</p> : members.map((member) => <div key={member.id} className="flex flex-col gap-3 rounded-2xl bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           {member.profiles?.avatar_url ? <img src={member.profiles.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-xs font-bold text-white">{(member.profiles?.display_name || member.profiles?.username || "U").slice(0,1).toUpperCase()}</div>}
           <div><p className="font-semibold">{member.profiles?.display_name || "Viajante"}</p><p className="text-xs text-neutral-500">@{member.profiles?.username || "sem username"}</p></div>
         </div>
         <div className="flex items-center gap-2">
-          {canManage ? <><select value={member.role} onChange={(e) => changeRole(member.id, e.target.value as Member["role"])} className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs"><option value="editor">Editor</option><option value="viewer">Visualizador</option></select><button onClick={() => removeMember(member.id)} className="text-xs font-semibold text-red-600">Remover</button></> : member.user_id === currentUserId ? <button onClick={() => removeMember(undefined, member.user_id)} className="text-xs font-semibold text-red-600">Sair da viagem</button> : <span className="rounded-full bg-neutral-200 px-2.5 py-1 text-xs text-neutral-600">{member.role === "editor" ? "Editor" : "Visualizador"}</span>}
+          {canManage ? <><select value={member.role} onChange={(e) => changeRole(member.id, e.target.value as Member["role"])} className="rounded-lg border border-neutral-300 bg-white px-2 py-1.5 text-xs"><option value="editor">Editor</option><option value="viewer">Visualizador</option></select><button onClick={() => removeMember(member.id)} className="text-xs font-semibold text-red-600">Remover</button></> : member.user_id === currentUserId ? <button onClick={() => removeMember(undefined, member.user_id)} className="text-xs font-semibold text-red-600">Sair da viagem</button> : <span className="rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-xs text-neutral-600">{member.role === "editor" ? "Editor" : "Visualizador"}</span>}
         </div>
       </div>)}
     </div>}
