@@ -10,6 +10,7 @@ import TripShareTools from "./trip-share-tools";
 import TripCollaboration from "./trip-collaboration";
 import TripReservations from "./trip-reservations";
 import TripSummary from "./trip-summary";\nimport TripCalendar from "./trip-calendar";
+import SiteHeader from "@/app/components/site-header";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -30,7 +31,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
   const canEdit = isOwner || member?.role === "editor";
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-8">
+    <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader />
       <div className="mx-auto max-w-6xl">
         <Link href="/dashboard" className="text-sm font-semibold text-neutral-500 hover:text-neutral-950">← Minhas viagens</Link>
         <div className="mt-5 rounded-3xl border border-neutral-200 bg-white p-7 shadow-sm">
