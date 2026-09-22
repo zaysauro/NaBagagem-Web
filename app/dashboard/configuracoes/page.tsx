@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import NotificationPreferences from "./notification-preferences";\nimport SiteHeader from "@/app/components/site-header";
+import NotificationPreferences from "./notification-preferences";
 import SiteHeader from "@/app/components/site-header";
 
 export default async function SettingsPage() {
@@ -10,7 +10,8 @@ export default async function SettingsPage() {
   if (!user) return <main className="p-8">Não autenticado.</main>;
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader /><SiteHeader />
+    <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6">
+      <SiteHeader />
       <div className="mx-auto max-w-3xl">
         <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">
           ← Dashboard
