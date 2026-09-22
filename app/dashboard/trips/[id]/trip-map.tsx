@@ -28,9 +28,12 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const [searching,setSearching]=useState(false);
   const [searchError,setSearchError]=useState("");
   const [adding,setAdding]=useState("");
-  const [selectedSearch,setSelectedSearch]=useState<SearchPlace|null>(null);\n  const [selectedAddDay,setSelectedAddDay]=useState(1);\n  const [dailyRoutes,setDailyRoutes]=useState<Record<number,{distanceKm:number;durationMinutes:number}>>({});
+  const [selectedSearch,setSelectedSearch]=useState<SearchPlace|null>(null);
+  const [selectedAddDay,setSelectedAddDay]=useState(1);
+  const [dailyRoutes,setDailyRoutes]=useState<Record<number,{distanceKm:number;durationMinutes:number}>>({});
 
-  const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);\n  useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
+  const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);
+  useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
 
   useEffect(()=>{
     if(!ref.current)return;
@@ -197,7 +200,8 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     {routeInfo&&<div className="absolute right-3 bottom-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow">
       <span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min
     </div>}
-    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}\n    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
+    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}
+    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
   </div>;
 }
 
