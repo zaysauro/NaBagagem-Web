@@ -18,7 +18,7 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
     catch { setMessage("Link público gerado."); }
   }
 
-  function exportFile(format: "gpx" | "kml" | "json") {
+  function exportFile(format: "gpx" | "kml" | "json" | "ics") {
     window.location.href = "/api/trips/" + tripId + "/export?format=" + format;
   }
 
