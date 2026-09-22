@@ -8,7 +8,7 @@ function esc(value: unknown) {
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const format = new URL(request.url).searchParams.get("format")?.toLowerCase() || "gpx";
-  if (!["gpx", "kml", "json"].includes(format)) return NextResponse.json({ error: "Formato inválido." }, { status: 400 });
+  if (!["gpx", "kml", "json", "ics"].includes(format)) return NextResponse.json({ error: "Formato inválido." }, { status: 400 });
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -17,6 +17,29 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const { data: trip, error } = await supabase.from("trips").select("id,title,description").eq("id", id).eq("user_id", user.id).single();
   if (error || !trip) return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
 
+  if (format === "ics") {
+    const { data: events } = await supabase.from("trip_events").select("id,title,description,event_date,start_time,end_time,location_id").eq("trip_id", id).order("event_date").order("start_time");
+    const locationIds = (events || []).map((e: any) => e.location_id).filter(Boolean);
+    const { data: locations } = locationIds.length ? await supabase.from("trip_locations").select("id,name,city,country").in("id", locationIds) : { data: [] as any[] };
+    const locationMap = new Map((locations || []).map((l: any) => [l.id, l]));
+    const escIcs = (value: any) => String(value ?? "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\\\n");
+    const dt = (date: any, time: any) => { if (!date) return null; const raw = String(time || "00:00").slice(0,5).replace(":", ""); return String(date).replace(/-/g, "") + "T" + raw + "00"; };
+    const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//NaBagagem//Trip Calendar//PT-BR","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+    for (const event of events || []) {
+      const start = dt(event.event_date, event.start_time); if (!start) continue;
+      const end = dt(event.event_date, event.end_time);
+      const loc = locationMap.get(event.location_id);
+      lines.push("BEGIN:VEVENT","UID:"+event.id+"@nabagagem","DTSTAMP:"+new Date().toISOString().replace(/[-:]/g,"").replace(/\\.\\d{3}/,""),"DTSTART:"+start);
+      if (end) lines.push("DTEND:"+end);
+      lines.push("SUMMARY:"+escIcs(event.title));
+      if (event.description) lines.push("DESCRIPTION:"+escIcs(event.description));
+      if (loc) lines.push("LOCATION:"+escIcs([loc.name,loc.city,loc.country].filter(Boolean).join(", ")));
+      lines.push("END:VEVENT");
+    }
+    lines.push("END:VCALENDAR");
+    const filename = trip.title.replace(/[^a-z0-9_-]+/gi,"_") || "viagem";
+    return new NextResponse(lines.join("\r\n")+"\r\n",{headers:{"Content-Type":"text/calendar; charset=utf-8","Content-Disposition":"attachment; filename=\""+filename+".ics\""}});
+  }
   if (format === "json") {
     const [{ data: locations }, { data: events }, { data: expenses }, { data: checklist }] = await Promise.all([
       supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
