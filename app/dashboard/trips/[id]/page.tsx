@@ -9,7 +9,8 @@ import TripCurrency from "./trip-currency";
 import TripShareTools from "./trip-share-tools";
 import TripCollaboration from "./trip-collaboration";
 import TripReservations from "./trip-reservations";
-import TripSummary from "./trip-summary";\nimport TripCalendar from "./trip-calendar";
+import TripSummary from "./trip-summary";
+import TripCalendar from "./trip-calendar";
 import SiteHeader from "@/app/components/site-header";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
@@ -56,7 +57,8 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
           <TripMap tripId={trip.id} canEdit={canEdit} startDate={trip.start_date} endDate={trip.end_date} locations={locations ?? []} events={(events ?? []).map((event:any) => { const location=(locations ?? []).find((item:any)=>item.id===event.location_id); return { ...event, latitude:event.latitude ?? location?.latitude ?? null, longitude:event.longitude ?? location?.longitude ?? null }; })} />
         </section>
 
-        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />\n        <TripCalendar startDate={trip.start_date} endDate={trip.end_date} events={(events ?? []).map((event:any)=>({ ...event, location_name:(locations ?? []).find((l:any)=>l.id===event.location_id)?.name || null }))} />
+        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
+        <TripCalendar startDate={trip.start_date} endDate={trip.end_date} events={(events ?? []).map((event:any)=>({ ...event, location_name:(locations ?? []).find((l:any)=>l.id===event.location_id)?.name || null }))} />
         <TripTools tripId={trip.id} canEdit={canEdit} />
         <TripSummary tripId={trip.id} initialEvents={events ?? []} />
         <div className="mt-7 grid gap-7 lg:grid-cols-2">
