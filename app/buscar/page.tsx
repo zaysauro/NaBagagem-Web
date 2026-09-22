@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SiteHeader from "@/app/components/site-header";
 
 type Results={users:any[];posts:any[];destinations:any[]};
 export default function SearchPage(){
@@ -9,7 +10,7 @@ export default function SearchPage(){
  async function search(value=q){const term=value.trim();if(!term){setResults({users:[],posts:[],destinations:[]});setSearched(false);return}try{const stored=JSON.parse(localStorage.getItem("nabagagem:recent-searches")||"[]");const next=[term,...stored.filter((x:string)=>x.toLowerCase()!==term.toLowerCase())].slice(0,6);localStorage.setItem("nabagagem:recent-searches",JSON.stringify(next));setRecent(next)}catch{}setLoading(true);setMessage("");const r=await fetch("/api/search?q="+encodeURIComponent(term),{cache:"no-store"});const d=await r.json();if(r.ok)setResults(d);else setMessage(d.error||"Não foi possível buscar.");setLoading(false);setSearched(true);}
  useEffect(()=>{const params=new URLSearchParams(window.location.search);const initial=params.get("q")||"";try{setRecent(JSON.parse(localStorage.getItem("nabagagem:recent-searches")||"[]"))}catch{}if(initial){setQ(initial);search(initial)}},[]);
  const total=results.users.length+results.posts.length+results.destinations.length;
- return <main className="min-h-screen bg-neutral-50 px-4 py-8 sm:px-6"><div className="mx-auto max-w-5xl">
+ return <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader /><div className="mx-auto max-w-5xl">
   <div className="flex items-center justify-between"><Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</Link><Link href="/feed" className="text-sm font-semibold">Feed</Link></div>
   <h1 className="mt-5 text-3xl font-bold">Buscar</h1><p className="mt-1 text-neutral-500">Encontre viajantes, publicações e destinos.</p>
   <form onSubmit={e=>{e.preventDefault();search()}} className="mt-6 flex gap-2"><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Nome, @username, destino ou publicação..." className="min-w-0 flex-1 rounded-xl border bg-white px-4 py-3"/><button className="rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white">Buscar</button></form>{!searched&&recent.length>0&&<div className="mt-3 flex flex-wrap gap-2"><span className="py-1 text-xs text-neutral-400">Recentes:</span>{recent.map(term=><button key={term} type="button" onClick={()=>{setQ(term);search(term)}} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-neutral-600 shadow-sm">{term}</button>)}</div>}
