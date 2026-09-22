@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import SiteHeader from "@/app/components/site-header";
 
 type Media = { id: string; public_url: string };
 type Comment = {
@@ -146,7 +147,7 @@ export default function FeedPage() {
     if(r.ok)setMessage("Denúncia registrada.");else setMessage("Não foi possível registrar a denúncia.");
   }
 
-  return <main className="min-h-screen bg-neutral-50 px-4 py-8 sm:px-6">
+  return <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader />
     <div className="mx-auto max-w-3xl">
       <div className="flex items-center justify-between gap-4">
         <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</Link>
