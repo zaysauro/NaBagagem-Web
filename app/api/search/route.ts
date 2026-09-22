@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+type SearchUser = {
+  id: string;
+  display_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+};
+
 export async function GET(request: Request) {
   const q = new URL(request.url).searchParams.get("q")?.trim();
   if (!q) return NextResponse.json({ users: [], posts: [], destinations: [] });
@@ -27,17 +35,21 @@ export async function GET(request: Request) {
         .limit(20)
     : { data: null, error: null };
 
-  const users = rpcError ? profileUsers || [] : rpcUsers || [];
+  const users: SearchUser[] = (rpcError ? profileUsers || [] : rpcUsers || []) as SearchUser[];
 
   if (rpcError && profileError && !users.length) {
     return NextResponse.json({ error: profileError.message }, { status: 400 });
   }
 
   // Estado da relação social para permitir seguir diretamente no resultado.
-  let usersWithFollowState = users;
+  let usersWithFollowState: Array<SearchUser & {
+    isFollowing: boolean;
+    followsMe: boolean;
+  }> = [];
 
   if (users.length) {
-    const ids = users.map((item) => item.id);
+    const ids = users.map((item: SearchUser) => item.id);
+
     const [{ data: outgoing }, { data: incoming }] = await Promise.all([
       supabase
         .from("user_follows")
@@ -54,7 +66,7 @@ export async function GET(request: Request) {
     const followingSet = new Set((outgoing || []).map((row) => row.following_id));
     const followsMeSet = new Set((incoming || []).map((row) => row.follower_id));
 
-    usersWithFollowState = users.map((item) => ({
+    usersWithFollowState = users.map((item: SearchUser) => ({
       ...item,
       isFollowing: followingSet.has(item.id),
       followsMe: followsMeSet.has(item.id),
