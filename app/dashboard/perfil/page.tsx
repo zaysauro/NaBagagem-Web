@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import WorldMap from "./world-map";
 import { StatsChart } from "./stats-chart";
+import SiteHeader from "@/app/components/site-header";
 
 type Data = {
   profile:{display_name:string|null;username:string|null;avatar_url:string|null;bio:string|null}|null;
@@ -36,7 +37,7 @@ export default function ProfilePage(){
 
   const percent=data.stats.countryPercent;
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 py-8">
+    <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader />
       <div className="mx-auto max-w-6xl">
         <div className="flex items-center justify-between">
           <a href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</a>
