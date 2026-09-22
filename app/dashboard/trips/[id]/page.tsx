@@ -9,7 +9,7 @@ import TripCurrency from "./trip-currency";
 import TripShareTools from "./trip-share-tools";
 import TripCollaboration from "./trip-collaboration";
 import TripReservations from "./trip-reservations";
-import TripSummary from "./trip-summary";
+import TripSummary from "./trip-summary";\nimport TripCalendar from "./trip-calendar";
 
 export default async function TripPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -52,10 +52,10 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
             <div><h2 className="text-xl font-bold text-neutral-950">Mapa da viagem</h2><p className="mt-1 text-sm text-neutral-500">Destinos localizados automaticamente aparecem aqui na ordem do roteiro.</p></div>
             <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">{(locations ?? []).filter((l:any)=>l.latitude != null && l.longitude != null).length} pontos no mapa</span>
           </div>
-          <TripMap tripId={trip.id} canEdit={canEdit} locations={locations ?? []} events={(events ?? []).map((event:any) => { const location=(locations ?? []).find((item:any)=>item.id===event.location_id); return { ...event, latitude:event.latitude ?? location?.latitude ?? null, longitude:event.longitude ?? location?.longitude ?? null }; })} />
+          <TripMap tripId={trip.id} canEdit={canEdit} startDate={trip.start_date} endDate={trip.end_date} locations={locations ?? []} events={(events ?? []).map((event:any) => { const location=(locations ?? []).find((item:any)=>item.id===event.location_id); return { ...event, latitude:event.latitude ?? location?.latitude ?? null, longitude:event.longitude ?? location?.longitude ?? null }; })} />
         </section>
 
-        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
+        <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />\n        <TripCalendar startDate={trip.start_date} endDate={trip.end_date} events={(events ?? []).map((event:any)=>({ ...event, location_name:(locations ?? []).find((l:any)=>l.id===event.location_id)?.name || null }))} />
         <TripTools tripId={trip.id} canEdit={canEdit} />
         <TripSummary tripId={trip.id} initialEvents={events ?? []} />
         <div className="mt-7 grid gap-7 lg:grid-cols-2">
