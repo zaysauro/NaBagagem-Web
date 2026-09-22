@@ -12,7 +12,7 @@ type SearchPlace={latitude:number;longitude:number;display_name:string;name:stri
 
 const layerLabels={attractions:"Atrações",restaurants:"Restaurantes",transit:"Transporte"};
 
-export default function TripMap({locations,events=[],tripId,canEdit=false}:{locations:Point[];events?:EventPoint[];tripId:string;canEdit?:boolean}){
+export default function TripMap({locations,events=[],tripId,canEdit=false,startDate=null,endDate=null}:{locations:Point[];events?:EventPoint[];tripId:string;canEdit?:boolean;startDate?:string|null;endDate?:string|null}){
   const router=useRouter();
   const ref=useRef<HTMLDivElement>(null);
   const mapRef=useRef<L.Map|null>(null);
@@ -28,9 +28,9 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
   const [searching,setSearching]=useState(false);
   const [searchError,setSearchError]=useState("");
   const [adding,setAdding]=useState("");
-  const [selectedSearch,setSelectedSearch]=useState<SearchPlace|null>(null);
+  const [selectedSearch,setSelectedSearch]=useState<SearchPlace|null>(null);\n  const [selectedAddDay,setSelectedAddDay]=useState(1);\n  const [dailyRoutes,setDailyRoutes]=useState<Record<number,{distanceKm:number;durationMinutes:number}>>({});
 
-  const days=useMemo(()=>[...new Set(events.map(e=>e.day_index).filter(Number.isFinite))].sort((a,b)=>a-b),[events]);
+  const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);\n  useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
 
   useEffect(()=>{
     if(!ref.current)return;
@@ -99,6 +99,19 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
     return()=>{group.remove();};
   },[events,day]);
 
+  useEffect(()=>{
+    let active=true;
+    async function loadDailyRoutes(){
+      const grouped=new Map<number,Array<{latitude:number;longitude:number}>>();
+      for(const event of events){ if(day!==0&&event.day_index!==day) continue; if(event.latitude==null||event.longitude==null) continue; const list=grouped.get(event.day_index)||[]; list.push({latitude:event.latitude,longitude:event.longitude}); grouped.set(event.day_index,list); }
+      const next:Record<number,{distanceKm:number;durationMinutes:number}>={};
+      await Promise.all([...grouped.entries()].map(async([dayIndex,points])=>{ if(points.length<2)return; try{ const response=await fetch("/api/route?points="+encodeURIComponent(JSON.stringify(points)),{cache:"no-store"}); if(!response.ok)return; const data=await response.json(); next[dayIndex]={distanceKm:Number(data.distanceKm||0),durationMinutes:Number(data.durationMinutes||0)}; }catch{} }));
+      if(active)setDailyRoutes(next);
+    }
+    void loadDailyRoutes();
+    return()=>{active=false};
+  },[events,day]);
+
   async function searchPlaces(){
     const query=search.trim();if(!query)return;
     setSearching(true);setSearchError("");setSearchResults([]);
@@ -121,7 +134,13 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
     map.flyTo([place.latitude,place.longitude],15,{duration:.8});
   }
 
-  async function addSearchPlace(place:SearchPlace){
+  function dateForDay(day:number){
+    if(!startDate)return null;
+    const date=new Date(startDate+"T12:00:00"); date.setDate(date.getDate()+day-1);
+    return date.toISOString().slice(0,10);
+  }
+
+  async function addSearchPlace(place:SearchPlace,createActivity:boolean){
     if(!canEdit)return;
     setAdding(place.display_name);setSearchError("");
     try{
@@ -131,6 +150,11 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
       });
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Não foi possível adicionar o destino.");
+      if(createActivity && data.location?.id){
+        const eventResponse=await fetch("/api/trips/"+tripId+"/events",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:place.name,location_id:data.location.id,event_date:dateForDay(selectedAddDay),day_index:selectedAddDay,status:"future",color:"#111827"})});
+        const eventData=await eventResponse.json();
+        if(!eventResponse.ok)throw new Error(eventData.error||"Destino adicionado, mas não foi possível criar a atividade.");
+      }
       setSearchResults([]);setSelectedSearch(null);setSearch("");
       if(searchLayer.current){searchLayer.current.remove();searchLayer.current=null;}
       router.refresh();
@@ -158,7 +182,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
         <p className="text-xs font-semibold text-neutral-500">Local selecionado</p>
         <p className="mt-1 text-sm font-bold">{selectedSearch.name}</p>
         <p className="mt-0.5 text-xs text-neutral-500">{selectedSearch.city}{selectedSearch.country?" · "+selectedSearch.country:""}</p>
-        {canEdit&&<button type="button" onClick={()=>void addSearchPlace(selectedSearch)} disabled={!!adding} className="mt-3 w-full rounded-xl bg-neutral-950 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{adding?"Adicionando...":"Adicionar ao roteiro"}</button>}
+        {canEdit&&<><label className="mt-3 block text-xs font-semibold text-neutral-500">Adicionar ao dia<select value={selectedAddDay} onChange={e=>setSelectedAddDay(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-xs">{days.map(d=><option key={d} value={d}>Dia {d}{dateForDay(d)?" · "+dateForDay(d):""}</option>)}</select></label><div className="mt-2 grid grid-cols-2 gap-2"><button type="button" onClick={()=>void addSearchPlace(selectedSearch,false)} disabled={!!adding} className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50">{adding?"Adicionando...":"Só destino"}</button><button type="button" onClick={()=>void addSearchPlace(selectedSearch,true)} disabled={!!adding} className="rounded-xl bg-neutral-950 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{adding?"Adicionando...":"Destino + atividade"}</button></div></>}
       </div>}
     </div>
     <div ref={ref} className="h-[460px] w-full overflow-hidden rounded-2xl"/>
@@ -173,7 +197,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false}:{loca
     {routeInfo&&<div className="absolute right-3 bottom-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow">
       <span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min
     </div>}
-    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
+    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}\n    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
   </div>;
 }
 
