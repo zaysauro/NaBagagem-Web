@@ -18,7 +18,10 @@ export default function ProfileActions({ username }: { username: string }) {
   const [actionLoading, setActionLoading] = useState(false);
 
   async function load() {
-    const r = await fetch("/api/social/profile?username=" + encodeURIComponent(username), { cache: "no-store" });
+    const r = await fetch(
+      "/api/social/profile?username=" + encodeURIComponent(username),
+      { cache: "no-store" }
+    );
     const d = await r.json();
     if (r.ok) setData(d);
     else setMessage(d.error || "Não foi possível carregar o perfil.");
@@ -59,7 +62,7 @@ export default function ProfileActions({ username }: { username: string }) {
     const r = await fetch("/api/social/follow", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: target, action })
+      body: JSON.stringify({ user_id: target, action }),
     });
 
     const d = await r.json();
@@ -74,23 +77,20 @@ export default function ProfileActions({ username }: { username: string }) {
     setActionLoading(false);
   }
 
-  async function action(path: string, method: string) {
+  async function blockAction(actionName: "block" | "unblock") {
     setMessage("");
+
     const target = data?.profile?.id;
     if (!target) return;
 
-    const actionName =
-      method === "DELETE"
-        ? path.includes("/block") ? "unblock" : "unfollow"
-        : path.includes("/block") ? "block" : "follow";
-
-    const r = await fetch(path, {
+    const r = await fetch("/api/social/block", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: target, action: actionName })
+      body: JSON.stringify({ user_id: target, action: actionName }),
     });
 
     const d = await r.json();
+
     if (!r.ok) {
       setMessage(d.error || "Não foi possível concluir.");
       return;
@@ -105,7 +105,7 @@ export default function ProfileActions({ username }: { username: string }) {
 
   const followLabel = data.isFollowing
     ? data.isMutual
-      ? "Seguindo · Segue você"
+      ? "Amigos"
       : "Seguindo"
     : data.followsMe
       ? "Seguir de volta"
@@ -144,7 +144,7 @@ export default function ProfileActions({ username }: { username: string }) {
 
       {data.isBlocked ? (
         <button
-          onClick={() => action("/api/social/block", "DELETE")}
+          onClick={() => blockAction("unblock")}
           className="rounded-xl border px-4 py-2 text-sm"
         >
           Desbloquear
@@ -152,7 +152,7 @@ export default function ProfileActions({ username }: { username: string }) {
       ) : (
         <button
           onClick={() => {
-            if (confirm("Bloquear este usuário?")) action("/api/social/block", "POST");
+            if (confirm("Bloquear este usuário?")) blockAction("block");
           }}
           className="rounded-xl border px-4 py-2 text-sm text-red-600"
         >
@@ -183,7 +183,7 @@ export default function ProfileActions({ username }: { username: string }) {
               {list.map((u) => (
                 <a
                   key={u.id}
-                  href={"/perfil/" + u.username}
+                  href={"/perfil/" + (u.username || u.id)}
                   className="flex items-center gap-3 rounded-xl bg-white p-2 hover:bg-neutral-100"
                 >
                   {u.avatar_url ? (
