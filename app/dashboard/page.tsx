@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Notifications from "./notifications";\nimport SiteHeader from "@/app/components/site-header";
+import SiteHeader from "@/app/components/site-header";
 
 function formatDate(value: string | null) {
   if (!value) return "Data não definida";
@@ -20,7 +20,8 @@ export default async function DashboardPage() {
   return (
     <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6">
       <div className="mx-auto max-w-6xl">
-        <SiteHeader />\n
+        <SiteHeader name={name} />
+
         <section className="pt-9">
           <div><h2 className="text-2xl font-bold text-neutral-950">Minhas viagens</h2><p className="mt-1 text-sm text-neutral-500">{trips?.length ?? 0} {trips?.length === 1 ? "viagem cadastrada" : "viagens cadastradas"}</p></div>
           {error ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">Não foi possível carregar suas viagens. Verifique se a estrutura do banco foi aplicada no Supabase.</div> : trips && trips.length > 0 ? <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{trips.map((trip) => <Link key={trip.id} href={`/dashboard/trips/${trip.id}`} className="group rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div className="flex h-32 items-end rounded-xl bg-neutral-100 p-4"><span className="text-4xl">✈️</span></div><h3 className="mt-5 text-lg font-bold text-neutral-950 group-hover:underline">{trip.title}</h3><p className="mt-1 line-clamp-2 text-sm text-neutral-600">{trip.description || "Sem descrição ainda."}</p><p className="mt-4 text-xs font-medium uppercase tracking-wide text-neutral-400">{formatDate(trip.start_date)} {trip.end_date ? `→ ${formatDate(trip.end_date)}` : ""}</p></Link>)}</div> : <div className="mt-6 rounded-3xl border border-dashed border-neutral-300 bg-white p-10 text-center"><div className="text-5xl">🧳</div><h3 className="mt-4 text-xl font-bold text-neutral-950">Sua primeira viagem começa aqui</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-neutral-600">Crie uma viagem e depois vamos adicionar destinos, eventos, mapa e fotos.</p><Link href="/dashboard/trips/new" className="mt-6 inline-flex rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white">Criar minha primeira viagem</Link></div>}
