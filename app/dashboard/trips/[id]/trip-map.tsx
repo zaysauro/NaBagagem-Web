@@ -147,20 +147,15 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     if(!canEdit)return;
     setAdding(place.display_name);setSearchError("");
     try{
-      const response=await fetch("/api/trips/"+tripId+"/locations",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({name:place.name,city:place.city,country:place.country,latitude:place.latitude,longitude:place.longitude,order_index:locations.length})
-      });
+      const response=await fetch("/api/trips/"+tripId+"/locations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:place.name,city:place.city,country:place.country,latitude:place.latitude,longitude:place.longitude,order_index:locations.length})});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Não foi possível adicionar o destino.");
-      if(createActivity && data.location?.id){
+      if(createActivity&&data.location?.id){
         const eventResponse=await fetch("/api/trips/"+tripId+"/events",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title:place.name,location_id:data.location.id,event_date:dateForDay(selectedAddDay),day_index:selectedAddDay,status:"future",color:"#111827"})});
         const eventData=await eventResponse.json();
         if(!eventResponse.ok)throw new Error(eventData.error||"Destino adicionado, mas não foi possível criar a atividade.");
       }
-      setSearchResults([]);setSelectedSearch(null);setSearch("");
-      if(searchLayer.current){searchLayer.current.remove();searchLayer.current=null;}
-      router.refresh();
+      setSearchResults([]);setSelectedSearch(null);setSearch("");if(searchLayer.current){searchLayer.current.remove();searchLayer.current=null;}router.refresh();
     }catch(error){setSearchError(error instanceof Error?error.message:"Não foi possível adicionar o destino.");}
     finally{setAdding("");}
   }
@@ -169,39 +164,33 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const visibleEvents=events.filter(e=>day===0||e.day_index===day);
 
   return <div className="relative">
-    <div className="absolute left-3 top-3 z-[1000] w-[min(420px,calc(100%-24px))]">
+    <div className="absolute left-3 right-3 top-3 z-[1000] sm:right-auto sm:w-[min(420px,calc(100%-24px))]">
       <form onSubmit={(event)=>{event.preventDefault();void searchPlaces();}} className="flex gap-2 rounded-2xl border bg-white p-2 shadow-lg">
-        <input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Pesquisar cidade, lugar, atração..." className="min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm outline-none" />
-        <button type="submit" disabled={searching||!search.trim()} className="rounded-xl bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40">{searching?"Buscando...":"Buscar"}</button>
+        <input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Pesquisar cidade, lugar, atração..." className="min-h-10 min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm outline-none" />
+        <button type="submit" disabled={searching||!search.trim()} className="min-h-10 shrink-0 rounded-xl bg-neutral-950 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-40">{searching?"Buscando...":"Buscar"}</button>
       </form>
-      {(searchResults.length>0||searchError)&&<div className="mt-2 max-h-64 overflow-auto rounded-2xl border bg-white p-2 shadow-lg">
-        {searchResults.map((place,index)=><button key={place.latitude+"-"+place.longitude+"-"+index} type="button" onClick={()=>selectSearchPlace(place)} className="block w-full rounded-xl p-3 text-left hover:bg-neutral-50">
-          <div className="text-sm font-semibold text-neutral-900">{place.name}</div>
-          <div className="mt-0.5 text-xs text-neutral-500">{place.display_name}</div>
-        </button>)}
+      {(searchResults.length>0||searchError)&&<div className="mt-2 max-h-56 overflow-auto rounded-2xl border bg-white p-2 shadow-lg">
+        {searchResults.map((place,index)=><button key={place.latitude+"-"+place.longitude+"-"+index} type="button" onClick={()=>selectSearchPlace(place)} className="block w-full rounded-xl p-3 text-left hover:bg-neutral-50"><div className="break-words text-sm font-semibold text-neutral-900">{place.name}</div><div className="mt-0.5 break-words text-xs text-neutral-500">{place.display_name}</div></button>)}
         {searchError&&<p className="p-3 text-xs text-red-600">{searchError}</p>}
       </div>}
       {selectedSearch&&<div className="mt-2 rounded-2xl border bg-white p-3 shadow-lg">
-        <p className="text-xs font-semibold text-neutral-500">Local selecionado</p>
-        <p className="mt-1 text-sm font-bold">{selectedSearch.name}</p>
-        <p className="mt-0.5 text-xs text-neutral-500">{selectedSearch.city}{selectedSearch.country?" · "+selectedSearch.country:""}</p>
-        {canEdit&&<><label className="mt-3 block text-xs font-semibold text-neutral-500">Adicionar ao dia<select value={selectedAddDay} onChange={e=>setSelectedAddDay(Number(e.target.value))} className="mt-1 w-full rounded-xl border px-3 py-2 text-xs">{days.map(d=><option key={d} value={d}>Dia {d}{dateForDay(d)?" · "+dateForDay(d):""}</option>)}</select></label><div className="mt-2 grid grid-cols-2 gap-2"><button type="button" onClick={()=>void addSearchPlace(selectedSearch,false)} disabled={!!adding} className="rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50">{adding?"Adicionando...":"Só destino"}</button><button type="button" onClick={()=>void addSearchPlace(selectedSearch,true)} disabled={!!adding} className="rounded-xl bg-neutral-950 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{adding?"Adicionando...":"Destino + atividade"}</button></div></>}
+        <p className="text-xs font-semibold text-neutral-500">Local selecionado</p><p className="mt-1 break-words text-sm font-bold">{selectedSearch.name}</p><p className="mt-0.5 break-words text-xs text-neutral-500">{selectedSearch.city}{selectedSearch.country?" · "+selectedSearch.country:""}</p>
+        {canEdit&&<><label className="mt-3 block text-xs font-semibold text-neutral-500">Adicionar ao dia<select value={selectedAddDay} onChange={e=>setSelectedAddDay(Number(e.target.value))} className="mt-1 min-h-10 w-full rounded-xl border px-3 py-2 text-xs">{days.map(d=><option key={d} value={d}>Dia {d}{dateForDay(d)?" · "+dateForDay(d):""}</option>)}</select></label><div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2"><button type="button" onClick={()=>void addSearchPlace(selectedSearch,false)} disabled={!!adding} className="min-h-10 rounded-xl border px-3 py-2 text-xs font-semibold disabled:opacity-50">{adding?"Adicionando...":"Só destino"}</button><button type="button" onClick={()=>void addSearchPlace(selectedSearch,true)} disabled={!!adding} className="min-h-10 rounded-xl bg-neutral-950 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">{adding?"Adicionando...":"Destino + atividade"}</button></div></>}
       </div>}
     </div>
-    <div ref={ref} className="h-[460px] w-full overflow-hidden rounded-2xl"/>
-    <div className="absolute right-3 top-3 z-[1000] flex max-w-[calc(100%-24px)] flex-wrap justify-end gap-2">
-      {Object.entries(layerLabels).map(([key,label])=><button key={key} type="button" onClick={()=>toggle(key)} className={"rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow "+(activeLayers[key]?"bg-neutral-950 text-white":"text-neutral-700")}>{label}</button>)}
+
+    <div ref={ref} className="h-[400px] w-full overflow-hidden rounded-2xl sm:h-[460px]"/>
+
+    <div className="absolute left-3 right-3 top-[76px] z-[1000] flex flex-wrap justify-end gap-2 sm:left-auto sm:right-3 sm:top-3">
+      {Object.entries(layerLabels).map(([key,label])=><button key={key} type="button" onClick={()=>toggle(key)} className={"min-h-9 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow "+(activeLayers[key]?"bg-neutral-950 text-white":"text-neutral-700")}>{label}</button>)}
     </div>
-    {days.length>0&&<div className="absolute bottom-3 left-3 z-[1000] flex max-w-[calc(100%-24px)] gap-1 overflow-x-auto rounded-xl border bg-white p-1 shadow">
-      <button type="button" onClick={()=>setDay(0)} className={"rounded-lg px-3 py-1.5 text-xs font-semibold "+(day===0?"bg-neutral-950 text-white":"")}>Todos</button>
-      {days.map(d=><button key={d} type="button" onClick={()=>setDay(d)} className={"rounded-lg px-3 py-1.5 text-xs font-semibold "+(day===d?"bg-neutral-950 text-white":"")}>Dia {d}</button>)}
-    </div>}
-    {poiMessage&&<div className="absolute right-3 top-14 z-[1000] rounded-xl bg-white px-3 py-2 text-xs shadow">{poiMessage}</div>}
-    {routeInfo&&<div className="absolute right-3 bottom-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow">
-      <span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min
-    </div>}
-    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}
-    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
+
+    {days.length>0&&<div className="absolute bottom-3 left-3 right-3 z-[1000] flex gap-1 overflow-x-auto rounded-xl border bg-white p-1 shadow sm:right-auto">{[["Todos",0],...days.map(d=>["Dia "+d,d])].map(([label,value])=><button key={String(value)} type="button" onClick={()=>setDay(Number(value))} className={"min-h-9 shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold "+(day===Number(value)?"bg-neutral-950 text-white":"")}>{label}</button>)}</div>}
+
+    {poiMessage&&<div className="absolute left-3 right-3 top-[122px] z-[1000] rounded-xl bg-white px-3 py-2 text-xs shadow sm:left-auto sm:right-3 sm:top-14">{poiMessage}</div>}
+    {routeInfo&&<div className="absolute bottom-[58px] left-3 right-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow sm:bottom-3 sm:left-auto sm:right-3 sm:w-auto"><span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min</div>}
+    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex max-w-full rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}
+    {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="max-w-full break-words rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
   </div>;
 }
 
