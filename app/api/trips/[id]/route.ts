@@ -53,6 +53,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     description: String(body.description || "").trim() || null,
     start_date: body.start_date || null,
     end_date: body.end_date || null,
+    budget_amount: body.budget_amount === "" || body.budget_amount == null ? null : Number(body.budget_amount),
+    budget_currency: String(body.budget_currency || "BRL").trim().toUpperCase().slice(0,8) || "BRL",
   };
   if (!updates.title) return NextResponse.json({ error: "Informe o nome da viagem." }, { status: 400 });
 
