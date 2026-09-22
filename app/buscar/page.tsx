@@ -3,22 +3,211 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteHeader from "@/app/components/site-header";
+import SearchUserResult from "./search-user-result";
 
-type Results={users:any[];posts:any[];destinations:any[]};
-export default function SearchPage(){
- const [q,setQ]=useState("");const [results,setResults]=useState<Results>({users:[],posts:[],destinations:[]});const [loading,setLoading]=useState(false);const [searched,setSearched]=useState(false);const [message,setMessage]=useState("");const [recent,setRecent]=useState<string[]>([]);
- async function search(value=q){const term=value.trim();if(!term){setResults({users:[],posts:[],destinations:[]});setSearched(false);return}try{const stored=JSON.parse(localStorage.getItem("nabagagem:recent-searches")||"[]");const next=[term,...stored.filter((x:string)=>x.toLowerCase()!==term.toLowerCase())].slice(0,6);localStorage.setItem("nabagagem:recent-searches",JSON.stringify(next));setRecent(next)}catch{}setLoading(true);setMessage("");const r=await fetch("/api/search?q="+encodeURIComponent(term),{cache:"no-store"});const d=await r.json();if(r.ok)setResults(d);else setMessage(d.error||"Não foi possível buscar.");setLoading(false);setSearched(true);}
- useEffect(()=>{const params=new URLSearchParams(window.location.search);const initial=params.get("q")||"";try{setRecent(JSON.parse(localStorage.getItem("nabagagem:recent-searches")||"[]"))}catch{}if(initial){setQ(initial);search(initial)}},[]);
- const total=results.users.length+results.posts.length+results.destinations.length;
- return <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6"><SiteHeader /><div className="mx-auto max-w-5xl">
-  <div className="flex items-center justify-between"><Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← Dashboard</Link><Link href="/feed" className="text-sm font-semibold">Feed</Link></div>
-  <h1 className="mt-5 text-3xl font-bold">Buscar</h1><p className="mt-1 text-neutral-500">Encontre viajantes, publicações e destinos.</p>
-  <form onSubmit={e=>{e.preventDefault();search()}} className="mt-6 flex gap-2"><input autoFocus value={q} onChange={e=>setQ(e.target.value)} placeholder="Nome, @username, destino ou publicação..." className="min-w-0 flex-1 rounded-xl border bg-white px-4 py-3"/><button className="rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white">Buscar</button></form>{!searched&&recent.length>0&&<div className="mt-3 flex flex-wrap gap-2"><span className="py-1 text-xs text-neutral-400">Recentes:</span>{recent.map(term=><button key={term} type="button" onClick={()=>{setQ(term);search(term)}} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-neutral-600 shadow-sm">{term}</button>)}</div>}
-  {message&&<p className="mt-4 rounded-xl bg-white p-3 text-sm text-red-600">{message}</p>}
-  {loading?<p className="mt-6 text-sm text-neutral-500">Buscando...</p>:searched&&total===0?<div className="mt-6 rounded-3xl border border-dashed bg-white p-10 text-center"><h2 className="text-xl font-bold">Nada encontrado</h2><p className="mt-2 text-sm text-neutral-500">Tente outro nome, destino ou palavra-chave.</p></div>:searched&&<div className="mt-6 grid gap-6 lg:grid-cols-3">
-   <section className="rounded-3xl border bg-white p-5 shadow-sm"><h2 className="font-bold">Viajantes <span className="text-neutral-400">({results.users.length})</span></h2><div className="mt-4 space-y-3">{results.users.map(u=>u.username?<Link key={u.id} href={"/perfil/"+u.username} className="flex items-center gap-3 rounded-2xl bg-neutral-50 p-3 hover:bg-neutral-100">{u.avatar_url?<img src={u.avatar_url} className="h-10 w-10 rounded-full object-cover"/>:<div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-sm font-bold text-white">{(u.display_name||u.username||"U")[0].toUpperCase()}</div>}<div className="min-w-0"><p className="truncate font-semibold">{u.display_name||"Viajante"}</p><p className="truncate text-xs text-neutral-500">@{u.username}</p></div></Link>:<div key={u.id} className="flex items-center gap-3 rounded-2xl bg-neutral-50 p-3 opacity-70">{u.avatar_url?<img src={u.avatar_url} className="h-10 w-10 rounded-full object-cover"/>:<div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900 text-sm font-bold text-white">{(u.display_name||"U")[0].toUpperCase()}</div>}<div className="min-w-0"><p className="truncate font-semibold">{u.display_name||"Viajante"}</p><p className="truncate text-xs text-neutral-500">Perfil sem username público</p></div></div>)}</div></section>
-   <section className="rounded-3xl border bg-white p-5 shadow-sm"><h2 className="font-bold">Publicações <span className="text-neutral-400">({results.posts.length})</span></h2><div className="mt-4 space-y-3">{results.posts.map(p=><article key={p.id} className="rounded-2xl bg-neutral-50 p-4"><Link href={p.profiles?.username?"/perfil/"+p.profiles.username:"/feed"} className="text-xs font-semibold text-neutral-500">{p.profiles?.display_name||"Viajante"}</Link><h3 className="mt-1 font-bold">{p.title}</h3>{p.body&&<p className="mt-1 line-clamp-3 text-sm text-neutral-600">{p.body}</p>}<Link href="/feed" className="mt-3 inline-block text-xs font-semibold">Ver no feed →</Link></article>)}</div></section>
-   <section className="rounded-3xl border bg-white p-5 shadow-sm"><h2 className="font-bold">Destinos <span className="text-neutral-400">({results.destinations.length})</span></h2><div className="mt-4 space-y-3">{results.destinations.map((d:any)=><Link key={d.id} href={"/dashboard/trips/"+d.trip_id} className="block rounded-2xl bg-neutral-50 p-4"><h3 className="font-bold">{d.name}</h3><p className="mt-1 text-sm text-neutral-500">{[d.city,d.country].filter(Boolean).join(", ")||"Localização não informada"}</p><p className="mt-2 text-xs font-semibold text-neutral-400">{d.trips?.title||"Viagem"}</p></Link>)}</div></section>
-  </div>}
- </div></main>
+type Results = { users: any[]; posts: any[]; destinations: any[] };
+
+export default function SearchPage() {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState<Results>({ users: [], posts: [], destinations: [] });
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [message, setMessage] = useState("");
+  const [recent, setRecent] = useState<string[]>([]);
+
+  async function search(value = q) {
+    const term = value.trim();
+
+    if (!term) {
+      setResults({ users: [], posts: [], destinations: [] });
+      setSearched(false);
+      return;
+    }
+
+    try {
+      const stored = JSON.parse(localStorage.getItem("nabagagem:recent-searches") || "[]");
+      const next = [term, ...stored.filter((x: string) => x.toLowerCase() !== term.toLowerCase())].slice(0, 6);
+      localStorage.setItem("nabagagem:recent-searches", JSON.stringify(next));
+      setRecent(next);
+    } catch {}
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/search?q=" + encodeURIComponent(term), { cache: "no-store" });
+      const data = await response.json();
+
+      if (response.ok) {
+        setResults(data);
+      } else {
+        setMessage(data.error || "Não foi possível buscar.");
+      }
+    } catch {
+      setMessage("Não foi possível concluir a busca.");
+    } finally {
+      setLoading(false);
+      setSearched(true);
+    }
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initial = params.get("q") || "";
+
+    try {
+      setRecent(JSON.parse(localStorage.getItem("nabagagem:recent-searches") || "[]"));
+    } catch {}
+
+    if (initial) {
+      setQ(initial);
+      search(initial);
+    }
+  }, []);
+
+  const total = results.users.length + results.posts.length + results.destinations.length;
+
+  return (
+    <main className="min-h-screen bg-neutral-50 px-4 pb-8 pt-24 sm:px-6">
+      <SiteHeader />
+
+      <div className="mx-auto max-w-5xl">
+        <div className="flex items-center justify-between">
+          <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">
+            ← Dashboard
+          </Link>
+          <Link href="/feed" className="text-sm font-semibold">
+            Feed
+          </Link>
+        </div>
+
+        <h1 className="mt-5 text-3xl font-bold">Buscar</h1>
+        <p className="mt-1 text-neutral-500">
+          Encontre viajantes por nome, @username ou e-mail, além de publicações e destinos.
+        </p>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            search();
+          }}
+          className="mt-6 flex gap-2"
+        >
+          <input
+            autoFocus
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            placeholder="Nome, @username, e-mail, destino ou publicação..."
+            className="min-w-0 flex-1 rounded-xl border bg-white px-4 py-3"
+          />
+          <button className="rounded-xl bg-neutral-950 px-5 py-3 text-sm font-semibold text-white">
+            Buscar
+          </button>
+        </form>
+
+        {!searched && recent.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="py-1 text-xs text-neutral-400">Recentes:</span>
+            {recent.map((term) => (
+              <button
+                key={term}
+                type="button"
+                onClick={() => {
+                  setQ(term);
+                  search(term);
+                }}
+                className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-neutral-600 shadow-sm"
+              >
+                {term}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {message && <p className="mt-4 rounded-xl bg-white p-3 text-sm text-red-600">{message}</p>}
+
+        {loading ? (
+          <p className="mt-6 text-sm text-neutral-500">Buscando...</p>
+        ) : searched && total === 0 ? (
+          <div className="mt-6 rounded-3xl border border-dashed bg-white p-10 text-center">
+            <h2 className="text-xl font-bold">Nada encontrado</h2>
+            <p className="mt-2 text-sm text-neutral-500">
+              Tente outro nome, @username, e-mail, destino ou palavra-chave.
+            </p>
+          </div>
+        ) : (
+          searched && (
+            <div className="mt-6 grid gap-6 lg:grid-cols-3">
+              <section className="rounded-3xl border bg-white p-5 shadow-sm">
+                <h2 className="font-bold">
+                  Viajantes <span className="text-neutral-400">({results.users.length})</span>
+                </h2>
+
+                <p className="mt-1 text-xs text-neutral-500">
+                  Abra o perfil ou siga diretamente por aqui.
+                </p>
+
+                <div className="mt-4 space-y-3">
+                  {results.users.map((user) => (
+                    <SearchUserResult key={user.id} user={user} />
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-3xl border bg-white p-5 shadow-sm">
+                <h2 className="font-bold">
+                  Publicações <span className="text-neutral-400">({results.posts.length})</span>
+                </h2>
+
+                <div className="mt-4 space-y-3">
+                  {results.posts.map((post) => (
+                    <article key={post.id} className="rounded-2xl bg-neutral-50 p-4">
+                      <Link
+                        href={post.profiles?.username ? "/perfil/" + post.profiles.username : "/feed"}
+                        className="text-xs font-semibold text-neutral-500"
+                      >
+                        {post.profiles?.display_name || "Viajante"}
+                      </Link>
+                      <h3 className="mt-1 font-bold">{post.title}</h3>
+                      {post.body && (
+                        <p className="mt-1 line-clamp-3 text-sm text-neutral-600">{post.body}</p>
+                      )}
+                      <Link href="/feed" className="mt-3 inline-block text-xs font-semibold">
+                        Ver no feed →
+                      </Link>
+                    </article>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-3xl border bg-white p-5 shadow-sm">
+                <h2 className="font-bold">
+                  Destinos <span className="text-neutral-400">({results.destinations.length})</span>
+                </h2>
+
+                <div className="mt-4 space-y-3">
+                  {results.destinations.map((destination: any) => (
+                    <Link
+                      key={destination.id}
+                      href={"/dashboard/trips/" + destination.trip_id}
+                      className="block rounded-2xl bg-neutral-50 p-4"
+                    >
+                      <h3 className="font-bold">{destination.name}</h3>
+                      <p className="mt-1 text-sm text-neutral-500">
+                        {[destination.city, destination.country].filter(Boolean).join(", ") ||
+                          "Localização não informada"}
+                      </p>
+                      <p className="mt-2 text-xs font-semibold text-neutral-400">
+                        {destination.trips?.title || "Viagem"}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            </div>
+          )
+        )}
+      </div>
+    </main>
+  );
 }
