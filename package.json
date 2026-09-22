@@ -17,7 +17,8 @@
     "react": "latest",
     "react-dom": "latest",
     "react-simple-maps": "latest",
-    "topojson-client": "latest"
+    "topojson-client": "latest",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
@@ -26,6 +27,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "tailwindcss": "latest",
-    "typescript": "latest"
+    "typescript": "latest",
+    "@types/qrcode": "^1.5.6"
   }
 }
