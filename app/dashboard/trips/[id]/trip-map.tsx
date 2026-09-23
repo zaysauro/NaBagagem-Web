@@ -35,7 +35,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const [routeMode,setRouteMode]=useState<keyof typeof routeLabels>("driving");
   const [optimizing,setOptimizing]=useState(false);
   const [mapFullscreen,setMapFullscreen]=useState(false);
-  const [locating,setLocating]=useState(false);
+  const [locating,setLocating]=useState(false); const [selectedEventId,setSelectedEventId]=useState<string|null>(null);
 
   const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);
   useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
@@ -101,11 +101,11 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       items.forEach((e,index)=>{
         const color=/^#[0-9a-f]{6}$/i.test(e.color)?e.color:"#111827";
         const icon=L.divIcon({className:"",html:'<div style="width:24px;height:24px;border-radius:50%;background:'+color+';border:2px solid white;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.35)">'+(index+1)+'</div>',iconSize:[24,24],iconAnchor:[12,12]});
-        L.marker([e.latitude,e.longitude],{icon}).addTo(group).bindPopup("<strong>"+escapeHtml(e.title)+"</strong><br/>Dia "+e.day_index+" · "+escapeHtml(e.status));
+        const marker=L.marker([e.latitude,e.longitude],{icon}).addTo(group); marker.on("click",()=>{setSelectedEventId(e.id);window.dispatchEvent(new CustomEvent("nabagagem:event-selected",{detail:{id:e.id}}));}); marker.bindPopup("<strong>"+escapeHtml(e.title)+"</strong><br/>Dia "+e.day_index+" · "+escapeHtml(e.status)); if(selectedEventId===e.id) marker.openPopup();
       });
     });
     return()=>{group.remove();};
-  },[events,day]);
+  },[events,day,selectedEventId]);
 
   useEffect(()=>{
     let active=true;
