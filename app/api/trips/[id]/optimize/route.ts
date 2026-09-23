@@ -25,7 +25,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (usable.length < 2) return NextResponse.json({ error: "O dia precisa ter pelo menos 2 atividades com localização." }, { status: 400 });
 
   const distance=(a:any,b:any)=>{const dLat=a.latitude-b.latitude;const dLng=(a.longitude-b.longitude)*Math.cos(a.latitude*Math.PI/180);return dLat*dLat+dLng*dLng;};
-  const scheduled=usable.filter((event:any)=>event.start_time).sort((a:any,b:any)=>(a.start_time||"").localeCompare(b.start_time||""));\n  const reserved=usable.filter((event:any)=>!event.start_time&&(event.reservation_name||event.confirmation_code));\n  const fixedStart=scheduled[0]||reserved[0]||usable[0];\n  const remaining=usable.filter((event:any)=>event.id!==fixedStart.id); const ordered:any[]=[fixedStart];
+  const scheduled=usable.filter((event:any)=>event.start_time).sort((a:any,b:any)=>(a.start_time||"").localeCompare(b.start_time||""));
+  const reserved=usable.filter((event:any)=>!event.start_time&&(event.reservation_name||event.confirmation_code));
+  const fixedStart=scheduled[0]||reserved[0]||usable[0];
+  const remaining=usable.filter((event:any)=>event.id!==fixedStart.id); const ordered:any[]=[fixedStart];
   while(remaining.length){
     const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
     remaining.forEach((candidate,index)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
