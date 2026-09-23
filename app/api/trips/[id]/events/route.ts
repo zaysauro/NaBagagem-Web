@@ -15,6 +15,7 @@ function normalizeColor(value: unknown) { const color = String(value || "").trim
 function normalizeReminder(value: unknown) { const minutes = Number(value); return Number.isInteger(minutes) && minutes >= 0 && minutes <= 10080 ? minutes : null; }
 function normalizeUrl(value: unknown) { const raw = String(value || "").trim(); if (!raw) return null; try { const url = new URL(raw); return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null; } catch { return null; } }
 function normalizeDay(value: unknown) { const day = Number(value); return Number.isInteger(day) && day >= 1 ? day : 1; }
+function normalizeOrder(value: unknown) { const order = Number(value); return Number.isInteger(order) && order >= 0 ? order : 0; }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; const { supabase, user, trip, canEdit } = await getContext(id);
@@ -26,7 +27,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { data, error } = await supabase.from("trip_events").insert({
     trip_id: id, location_id: body.location_id || null, title,
     description: String(body.description || "").trim() || null, event_date: body.event_date || null,
-    start_time: body.start_time || null, end_time: body.end_time || null, day_index: normalizeDay(body.day_index),
+    start_time: body.start_time || null, end_time: body.end_time || null, day_index: normalizeDay(body.day_index), order_index: normalizeOrder(body.order_index),
     status: normalizeStatus(body.status), color: normalizeColor(body.color),
     reservation_name: String(body.reservation_name || "").trim() || null,
     confirmation_code: String(body.confirmation_code || "").trim() || null,
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (body.end_time !== undefined) updates.end_time = body.end_time || null;
   if (body.location_id !== undefined) updates.location_id = body.location_id || null;
   if (body.day_index !== undefined) updates.day_index = normalizeDay(body.day_index);
+  if (body.order_index !== undefined) updates.order_index = normalizeOrder(body.order_index);
   if (body.status !== undefined) updates.status = normalizeStatus(body.status);
   if (body.color !== undefined) updates.color = normalizeColor(body.color);
   if (body.reservation_name !== undefined) updates.reservation_name = String(body.reservation_name || "").trim() || null;
