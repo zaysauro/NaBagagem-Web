@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const profiles = {
-  driving: "driving",
-  walking: "walking",
-  cycling: "cycling",
+  driving: { host: "https://router.project-osrm.org", profile: "driving" },
+  walking: { host: "https://routing.openstreetmap.de/routed-foot", profile: "driving" },
+  cycling: { host: "https://routing.openstreetmap.de/routed-bike", profile: "driving" },
 } as const;
 
 export async function GET(request: Request) {
@@ -28,7 +28,8 @@ export async function GET(request: Request) {
   }
 
   const coordinates = points.map((p) => p.longitude + "," + p.latitude).join(";");
-  const url = "https://router.project-osrm.org/route/v1/" + profiles[mode] + "/" + coordinates + "?overview=full&geometries=geojson&steps=false";
+  const provider = profiles[mode];
+  const url = provider.host + "/route/v1/" + provider.profile + "/" + coordinates + "?overview=full&geometries=geojson&steps=false";
   const response = await fetch(url, { next: { revalidate: 900 } });
   if (!response.ok) return NextResponse.json({ error: "Serviço de rotas indisponível." }, { status: 502 });
   const data = await response.json();
