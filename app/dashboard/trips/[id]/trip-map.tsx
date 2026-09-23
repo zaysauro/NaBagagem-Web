@@ -117,7 +117,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     }
     void loadDailyRoutes();
     return()=>{active=false};
-  },[events,day]);
+  },[events,day,routeMode]);
 
   async function searchPlaces(){
     const query=search.trim();if(!query)return;
