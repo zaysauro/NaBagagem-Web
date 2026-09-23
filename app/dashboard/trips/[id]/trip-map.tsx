@@ -35,6 +35,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const [routeMode,setRouteMode]=useState<keyof typeof routeLabels>("driving");
   const [optimizing,setOptimizing]=useState(false);
   const [mapFullscreen,setMapFullscreen]=useState(false);
+  const [locating,setLocating]=useState(false);
 
   const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);
   useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
@@ -175,6 +176,15 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     }catch(error){setSearchError(error instanceof Error?error.message:"Não foi possível otimizar o dia.");}
     finally{setOptimizing(false);}
   }
+  function locateMe(){
+    if(!navigator.geolocation){setPoiMessage("Seu navegador não oferece localização.");return;}
+    setLocating(true);setPoiMessage("");
+    navigator.geolocation.getCurrentPosition(
+      position=>{const map=mapRef.current;if(map){map.flyTo([position.coords.latitude,position.coords.longitude],16,{duration:.8});const icon=L.divIcon({className:"",html:'<div style="width:18px;height:18px;border-radius:50%;background:#2563eb;border:3px solid white;box-shadow:0 1px 6px rgba(0,0,0,.4)"></div>',iconSize:[18,18],iconAnchor:[9,9]});L.marker([position.coords.latitude,position.coords.longitude],{icon}).addTo(map).bindPopup("<strong>Você está aqui</strong>").openPopup();}setLocating(false);},
+      ()=>{setPoiMessage("Não foi possível acessar sua localização. Verifique a permissão do navegador.");setLocating(false);},
+      {enableHighAccuracy:true,maximumAge:30000,timeout:10000}
+    );
+  }
   async function toggleFullscreen(){
     const element=ref.current?.parentElement;
     if(!element)return;
@@ -205,7 +215,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     <div ref={ref} className={"h-[400px] w-full overflow-hidden rounded-2xl sm:h-[460px] "+(mapFullscreen?"h-[calc(100vh-16px)] sm:h-[calc(100vh-16px)]":"")}/>
 
     <div className="absolute left-3 right-3 top-[76px] z-[1000] flex flex-wrap justify-end gap-2 sm:left-auto sm:right-3 sm:top-3">
-      {Object.entries(layerLabels).map(([key,label])=><button key={key} type="button" onClick={()=>toggle(key)} className={"min-h-9 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow "+(activeLayers[key]?"bg-neutral-950 text-white":"text-neutral-700")}>{label}</button>)}
+      {<button type="button" onClick={locateMe} disabled={locating} className="min-h-9 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow disabled:opacity-50">{locating?"Localizando...":"Minha localização"}</button>}{Object.entries(layerLabels).map(([key,label])=><button key={key} type="button" onClick={()=>toggle(key)} className={"min-h-9 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow "+(activeLayers[key]?"bg-neutral-950 text-white":"text-neutral-700")}>{label}</button>)}
     </div>
 
     {days.length>0&&<div className="absolute bottom-3 left-3 right-3 z-[1000] flex gap-1 overflow-x-auto rounded-xl border bg-white p-1 shadow sm:right-auto">{[["Todos",0],...days.map(d=>["Dia "+d,d])].map(([label,value])=><button key={String(value)} type="button" onClick={()=>setDay(Number(value))} className={"min-h-9 shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold "+(day===Number(value)?"bg-neutral-950 text-white":"")}>{label}</button>)}</div>}
