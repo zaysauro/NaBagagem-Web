@@ -10,8 +10,12 @@ export async function POST(request: Request) {
   const postId = String(form.get("post_id") || "").trim();
   const file = form.get("file");
   if (!postId || !(file instanceof File)) return NextResponse.json({ error: "Post e imagem são obrigatórios." }, { status: 400 });
-  if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Envie uma imagem." }, { status: 400 });
+  const allowed = new Set(["image/jpeg","image/png","image/webp","image/heic","image/heif"]);
+  if (!allowed.has(file.type)) return NextResponse.json({ error: "Formato não suportado. Use JPG, PNG ou WebP." }, { status: 400 });
   if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "A imagem deve ter no máximo 8 MB." }, { status: 400 });
+
+  const { count } = await supabase.from("feed_post_media").select("id", { count: "exact", head: true }).eq("post_id", postId);
+  if ((count || 0) >= 5) return NextResponse.json({ error: "Cada publicação pode ter no máximo 5 fotos." }, { status: 400 });
 
   const { data: post } = await supabase.from("feed_posts").select("id").eq("id", postId).eq("user_id", user.id).maybeSingle();
   if (!post) return NextResponse.json({ error: "Publicação não encontrada." }, { status: 404 });
@@ -23,9 +27,9 @@ export async function POST(request: Request) {
 
   const { data: publicData } = supabase.storage.from("feed-media").getPublicUrl(path);
   const { data, error } = await supabase.from("feed_post_media").insert({
-    post_id: postId, user_id: user.id, storage_path: path, public_url: publicData.publicUrl
+    post_id: postId, user_id: user.id, storage_path: path, public_url: publicData.publicUrl, mime_type: file.type, size_bytes: file.size
   }).select().single();
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) { await supabase.storage.from("feed-media").remove([path]); return NextResponse.json({ error: error.message }, { status: 400 }); }
 
   return NextResponse.json({ media: data }, { status: 201 });
 }
