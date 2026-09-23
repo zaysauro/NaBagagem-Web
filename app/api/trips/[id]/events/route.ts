@@ -24,10 +24,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!canEdit) return NextResponse.json({ error: "Você não tem permissão para editar esta viagem." }, { status: 403 });
   const body = await request.json(); const title = String(body.title || "").trim();
   if (!title) return NextResponse.json({ error: "Informe o título do evento." }, { status: 400 });
+  const dayIndex = normalizeDay(body.day_index);
+  let orderIndex = normalizeOrder(body.order_index);
+  if (body.order_index === undefined) {
+    const { data: lastEvent } = await supabase.from("trip_events")
+      .select("order_index")
+      .eq("trip_id", id)
+      .eq("day_index", dayIndex)
+      .order("order_index", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    orderIndex = Number.isInteger(lastEvent?.order_index) ? Number(lastEvent.order_index) + 1 : 0;
+  }
   const { data, error } = await supabase.from("trip_events").insert({
     trip_id: id, location_id: body.location_id || null, title,
     description: String(body.description || "").trim() || null, event_date: body.event_date || null,
-    start_time: body.start_time || null, end_time: body.end_time || null, day_index: normalizeDay(body.day_index), order_index: normalizeOrder(body.order_index),
+    start_time: body.start_time || null, end_time: body.end_time || null, day_index: dayIndex, order_index: orderIndex,
     status: normalizeStatus(body.status), color: normalizeColor(body.color),
     reservation_name: String(body.reservation_name || "").trim() || null,
     confirmation_code: String(body.confirmation_code || "").trim() || null,
