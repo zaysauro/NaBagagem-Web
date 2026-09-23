@@ -32,7 +32,7 @@ export default function FeedPage() {
   const [page,setPage]=useState(0);
   const [hasMore,setHasMore]=useState(false);
   const [message,setMessage]=useState("");
-  const [pendingImage,setPendingImage]=useState<File|null>(null);
+  const [pendingImages,setPendingImages]=useState<File[]>([]);
   const [editing,setEditing]=useState<string|null>(null);
   const [editTitle,setEditTitle]=useState("");
   const [editBody,setEditBody]=useState("");
@@ -74,12 +74,14 @@ export default function FeedPage() {
       body:JSON.stringify({title,body,visibility,trip_id:tripId||null})});
     const d=await r.json();
     if(!r.ok){setMessage(d.error||"Erro ao publicar.");return;}
-    if(pendingImage){
-      const form=new FormData(); form.append("post_id",d.post.id); form.append("file",pendingImage);
-      const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
-      if(!upload.ok){const error=await upload.json();setMessage("Publicação criada, mas a imagem não foi enviada: "+(error.error||"erro"));}
+    if(pendingImages.length){
+      for(const image of pendingImages.slice(0,5)){
+        const form=new FormData(); form.append("post_id",d.post.id); form.append("file",image);
+        const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
+        if(!upload.ok){const error=await upload.json();setMessage("Publicação criada, mas uma imagem não foi enviada: "+(error.error||"erro"));break;}
+      }
     }
-    setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImage(null);
+    setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImages([]);
     if(fileRef.current)fileRef.current.value="";
     await load(true);
   }
@@ -167,9 +169,9 @@ export default function FeedPage() {
           <select value={visibility} onChange={e=>setVisibility(e.target.value)} className="rounded-xl border p-3">
             <option value="public">Público</option><option value="followers">Seguidores</option><option value="private">Somente eu</option>
           </select>
-          <input ref={fileRef} type="file" accept="image/*" onChange={e=>setPendingImage(e.target.files?.[0]||null)} className="block w-full rounded-xl border p-2 text-sm"/>
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onChange={async e=>{const files=Array.from(e.target.files||[]).slice(0,5);const compressed=await Promise.all(files.map(compressImage));setPendingImages(compressed);}} className="block w-full rounded-xl border p-2 text-sm"/>
         </div>
-        {pendingImage&&<p className="mt-2 text-xs text-neutral-500">Imagem: {pendingImage.name}</p>}
+        {pendingImages.length>0&&<div className="mt-2"><p className="text-xs text-neutral-500">{pendingImages.length} foto{pendingImages.length===1?"":"s"} selecionada{pendingImages.length===1?"":"s"} · serão comprimidas antes do envio</p><div className="mt-2 grid grid-cols-5 gap-2">{pendingImages.map((image,index)=><div key={index} className="aspect-square overflow-hidden rounded-xl bg-neutral-100"><img src={URL.createObjectURL(image)} alt="" className="h-full w-full object-cover"/></div>)}</div></div>}
         <button className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar</button>
       </form>
 
