@@ -27,29 +27,61 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const distance=(a:any,b:any)=>{const dLat=a.latitude-b.latitude;const dLng=(a.longitude-b.longitude)*Math.cos(a.latitude*Math.PI/180);return dLat*dLat+dLng*dLng;};
   const scheduled=usable.filter((event:any)=>event.start_time).sort((a:any,b:any)=>(a.start_time||"").localeCompare(b.start_time||""));
   const reserved=usable.filter((event:any)=>!event.start_time&&(event.reservation_name||event.confirmation_code));
-  const fixedStart=scheduled[0]||reserved[0]||usable[0];
-  const remaining=usable.filter((event:any)=>event.id!==fixedStart.id); const ordered:any[]=[fixedStart];
-  while(remaining.length){
-    const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
-    remaining.forEach((candidate,index)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
-    ordered.push(remaining.splice(best,1)[0]);
-  }
-  let improved=true; let passes=0;
-  while(improved&&passes<20){
-    improved=false; passes++;
+  const anchors=[...scheduled,...reserved.filter((event:any)=>!scheduled.some((x:any)=>x.id===event.id))];
+  const flexible=usable.filter((event:any)=>!anchors.some((x:any)=>x.id===event.id));
+
+  if (anchors.length <= 1) {
+    const fixedStart=anchors[0]||usable[0];
+    const remaining=usable.filter((event:any)=>event.id!==fixedStart.id);
+    const ordered:any[]=[fixedStart];
+    while(remaining.length){
+      const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
+      remaining.forEach((candidate:any,index:number)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
+      ordered.push(remaining.splice(best,1)[0]);
+    }
     for(let i=1;i<ordered.length-2;i++){
       for(let k=i+1;k<ordered.length-1;k++){
         const before=distance(ordered[i-1],ordered[i])+distance(ordered[k],ordered[k+1]);
         const after=distance(ordered[i-1],ordered[k])+distance(ordered[i],ordered[k+1]);
-        if(after+1e-12<before){
-          const segment=ordered.slice(i,k+1).reverse();
-          ordered.splice(i,segment.length,...segment);
-          improved=true;
-        }
+        if(after+1e-12<before) ordered.splice(i,k-i+1,...ordered.slice(i,k+1).reverse());
       }
     }
+    anchors.splice(0,anchors.length,...ordered);
   }
 
+  const ordered:any[]=[];
+  const nearest=(from:any,pool:any[])=>{
+    if(!pool.length)return null;
+    let bestIndex=0,bestDistance=Number.POSITIVE_INFINITY;
+    pool.forEach((candidate:any,index:number)=>{const d=distance(from,candidate);if(d<bestDistance){bestDistance=d;bestIndex=index;}});
+    return pool.splice(bestIndex,1)[0];
+  };
+
+  // Horários marcados funcionam como âncoras: atividades flexíveis são inseridas
+  // no espaço disponível entre duas âncoras, sem atravessar uma reserva agendada.
+  const remainingFlexible=[...flexible];
+  for(let i=0;i<anchors.length;i++){
+    const anchor=anchors[i];
+    ordered.push(anchor);
+    const nextAnchor=anchors[i+1];
+    if(!nextAnchor) {
+      let current=anchor;
+      while(remainingFlexible.length){const next=nearest(current,remainingFlexible);if(!next)break;ordered.push(next);current=next;}
+      break;
+    }
+    while(remainingFlexible.length){
+      const candidate=remainingFlexible.reduce((best:any,item:any)=>!best||distance(anchor,item)<distance(anchor,best)?item:best,null);
+      if(!candidate)break;
+      const beforeCandidate=distance(anchor,candidate)+distance(candidate,nextAnchor);
+      const direct=distance(anchor,nextAnchor);
+      // Insert only when the detour is reasonably small; this keeps the route compact
+      // while preserving every scheduled/reserved anchor in its original order.
+      if(beforeCandidate <= direct*1.85){
+        remainingFlexible.splice(remainingFlexible.findIndex((x:any)=>x.id===candidate.id),1);
+        ordered.push(candidate);
+      } else break;
+    }
+  }
   for (let index = 0; index < ordered.length; index++) {
     const { error: updateError } = await supabase.from("trip_events").update({ order_index: index }).eq("id", ordered[index].id).eq("trip_id", id);
     if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
