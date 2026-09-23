@@ -24,7 +24,7 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   const [{ data: locations }, { data: events }, { data: member }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
-    supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("event_date").order("start_time"),
+    supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("order_index").order("event_date").order("start_time"),
     supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle(),
   ]);
 
