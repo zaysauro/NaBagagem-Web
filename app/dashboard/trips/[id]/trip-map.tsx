@@ -43,9 +43,9 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   useEffect(()=>{
     if(!ref.current)return;
     const points=locations.filter(p=>p.latitude!=null&&p.longitude!=null) as Array<Point&{latitude:number;longitude:number}>;
-    const map=L.map(ref.current,{scrollWheelZoom:true});
+    const worldBounds=L.latLngBounds([[-85.05112878,-180],[85.05112878,180]]); const map=L.map(ref.current,{scrollWheelZoom:true,minZoom:2,maxZoom:19,maxBounds:worldBounds,maxBoundsViscosity:1,worldCopyJump:false});
     mapRef.current=map;
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",maxZoom:19}).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"&copy; OpenStreetMap contributors",maxZoom:19,noWrap:true,bounds:worldBounds}).addTo(map);
     const route=L.layerGroup().addTo(map);
     if(points.length){
       const bounds=L.latLngBounds(points.map(p=>[p.latitude,p.longitude] as [number,number]));
