@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!Number.isInteger(day) || day < 1) return NextResponse.json({ error: "Dia inválido." }, { status: 400 });
 
   const { data: events, error } = await supabase.from("trip_events")
-    .select("id,location_id,latitude,longitude,order_index")
+    .select("id,location_id,latitude,longitude,order_index,start_time,reservation_name,confirmation_code")
     .eq("trip_id", id).eq("day_index", day).order("order_index", { ascending: true }).order("start_time", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
@@ -25,7 +25,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (usable.length < 2) return NextResponse.json({ error: "O dia precisa ter pelo menos 2 atividades com localização." }, { status: 400 });
 
   const distance=(a:any,b:any)=>{const dLat=a.latitude-b.latitude;const dLng=(a.longitude-b.longitude)*Math.cos(a.latitude*Math.PI/180);return dLat*dLat+dLng*dLng;};
-  const remaining=[...usable]; const ordered:any[]=[remaining.shift()];
+  const fixedStart=usable.find((event:any)=>event.start_time)||usable.find((event:any)=>event.reservation_name||event.confirmation_code)||usable[0];\n  const remaining=usable.filter((event:any)=>event.id!==fixedStart.id); const ordered:any[]=[fixedStart];
   while(remaining.length){
     const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
     remaining.forEach((candidate,index)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
