@@ -24,19 +24,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const usable = (events || []).filter((e: any) => Number.isFinite(e.latitude) && Number.isFinite(e.longitude));
   if (usable.length < 2) return NextResponse.json({ error: "O dia precisa ter pelo menos 2 atividades com localização." }, { status: 400 });
 
-  const remaining = [...usable];
-  const ordered: any[] = [remaining.shift()];
-  while (remaining.length) {
-    const current = ordered[ordered.length - 1];
-    let best = 0;
-    let bestDistance = Number.POSITIVE_INFINITY;
-    remaining.forEach((candidate, index) => {
-      const dLat = candidate.latitude - current.latitude;
-      const dLng = (candidate.longitude - current.longitude) * Math.cos(current.latitude * Math.PI / 180);
-      const distance = dLat * dLat + dLng * dLng;
-      if (distance < bestDistance) { bestDistance = distance; best = index; }
-    });
-    ordered.push(remaining.splice(best, 1)[0]);
+  const distance=(a:any,b:any)=>{const dLat=a.latitude-b.latitude;const dLng=(a.longitude-b.longitude)*Math.cos(a.latitude*Math.PI/180);return dLat*dLat+dLng*dLng;};
+  const remaining=[...usable]; const ordered:any[]=[remaining.shift()];
+  while(remaining.length){
+    const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
+    remaining.forEach((candidate,index)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
+    ordered.push(remaining.splice(best,1)[0]);
+  }
+  let improved=true; let passes=0;
+  while(improved&&passes<20){
+    improved=false; passes++;
+    for(let i=1;i<ordered.length-2;i++){
+      for(let k=i+1;k<ordered.length-1;k++){
+        const before=distance(ordered[i-1],ordered[i])+distance(ordered[k],ordered[k+1]);
+        const after=distance(ordered[i-1],ordered[k])+distance(ordered[i],ordered[k+1]);
+        if(after+1e-12<before){
+          const segment=ordered.slice(i,k+1).reverse();
+          ordered.splice(i,segment.length,...segment);
+          improved=true;
+        }
+      }
+    }
   }
 
   for (let index = 0; index < ordered.length; index++) {
