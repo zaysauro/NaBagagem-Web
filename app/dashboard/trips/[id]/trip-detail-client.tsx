@@ -13,7 +13,7 @@ export default function TripDetailClient({tripId,initialLocations,initialEvents=
  const[locations,setLocations]=useState(initialLocations),[events,setEvents]=useState(initialEvents);
  const[locationForm,setLocationForm]=useState({name:"",city:"",country:"",visited_at:"",notes:""});
  const[eventForm,setEventForm]=useState({title:"",description:"",event_date:"",start_time:"",end_time:"",location_id:"",day_index:"1",status:"future" as Status,color:"#111827",reservation_name:"",confirmation_code:"",reservation_url:"",reminder_minutes:""});
- const[locationLoading,setLocationLoading]=useState(false),[eventLoading,setEventLoading]=useState(false),[message,setMessage]=useState(""),[isOffline,setIsOffline]=useState(false),[cachedAt,setCachedAt]=useState<number|null>(null),[travelInfo,setTravelInfo]=useState<Record<string,{distanceKm:number;durationMinutes:number}>>({}),[routeMode,setRouteMode]=useState<"driving"|"walking"|"cycling">("driving"),[optimizingDay,setOptimizingDay]=useState<number|null>(null);
+ const[draggedEvent,setDraggedEvent]=useState<string|null>(null),[locationLoading,setLocationLoading]=useState(false),[eventLoading,setEventLoading]=useState(false),[message,setMessage]=useState(""),[isOffline,setIsOffline]=useState(false),[cachedAt,setCachedAt]=useState<number|null>(null),[travelInfo,setTravelInfo]=useState<Record<string,{distanceKm:number;durationMinutes:number}>>({}),[routeMode,setRouteMode]=useState<"driving"|"walking"|"cycling">("driving"),[optimizingDay,setOptimizingDay]=useState<number|null>(null);
  useEffect(()=>{let active=true;let supabase:ReturnType<typeof createClient>|null=null;async function refresh(){try{const response=await fetch("/api/trips/"+tripId,{cache:"no-store"});if(!response.ok)throw new Error("offline");const data=await response.json();if(!active)return;const nextLocations=data.locations||[],nextEvents=data.events||[];setLocations(nextLocations);setEvents(nextEvents);setIsOffline(false);setCachedAt(Date.now());saveOfflineTrip(tripId,{trip:data.trip||null,locations:nextLocations,events:nextEvents})}catch{if(!active)return;const cached=readOfflineTrip(tripId);if(cached){setLocations(cached.locations as Location[]);setEvents(cached.events as Event[]);setCachedAt(cached.cachedAt);setIsOffline(true);setMessage("Modo offline: exibindo os dados salvos no último acesso.")}else setIsOffline(true)}}const offline=()=>{setIsOffline(true);const cached=readOfflineTrip(tripId);if(cached){setLocations(cached.locations as Location[]);setEvents(cached.events as Event[]);setCachedAt(cached.cachedAt)}};const online=()=>void refresh();void refresh();window.addEventListener("offline",offline);window.addEventListener("online",online);try{supabase=createClient();const channel=supabase.channel("trip-collaboration-"+tripId).on("postgres_changes",{event:"*",schema:"public",table:"trip_locations",filter:"trip_id=eq."+tripId},refresh).on("postgres_changes",{event:"*",schema:"public",table:"trip_events",filter:"trip_id=eq."+tripId},refresh).on("postgres_changes",{event:"*",schema:"public",table:"trips",filter:"id=eq."+tripId},refresh).subscribe();return()=>{active=false;window.removeEventListener("offline",offline);window.removeEventListener("online",online);if(supabase)supabase.removeChannel(channel)}}catch{return()=>{active=false;window.removeEventListener("offline",offline);window.removeEventListener("online",online)}}},[tripId]);
  const groupedEvents=useMemo(()=>{const groups=new Map<number,Event[]>();[...events].sort((a,b)=>a.day_index-b.day_index+a.order_index-b.order_index||(a.event_date||"").localeCompare(b.event_date||"")||(a.start_time||"").localeCompare(b.start_time||"")).forEach(e=>{const list=groups.get(e.day_index)||[];list.push(e);groups.set(e.day_index,list)});return[...groups.entries()]},[events]);
  const conflicts=useMemo(()=>{const result=new Set<string>();for(const[,dayEvents]of groupedEvents)for(let i=0;i<dayEvents.length;i++){const a=dayEvents[i];if(!a.start_time||!a.end_time)continue;for(let j=i+1;j<dayEvents.length;j++){const b=dayEvents[j];if(!b.start_time||!b.end_time)continue;if(a.start_time.slice(0,5)<b.end_time.slice(0,5)&&b.start_time.slice(0,5)<a.end_time.slice(0,5)){result.add(a.id);result.add(b.id)}}}return result},[groupedEvents]);
@@ -25,6 +25,24 @@ export default function TripDetailClient({tripId,initialLocations,initialEvents=
   if(!canEdit)return;
   setOptimizingDay(day);setMessage("");
   try{const r=await fetch("/api/trips/"+tripId+"/optimize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Não foi possível otimizar.");const response=await fetch("/api/trips/"+tripId,{cache:"no-store"});const fresh=await response.json();if(response.ok){setEvents(fresh.events||[]);setLocations(fresh.locations||[]);}setMessage("Dia "+day+" reorganizado para reduzir deslocamentos.");}catch(error){setMessage(error instanceof Error?error.message:"Não foi possível otimizar o dia.");}finally{setOptimizingDay(null);}
+ }
+ async function reorderEvent(draggedId:string,targetId:string){
+  if(!canEdit||draggedId===targetId)return;
+  const dragged=events.find(e=>e.id===draggedId),target=events.find(e=>e.id===targetId);
+  if(!dragged||!target||dragged.day_index!==target.day_index)return;
+  const dayEvents=events.filter(e=>e.day_index===dragged.day_index).sort((a,b)=>a.order_index-b.order_index);
+  const from=dayEvents.findIndex(e=>e.id===draggedId),to=dayEvents.findIndex(e=>e.id===targetId);
+  if(from<0||to<0)return;
+  const reordered=[...dayEvents]; const [moved]=reordered.splice(from,1); reordered.splice(to,0,moved);
+  setEvents(current=>current.map(e=>{const nextIndex=reordered.findIndex(item=>item.id===e.id);return nextIndex<0?e:{...e,order_index:nextIndex};}));
+  setMessage("");
+  try{
+    await Promise.all(reordered.map((event,index)=>fetch("/api/trips/"+tripId+"/events?eventId="+event.id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_index:index})}).then(async r=>{if(!r.ok){const d=await r.json().catch(()=>({}));throw new Error(d.error||"Não foi possível salvar a ordem.");}})));
+  }catch(error){
+    setMessage(error instanceof Error?error.message:"Não foi possível salvar a nova ordem.");
+    const response=await fetch("/api/trips/"+tripId,{cache:"no-store"}); const fresh=await response.json().catch(()=>null);
+    if(response.ok){setEvents(fresh?.events||[]);setLocations(fresh?.locations||[]);}
+  }finally{setDraggedEvent(null);}
  }
  async function moveEvent(id:string,direction:-1|1){
   if(!canEdit)return;
@@ -67,7 +85,7 @@ export default function TripDetailClient({tripId,initialLocations,initialEvents=
               {dayEvents.map((item,index) => {
                 const route=item.location_id&&dayEvents[index+1]?.location_id ? travelInfo[item.location_id+":"+dayEvents[index+1].location_id] : null;
                 const nextId=dayEvents[index+1]?.id;
-                return <div key={item.id} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4" style={{borderLeftWidth:5,borderLeftColor:item.color}}>
+                return <div key={item.id} draggable={canEdit} onDragStart={()=>canEdit&&setDraggedEvent(item.id)} onDragOver={event=>{if(canEdit)event.preventDefault()}} onDrop={()=>{if(draggedEvent)void reorderEvent(draggedEvent,item.id)}} onDragEnd={()=>setDraggedEvent(null)} className={"rounded-2xl border border-neutral-200 bg-neutral-50 p-4 transition-opacity "+(draggedEvent===item.id?"opacity-40":"")} style={{borderLeftWidth:5,borderLeftColor:item.color}}>
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2"><p className="break-words font-bold">{item.title}</p>{conflicts.has(item.id)&&<span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-bold text-red-700">Conflito de horário</span>}</div>
