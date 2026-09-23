@@ -20,7 +20,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const poiLayers=useRef<Record<string,L.LayerGroup>>({});
   const eventLayer=useRef<L.LayerGroup|null>(null);
   const searchLayer=useRef<L.LayerGroup|null>(null);
-  const [activeLayers,setActiveLayers]=useState<Record<string,boolean>>({attractions:false,restaurants:false,transit:false});
+  const [activeLayers,setActiveLayers]=useState<Record<string,boolean>>(()=>Object.fromEntries(Object.keys(layerLabels).map(key=>[key,false])));
   const [day,setDay]=useState(0);
   const [poiMessage,setPoiMessage]=useState("");
   const [routeInfo,setRouteInfo]=useState<{distanceKm:number;durationMinutes:number}|null>(null);
@@ -104,7 +104,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       });
     });
     return()=>{group.remove();};
-  },[events,day,routeMode]);
+  },[events,day]);
 
   useEffect(()=>{
     let active=true;
