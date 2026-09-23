@@ -202,7 +202,7 @@ export default function FeedPage() {
                   </div>
                 </div>
                 {p.body&&<p className="mt-4 whitespace-pre-wrap text-neutral-700">{p.body}</p>}
-                {p.media?.length>0&&<div className="mt-4 grid gap-2 sm:grid-cols-2">{p.media.map(m=><img key={m.id} src={m.public_url} alt="" className="max-h-80 w-full rounded-2xl object-cover"/>)}</div>}
+                {p.media?.length>0&&<div className={"mt-4 grid gap-2 "+(p.media.length===1?"grid-cols-1":"grid-cols-2")}>{p.media.map((m,index)=><button key={m.id} type="button" onClick={()=>window.open(m.public_url,"_blank","noopener,noreferrer")} className={"overflow-hidden rounded-2xl bg-neutral-100 "+(p.media.length===3&&index===0?"col-span-2":"")}><img src={m.public_url} alt="" loading="lazy" decoding="async" className={"w-full object-cover "+(p.media.length===1?"max-h-[520px]":"h-56 sm:h-72")}/></button>)}</div>}
                 <div className="mt-5 flex flex-wrap gap-4 text-sm">
                   <button onClick={()=>like(p)} className="font-semibold">{p.likedByMe?"Curtido":"Curtir"} · {p.likes}</button>
                   <button onClick={()=>comment(p)} className="font-semibold">Comentar · {p.comments.length}</button>
