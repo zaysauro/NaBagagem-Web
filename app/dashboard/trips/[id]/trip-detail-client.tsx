@@ -77,11 +77,11 @@ export default function TripDetailClient({tripId,initialLocations,initialEvents=
       <div className="mt-5 space-y-6">
         {groupedEvents.map(([day,dayEvents]) =>
           <div key={day}>
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-3 flex flex-wrap items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-neutral-950 text-sm font-bold text-white">{day}</div>
               <h3 className="font-bold">Dia {day}</h3>
               <span className="text-xs text-neutral-400">{dayEvents.length} atividade{dayEvents.length===1?"":"s"}</span>
-              {(()=>{const m=dayMetrics.get(day);if(!m)return null;return <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-neutral-500 sm:ml-12"><span className="rounded-full bg-neutral-100 px-2.5 py-1">{m.distanceKm.toFixed(1)} km</span><span className="rounded-full bg-neutral-100 px-2.5 py-1">{Math.round(m.durationMinutes)} min deslocamento</span>{m.scheduledMinutes>0&&<span className="rounded-full bg-neutral-100 px-2.5 py-1">{Math.floor(m.scheduledMinutes/60)}h {m.scheduledMinutes%60}min de atividades</span>}</div>})()}
+              {(()=>{const m=dayMetrics.get(day);if(!m)return null;return <div className="basis-full flex flex-wrap gap-2 text-[11px] text-neutral-500 sm:ml-12"><span className="rounded-full bg-neutral-100 px-2.5 py-1">{m.distanceKm.toFixed(1)} km</span><span className="rounded-full bg-neutral-100 px-2.5 py-1">{Math.round(m.durationMinutes)} min deslocamento</span>{m.scheduledMinutes>0&&<span className="rounded-full bg-neutral-100 px-2.5 py-1">{Math.floor(m.scheduledMinutes/60)}h {m.scheduledMinutes%60}min de atividades</span>}</div>})()}
               {canEdit&&<button type="button" onClick={()=>void optimizeDay(day)} disabled={optimizingDay===day} className="ml-auto min-h-8 rounded-lg bg-neutral-950 px-2.5 text-xs font-semibold text-white disabled:opacity-50">{optimizingDay===day?"Otimizando...":"Otimizar"}</button>}
             </div>
             <div className="space-y-3">
