@@ -10,7 +10,8 @@ type EventPoint={id:string;title:string;day_index:number;color:string;latitude:n
 type POI={id:string;name:string;latitude:number;longitude:number;category:string};
 type SearchPlace={latitude:number;longitude:number;display_name:string;name:string;city:string;country:string;type:string};
 
-const layerLabels={attractions:"Atrações",restaurants:"Restaurantes",transit:"Transporte"};
+const layerLabels={attractions:"Atrações",restaurants:"Restaurantes",cafes:"Cafés",hotels:"Hotéis",shopping:"Compras",nature:"Natureza",beaches:"Praias",photospots:"Fotos",transit:"Transporte"} as const;
+const routeLabels={driving:"Carro",walking:"A pé",cycling:"Bicicleta"} as const;
 
 export default function TripMap({locations,events=[],tripId,canEdit=false,startDate=null,endDate=null}:{locations:Point[];events?:EventPoint[];tripId:string;canEdit?:boolean;startDate?:string|null;endDate?:string|null}){
   const router=useRouter();
@@ -31,6 +32,9 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   const [selectedSearch,setSelectedSearch]=useState<SearchPlace|null>(null);
   const [selectedAddDay,setSelectedAddDay]=useState(1);
   const [dailyRoutes,setDailyRoutes]=useState<Record<number,{distanceKm:number;durationMinutes:number}>>({});
+  const [routeMode,setRouteMode]=useState<keyof typeof routeLabels>("driving");
+  const [optimizing,setOptimizing]=useState(false);
+  const [mapFullscreen,setMapFullscreen]=useState(false);
 
   const days=useMemo(()=>{ const set=new Set(events.map(e=>e.day_index).filter(Number.isFinite)); if(startDate&&endDate){ const a=new Date(startDate+"T12:00:00"); const b=new Date(endDate+"T12:00:00"); const total=Math.max(1,Math.floor((b.getTime()-a.getTime())/86400000)+1); for(let i=1;i<=Math.min(total,60);i++)set.add(i); } if(!set.size)set.add(1); return [...set].sort((a,b)=>a-b); },[events,startDate,endDate]);
   useEffect(()=>{ if(!days.includes(selectedAddDay)) setSelectedAddDay(days[0]||1); },[days,selectedAddDay]);
@@ -47,7 +51,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       map.fitBounds(bounds.pad(0.2),{maxZoom:13});
       points.forEach((p,index)=>L.marker([p.latitude,p.longitude]).addTo(map).bindPopup("<strong>"+escapeHtml(String(index+1)+". "+p.name)+"</strong><br/>"+escapeHtml([p.city,p.country].filter(Boolean).join(", "))));
       if(points.length>1){
-        fetch("/api/route?points="+encodeURIComponent(JSON.stringify(points.map((p)=>({latitude:p.latitude,longitude:p.longitude})))),{cache:"no-store"})
+        fetch("/api/route?mode="+routeMode+"&points="+encodeURIComponent(JSON.stringify(points.map((p)=>({latitude:p.latitude,longitude:p.longitude})))),{cache:"no-store"})
           .then(async(response)=>{if(!response.ok)throw new Error("rota");return response.json();})
           .then((data)=>{if(Array.isArray(data.geometry)){L.polyline(data.geometry as [number,number][],{weight:5,opacity:.8}).addTo(route);setRouteInfo({distanceKm:Number(data.distanceKm||0),durationMinutes:Number(data.durationMinutes||0)});}})
           .catch(()=>{L.polyline(points.map(p=>[p.latitude,p.longitude] as [number,number]),{weight:4,dashArray:"8 8",opacity:.65}).addTo(route);setRouteInfo(null);});
@@ -55,7 +59,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     }else map.setView([20,0],2);
     const timer=window.setTimeout(()=>map.invalidateSize(),100);
     return()=>{window.clearTimeout(timer);map.remove();mapRef.current=null;};
-  },[locations]);
+  },[locations,routeMode]);
 
   useEffect(()=>{
     const map=mapRef.current;if(!map)return;
@@ -100,7 +104,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       });
     });
     return()=>{group.remove();};
-  },[events,day]);
+  },[events,day,routeMode]);
 
   useEffect(()=>{
     let active=true;
@@ -108,7 +112,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       const grouped=new Map<number,Array<{latitude:number;longitude:number}>>();
       for(const event of events){ if(day!==0&&event.day_index!==day) continue; if(event.latitude==null||event.longitude==null) continue; const list=grouped.get(event.day_index)||[]; list.push({latitude:event.latitude,longitude:event.longitude}); grouped.set(event.day_index,list); }
       const next:Record<number,{distanceKm:number;durationMinutes:number}>={};
-      await Promise.all([...grouped.entries()].map(async([dayIndex,points])=>{ if(points.length<2)return; try{ const response=await fetch("/api/route?points="+encodeURIComponent(JSON.stringify(points)),{cache:"no-store"}); if(!response.ok)return; const data=await response.json(); next[dayIndex]={distanceKm:Number(data.distanceKm||0),durationMinutes:Number(data.durationMinutes||0)}; }catch{} }));
+      await Promise.all([...grouped.entries()].map(async([dayIndex,points])=>{ if(points.length<2)return; try{ const response=await fetch("/api/route?mode="+routeMode+"&points="+encodeURIComponent(JSON.stringify(points)),{cache:"no-store"}); if(!response.ok)return; const data=await response.json(); next[dayIndex]={distanceKm:Number(data.distanceKm||0),durationMinutes:Number(data.durationMinutes||0)}; }catch{} }));
       if(active)setDailyRoutes(next);
     }
     void loadDailyRoutes();
@@ -161,9 +165,28 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
   }
 
   function toggle(category:string){setActiveLayers(current=>({...current,[category]:!current[category]}));}
+  async function optimizeDay(dayIndex:number){
+    if(!canEdit)return;
+    setOptimizing(true);setSearchError("");
+    try{
+      const response=await fetch("/api/trips/"+tripId+"/optimize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({day:dayIndex})});
+      const data=await response.json(); if(!response.ok)throw new Error(data.error||"Não foi possível otimizar.");
+      router.refresh();
+    }catch(error){setSearchError(error instanceof Error?error.message:"Não foi possível otimizar o dia.");}
+    finally{setOptimizing(false);}
+  }
+  async function toggleFullscreen(){
+    const element=ref.current?.parentElement;
+    if(!element)return;
+    try{
+      if(document.fullscreenElement) await document.exitFullscreen();
+      else await element.requestFullscreen();
+      setMapFullscreen(Boolean(document.fullscreenElement));
+    }catch{}
+  }
   const visibleEvents=events.filter(e=>day===0||e.day_index===day);
 
-  return <div className="relative">
+  return <div className={"relative "+(mapFullscreen?"h-screen bg-white p-2":"")}>
     <div className="absolute left-3 right-3 top-3 z-[1000] sm:right-auto sm:w-[min(420px,calc(100%-24px))]">
       <form onSubmit={(event)=>{event.preventDefault();void searchPlaces();}} className="flex gap-2 rounded-2xl border bg-white p-2 shadow-lg">
         <input value={search} onChange={event=>setSearch(event.target.value)} placeholder="Pesquisar cidade, lugar, atração..." className="min-h-10 min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm outline-none" />
@@ -179,7 +202,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       </div>}
     </div>
 
-    <div ref={ref} className="h-[400px] w-full overflow-hidden rounded-2xl sm:h-[460px]"/>
+    <div ref={ref} className={"h-[400px] w-full overflow-hidden rounded-2xl sm:h-[460px] "+(mapFullscreen?"h-[calc(100vh-16px)] sm:h-[calc(100vh-16px)]":"")}/>
 
     <div className="absolute left-3 right-3 top-[76px] z-[1000] flex flex-wrap justify-end gap-2 sm:left-auto sm:right-3 sm:top-3">
       {Object.entries(layerLabels).map(([key,label])=><button key={key} type="button" onClick={()=>toggle(key)} className={"min-h-9 rounded-full border bg-white px-3 py-1.5 text-xs font-semibold shadow "+(activeLayers[key]?"bg-neutral-950 text-white":"text-neutral-700")}>{label}</button>)}
@@ -189,7 +212,7 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
 
     {poiMessage&&<div className="absolute left-3 right-3 top-[122px] z-[1000] rounded-xl bg-white px-3 py-2 text-xs shadow sm:left-auto sm:right-3 sm:top-14">{poiMessage}</div>}
     {routeInfo&&<div className="absolute bottom-[58px] left-3 right-3 z-[1000] rounded-xl border bg-white px-3 py-2 text-xs shadow sm:bottom-3 sm:left-auto sm:right-3 sm:w-auto"><span className="font-semibold">Rota terrestre</span> · {routeInfo.distanceKm.toFixed(1)} km · {Math.round(routeInfo.durationMinutes)} min</div>}
-    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex max-w-full rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span>&nbsp;·&nbsp;{route.distanceKm.toFixed(1)} km&nbsp;·&nbsp;{Math.round(route.durationMinutes)} min de carro</div>)}
+    {Object.entries(dailyRoutes).filter(([d])=>day===0||Number(d)===day).map(([d,route])=><div key={d} className="mt-3 inline-flex max-w-full flex-wrap items-center gap-2 rounded-xl border bg-white px-3 py-2 text-xs shadow-sm"><span className="font-semibold">Dia {d}</span><span>· {route.distanceKm.toFixed(1)} km · {Math.round(route.durationMinutes)} min de {routeLabels[routeMode].toLowerCase()}</span>{canEdit&&<button type="button" onClick={()=>void optimizeDay(Number(d))} disabled={optimizing} className="rounded-lg bg-neutral-950 px-2 py-1 font-semibold text-white disabled:opacity-50">{optimizing?"Otimizando...":"Otimizar dia"}</button>}</div>)}
     {visibleEvents.length>0&&<div className="mt-3 flex flex-wrap gap-2">{visibleEvents.map(e=><span key={e.id} className="max-w-full break-words rounded-full border bg-white px-3 py-1 text-xs font-semibold" style={{borderColor:e.color}}>{e.title}</span>)}</div>}
   </div>;
 }
