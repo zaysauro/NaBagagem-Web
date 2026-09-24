@@ -15,7 +15,7 @@ type Post = {
   id:string; user_id:string; title:string; body:string|null; created_at:string;
   isMine:boolean;
   trip_id:string|null; visibility:string; likedByMe:boolean; likes:number;
-  comments:Comment[]; profiles:any; media:Media[]; bookmarkedByMe:boolean;
+  comments:Comment[]; profiles:any; media:Media[]; bookmarkedByMe:boolean; feedSource:"mine"|"friends"|"following"|"discover";
 };
 
 const visibilityLabels:Record<string,string>={public:"Público",followers:"Seguidores",private:"Somente eu"};
