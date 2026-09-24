@@ -6,13 +6,22 @@ export async function GET(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
-  const query = new URL(request.url).searchParams.get("q")?.trim();
-  if (!query) return NextResponse.json({ error: "Informe um local." }, { status: 400 });
+  const params = new URL(request.url).searchParams;
+  const query = params.get("q")?.trim();
+  const latitude = Number(params.get("lat"));
+  const longitude = Number(params.get("lng"));
+  const reverse = Number.isFinite(latitude) && Number.isFinite(longitude);
+  if (!reverse && !query) return NextResponse.json({ error: "Informe um local." }, { status: 400 });
 
-  const url = new URL("https://nominatim.openstreetmap.org/search");
-  url.searchParams.set("q", query);
+  const url = new URL("https://nominatim.openstreetmap.org/" + (reverse ? "reverse" : "search"));
+  if (reverse) {
+    url.searchParams.set("lat", String(latitude));
+    url.searchParams.set("lon", String(longitude));
+  } else {
+    url.searchParams.set("q", query!);
+    url.searchParams.set("limit", "6");
+  }
   url.searchParams.set("format", "jsonv2");
-  url.searchParams.set("limit", "6");
   url.searchParams.set("addressdetails", "1");
   url.searchParams.set("accept-language", "pt-BR");
 
@@ -22,7 +31,8 @@ export async function GET(request: Request) {
   });
   if (!response.ok) return NextResponse.json({ error: "Serviço de mapas indisponível." }, { status: 502 });
 
-  const results = await response.json();
+  const payload = await response.json();
+  const results = reverse ? [payload] : payload;
   const places = (results || [])
     .map((item: any) => ({
       latitude: Number(item.lat),
