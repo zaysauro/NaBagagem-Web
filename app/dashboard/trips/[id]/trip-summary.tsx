@@ -14,5 +14,144 @@ export default function TripSummary({tripId,initialEvents=[]}:{tripId:string;ini
  const budgetSpent=budget.currency==="BRL"?expenseBRL:expenses.filter(e=>e.currency===budget.currency).reduce((s,e)=>s+Number(e.amount||0),0);
  const budgetPercent=budget.amount&&budget.amount>0?Math.round(budgetSpent/budget.amount*100):0;
  const stats=[["Atividades",events.length],["Concluídas",completed],["Reservas",reservations],["Checklist",checklist+"%"],["Gastos BRL",expenseBRL.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})],["Itens",items.length]];
- return <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm"><div><p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Visão geral</p><h2 className="mt-1 text-xl font-bold text-neutral-950">Resumo da viagem</h2><p className="mt-1 text-sm text-neutral-500">Uma visão rápida do andamento do planejamento.</p></div><div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">{stats.map(([label,value])=><div key={String(label)} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 transition-colors"><p className="text-xs text-neutral-500">{label}</p><strong className="mt-1 block text-lg text-neutral-950">{value}</strong></div>)}</div><div className="mt-6"><div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4"><div className="flex flex-wrap items-center justify-between gap-2"><div><p className="text-sm font-bold text-neutral-900">Orçamento</p><p className="mt-1 text-xs text-neutral-500">{budget.amount?`Gasto de ${budgetSpent.toLocaleString("pt-BR",{style:"currency",currency:budget.currency})} de ${budget.amount.toLocaleString("pt-BR",{style:"currency",currency:budget.currency})}`:"Nenhum orçamento definido."}</p></div>{budget.amount&&<span className="text-sm font-bold text-neutral-900">{budgetPercent}%</span>}</div>{budget.amount&&<div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200"><div className="h-full rounded-full bg-neutral-950" style={{width:Math.min(100,budgetPercent)+"%"}}/></div>}{budget.amount&&budgetSpent>budget.amount&&<p className="mt-2 text-xs font-semibold text-red-600">Orçamento ultrapassado em {(budgetSpent-budget.amount).toLocaleString("pt-BR",{style:"currency",currency:budget.currency})}.</p>}</div></div><div className="mt-6 grid gap-4 md:grid-cols-2">{[["Progresso do itinerário",activityProgress],["Checklist",checklist]].map(([label,value])=><div key={String(label)} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4"><div className="flex justify-between text-xs font-semibold text-neutral-600"><span>{label}</span><span>{value}%</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200"><div className="h-full rounded-full bg-neutral-950 transition-all" style={{width:value+"%"}}/></div></div>)}</div><div className="mt-6"><p className="text-sm font-bold text-neutral-900">Gastos por categoria</p>{expenseBreakdown.length?<div className="mt-3 space-y-2">{expenseBreakdown.map(([category,amount])=><div key={category} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3"><div className="flex items-center justify-between text-xs"><span className="font-semibold text-neutral-700">{category}</span><span className="font-bold text-neutral-900">{amount.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-200"><div className="h-full rounded-full bg-neutral-900" style={{width:Math.max(4,Math.round(amount/Math.max(1,expenseBRL)*100))+"%"}}/></div></div>)}</div>:<p className="mt-2 text-sm text-neutral-500">Nenhum gasto em BRL registrado ainda.</p>}</div><div className="mt-6"><p className="text-sm font-bold text-neutral-900">Gastos por dia</p>{expenseDays.length?<div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{expenseDays.map(([date,amount])=><div key={date} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3"><div className="flex items-center justify-between text-xs"><span className="font-semibold text-neutral-700">{new Date(date+"T12:00:00").toLocaleDateString("pt-BR")}</span><span className="font-bold text-neutral-900">{amount.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</span></div></div>)}</div>:<p className="mt-2 text-sm text-neutral-500">Nenhuma despesa com data registrada.</p>}</div><div className="mt-6"><p className="text-sm font-bold text-neutral-900">Ritmo por dia</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{dayStats.map(([day,data])=><div key={day} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3"><div className="flex items-center justify-between"><span className="text-sm font-semibold">Dia {day}</span><span className="text-xs text-neutral-500">{data.count} atividade{data.count===1?"":"s"}</span></div><div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-500"><span>{data.completed} concluída{data.completed===1?"":"s"}</span><span>·</span><span>{data.reservations} reserva{data.reservations===1?"":"s"}</span></div>{data.minutes>0&&<><div className="mt-3 flex items-center justify-between text-[11px] text-neutral-500"><span>Carga agendada</span><span>{Math.floor(data.minutes/60)}h {data.minutes%60}min</span></div><div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-200"><div className="h-full rounded-full bg-neutral-900" style={{width:Math.max(4,Math.round(data.minutes/maxDayMinutes*100))+"%"}}/></div></>}</div></div>)}</div></div></section>;
+ return (
+  <section className="mt-7 rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div>
+      <p className="text-xs font-bold uppercase tracking-widest text-neutral-400">Visão geral</p>
+      <h2 className="mt-1 text-xl font-bold text-neutral-950">Resumo da viagem</h2>
+      <p className="mt-1 text-sm text-neutral-500">Uma visão rápida do andamento do planejamento.</p>
+    </div>
+
+    <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-6">
+      {stats.map(([label, value]) => (
+        <div key={String(label)} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4 transition-colors">
+          <p className="text-xs text-neutral-500">{label}</p>
+          <strong className="mt-1 block text-lg text-neutral-950">{value}</strong>
+        </div>
+      ))}
+    </div>
+
+    <div className="mt-6">
+      <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-bold text-neutral-900">Orçamento</p>
+            <p className="mt-1 text-xs text-neutral-500">
+              {budget.amount
+                ? `Gasto de ${budgetSpent.toLocaleString("pt-BR", { style: "currency", currency: budget.currency })} de ${budget.amount.toLocaleString("pt-BR", { style: "currency", currency: budget.currency })}`
+                : "Nenhum orçamento definido."}
+            </p>
+          </div>
+          {budget.amount && <span className="text-sm font-bold text-neutral-900">{budgetPercent}%</span>}
+        </div>
+        {budget.amount && (
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200">
+            <div className="h-full rounded-full bg-neutral-950" style={{ width: Math.min(100, budgetPercent) + "%" }} />
+          </div>
+        )}
+        {budget.amount && budgetSpent > budget.amount && (
+          <p className="mt-2 text-xs font-semibold text-red-600">
+            Orçamento ultrapassado em {(budgetSpent - budget.amount).toLocaleString("pt-BR", { style: "currency", currency: budget.currency })}.
+          </p>
+        )}
+      </div>
+    </div>
+
+    <div className="mt-6 grid gap-4 md:grid-cols-2">
+      {[
+        ["Progresso do itinerário", activityProgress],
+        ["Checklist", checklist],
+      ].map(([label, value]) => (
+        <div key={String(label)} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-4">
+          <div className="flex justify-between text-xs font-semibold text-neutral-600">
+            <span>{label}</span>
+            <span>{value}%</span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-neutral-200">
+            <div className="h-full rounded-full bg-neutral-950 transition-all" style={{ width: String(value) + "%" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div className="mt-6">
+      <p className="text-sm font-bold text-neutral-900">Gastos por categoria</p>
+      {expenseBreakdown.length ? (
+        <div className="mt-3 space-y-2">
+          {expenseBreakdown.map(([category, amount]) => (
+            <div key={category} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-neutral-700">{category}</span>
+                <span className="font-bold text-neutral-900">
+                  {amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+                <div
+                  className="h-full rounded-full bg-neutral-900"
+                  style={{ width: Math.max(4, Math.round((amount / Math.max(1, expenseBRL)) * 100)) + "%" }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-neutral-500">Nenhum gasto em BRL registrado ainda.</p>
+      )}
+    </div>
+
+    <div className="mt-6">
+      <p className="text-sm font-bold text-neutral-900">Gastos por dia</p>
+      {expenseDays.length ? (
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {expenseDays.map(([date, amount]) => (
+            <div key={date} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-neutral-700">{new Date(date + "T12:00:00").toLocaleDateString("pt-BR")}</span>
+                <span className="font-bold text-neutral-900">
+                  {amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-neutral-500">Nenhuma despesa com data registrada.</p>
+      )}
+    </div>
+
+    <div className="mt-6">
+      <p className="text-sm font-bold text-neutral-900">Ritmo por dia</p>
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {dayStats.map(([day, data]) => (
+          <div key={day} className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold">Dia {day}</span>
+              <span className="text-xs text-neutral-500">{data.count} atividade{data.count === 1 ? "" : "s"}</span>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-500">
+              <span>{data.completed} concluída{data.completed === 1 ? "" : "s"}</span>
+              <span>·</span>
+              <span>{data.reservations} reserva{data.reservations === 1 ? "" : "s"}</span>
+            </div>
+            {data.minutes > 0 && (
+              <>
+                <div className="mt-3 flex items-center justify-between text-[11px] text-neutral-500">
+                  <span>Carga agendada</span>
+                  <span>{Math.floor(data.minutes / 60)}h {data.minutes % 60}min</span>
+                </div>
+                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+                  <div
+                    className="h-full rounded-full bg-neutral-900"
+                    style={{ width: Math.max(4, Math.round((data.minutes / maxDayMinutes) * 100)) + "%" }}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+ );
 }
