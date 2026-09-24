@@ -94,6 +94,10 @@ export default function FeedPage() {
 
   async function publish(e:React.FormEvent){
     e.preventDefault(); setMessage("");
+    if(!body.trim() && pendingImages.length===0){
+      setMessage("Escreva alguma coisa ou escolha pelo menos uma foto.");
+      return;
+    }
     const r=await fetch("/api/feed",{method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({title,body,visibility,trip_id:tripId||null})});
     const d=await r.json();
@@ -180,14 +184,14 @@ export default function FeedPage() {
         <Link href="/dashboard/perfil" className="text-sm font-semibold">Meu perfil</Link>
       </div>
       <h1 className="mt-5 text-3xl font-bold">Feed</h1>
-      <p className="mt-1 text-neutral-500">Posts dos seus amigos primeiro, seguidos de descobertas de viajantes e novos roteiros pelo site.</p>
+      <p className="mt-1 text-neutral-500">Compartilhe textos, fotos, dicas e roteiros. Seus amigos aparecem primeiro e o restante da comunidade ajuda você a descobrir novos viajantes.</p>
 
       <form onSubmit={publish} className="mt-6 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
-        <input required value={title} onChange={e=>setTitle(e.target.value)} placeholder="Título da publicação" className="w-full rounded-xl border p-3"/>
-        <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Conte sobre sua viagem..." rows={3} className="mt-3 w-full rounded-xl border p-3"/>
+        <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Título (opcional)" className="w-full rounded-xl border p-3"/>
+        <textarea value={body} onChange={e=>setBody(e.target.value)} placeholder="Compartilhe uma história, dica, pensamento ou momento da sua viagem..." rows={4} className="mt-3 w-full rounded-xl border p-3"/>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <select value={tripId} onChange={e=>setTripId(e.target.value)} className="rounded-xl border p-3">
-            <option value="">Sem viagem vinculada</option>
+            <option value="">Sem roteiro vinculado — postagem livre</option>
             {trips.map(t=><option key={t.id} value={t.id}>{t.title}</option>)}
           </select>
           <select value={visibility} onChange={e=>setVisibility(e.target.value)} className="rounded-xl border p-3">
@@ -196,7 +200,7 @@ export default function FeedPage() {
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onChange={async e=>{const files=Array.from(e.target.files||[]).slice(0,5);const compressed=await Promise.all(files.map(compressImage));setPendingImages(compressed);}} className="block w-full rounded-xl border p-2 text-sm"/>
         </div>
         {pendingImages.length>0&&<div className="mt-2"><p className="text-xs text-neutral-500">{pendingImages.length} foto{pendingImages.length===1?"":"s"} selecionada{pendingImages.length===1?"":"s"} · serão comprimidas antes do envio</p><div className="mt-2 grid grid-cols-5 gap-2">{pendingImages.map((image,index)=><div key={index} className="aspect-square overflow-hidden rounded-xl bg-neutral-100"><img src={URL.createObjectURL(image)} alt="" className="h-full w-full object-cover"/></div>)}</div></div>}
-        <button className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar</button>
+        <button className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar no feed</button>
       </form>
 
       {message&&<p className="mt-3 rounded-xl bg-white p-3 text-sm text-neutral-600">{message}</p>}
