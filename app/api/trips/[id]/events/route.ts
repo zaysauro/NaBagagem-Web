@@ -34,7 +34,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       .order("order_index", { ascending: false })
       .limit(1)
       .maybeSingle();
-    orderIndex = Number.isInteger(lastEvent?.order_index) ? Number(lastEvent.order_index) + 1 : 0;
+    orderIndex = lastEvent && Number.isInteger(lastEvent.order_index) ? Number(lastEvent.order_index) + 1 : 0;
   }
   const { data, error } = await supabase.from("trip_events").insert({
     trip_id: id, location_id: body.location_id || null, title,
