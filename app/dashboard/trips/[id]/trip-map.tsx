@@ -51,9 +51,10 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
     const handleMapClick=(event:L.LeafletMouseEvent)=>{
       if(!canEdit)return;
       const lat=Number(event.latlng.lat.toFixed(6)),lng=Number(event.latlng.lng.toFixed(6));
-      setSelectedSearch({latitude:lat,longitude:lng,display_name:`${lat}, ${lng}`,name:"Novo ponto no mapa",city:"",country:"",type:"map-point"});
+      setSelectedSearch({latitude:lat,longitude:lng,display_name:String(lat)+", "+String(lng),name:"Novo ponto no mapa",city:"",country:"",type:"map-point"});
       setSearchError("");
       setSearchLayerFromCoordinate(map,lat,lng);
+      void (async()=>{try{const response=await fetch("/api/geocode?lat="+lat+"&lng="+lng,{cache:"no-store"});const data=await response.json();if(response.ok&&data.places?.[0]){const place=data.places[0] as SearchPlace;setSelectedSearch(place);setSearchLayerFromCoordinate(map,lat,lng,place.name,place.display_name);}}catch{}})();
     };
     map.on("click",handleMapClick);
     if(points.length){
@@ -215,11 +216,11 @@ export default function TripMap({locations,events=[],tripId,canEdit=false,startD
       {enableHighAccuracy:true,maximumAge:10000,timeout:15000}
     );
   }
-  function setSearchLayerFromCoordinate(map:L.Map,lat:number,lng:number){
+  function setSearchLayerFromCoordinate(map:L.Map,lat:number,lng:number,name="Novo ponto no mapa",displayName=""){
     if(searchLayer.current)searchLayer.current.remove();
     const group=L.layerGroup().addTo(map);searchLayer.current=group;
     const marker=L.marker([lat,lng]).addTo(group);
-    marker.bindPopup("<strong>Novo ponto no mapa</strong><br/>"+lat+", "+lng).openPopup();
+    marker.bindPopup("<strong>"+escapeHtml(name)+"</strong><br/>"+escapeHtml(displayName||String(lat)+", "+String(lng))).openPopup();
     map.flyTo([lat,lng],Math.max(map.getZoom(),15),{duration:.5});
   }
   async function toggleFullscreen(){
