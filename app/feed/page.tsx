@@ -180,7 +180,7 @@ export default function FeedPage() {
         <Link href="/dashboard/perfil" className="text-sm font-semibold">Meu perfil</Link>
       </div>
       <h1 className="mt-5 text-3xl font-bold">Feed</h1>
-      <p className="mt-1 text-neutral-500">Compartilhe viagens, siga viajantes e descubra roteiros.</p>
+      <p className="mt-1 text-neutral-500">Posts dos seus amigos primeiro, seguidos de descobertas de viajantes e novos roteiros pelo site.</p>
 
       <form onSubmit={publish} className="mt-6 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
         <input required value={title} onChange={e=>setTitle(e.target.value)} placeholder="Título da publicação" className="w-full rounded-xl border p-3"/>
@@ -218,7 +218,7 @@ export default function FeedPage() {
                 <div className="flex justify-between gap-4">
                   <div>
                     <h2 className="text-lg font-bold">{p.title}</h2>
-                    <p className="text-xs text-neutral-400">{p.profiles?.username?<Link href={"/perfil/"+p.profiles.username} className="font-semibold hover:underline">{p.profiles.display_name||"Viajante"}</Link>:p.profiles?.display_name||"Viajante"} · {new Date(p.created_at).toLocaleString("pt-BR")} · {visibilityLabels[p.visibility]||p.visibility}</p>
+                    <p className="text-xs text-neutral-400">{p.profiles?.username?<Link href={"/perfil/"+p.profiles.username} className="font-semibold hover:underline">{p.profiles.display_name||"Viajante"}</Link>:p.profiles?.display_name||"Viajante"} · {new Date(p.created_at).toLocaleString("pt-BR")} · {visibilityLabels[p.visibility]||p.visibility}</p><div className="mt-2 flex flex-wrap gap-2">{p.feedSource==="friends"&&<span className="rounded-full bg-neutral-900 px-2.5 py-1 text-[11px] font-bold text-white">Amigo</span>}{p.feedSource==="discover"&&<span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold text-neutral-600">Descoberta</span>}{p.feedSource==="following"&&<span className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-bold text-neutral-600">Seguindo</span>}</div>
                   </div>
                   <div className="flex shrink-0 gap-2 text-xs">
                     {p.isMine&&<button onClick={()=>startEdit(p)} className="font-semibold">Editar</button>}
