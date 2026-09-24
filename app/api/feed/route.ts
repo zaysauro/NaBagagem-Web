@@ -57,12 +57,14 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   const body = await request.json();
-  const title = String(body.title || "").trim();
-  if (!title) return NextResponse.json({ error: "Informe um título." }, { status: 400 });
+  const requestedTitle = String(body.title || "").trim();
+  const postBody = String(body.body || "").trim();
+  const title = requestedTitle || postBody.split(/\\r?\\n/).find((line: string) => line.trim())?.trim().slice(0, 80) || "Nova publicação";
+  if (!postBody && !requestedTitle) return NextResponse.json({ error: "Escreva algo para publicar." }, { status: 400 });
   const tripId = body.trip_id || null;
   if (tripId) { const { data: trip } = await supabase.from("trips").select("id").eq("id", tripId).eq("user_id", user.id).maybeSingle(); if (!trip) return NextResponse.json({ error: "Viagem inválida." }, { status: 400 }); }
   const visibility = ["public", "followers", "private"].includes(body.visibility) ? body.visibility : "public";
-  const { data, error } = await supabase.from("feed_posts").insert({ user_id: user.id, trip_id: tripId, title, body: String(body.body || "").trim() || null, visibility }).select().single();
+  const { data, error } = await supabase.from("feed_posts").insert({ user_id: user.id, trip_id: tripId, title, body: postBody || null, visibility }).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ post: data }, { status: 201 });
 }
