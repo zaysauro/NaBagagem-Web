@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const page = Math.max(0, Number(url.searchParams.get("page") || "0"));
   const pageSize = Math.min(30, Math.max(5, Number(url.searchParams.get("pageSize") || "20")));
+  const sourceFilter = String(url.searchParams.get("source") || "all");
   const from = page * pageSize;
   const { data: followingRows, error: followingError } = await supabase.from("user_follows").select("following_id").eq("follower_id", user.id);
   if (followingError) return NextResponse.json({ error: followingError.message }, { status: 400 });
@@ -48,8 +49,9 @@ export async function GET(request: Request) {
     const postComments = commentsByPost.get(p.id) || [];
     return { ...p, profiles: profiles.get(p.user_id) || null, isMine, feedSource: source, feedRank: rank, likes: (likesByPost.get(p.id) || []).length, likedByMe: (likesByPost.get(p.id) || []).some((x: any) => x.user_id === user.id), comments: postComments.filter((x: any) => x.approved || x.user_id === user.id || p.user_id === user.id).map((x: any) => ({ ...x, profiles: profiles.get(x.user_id) || null })), bookmarkedByMe: bookmarks.has(p.id), media: mediaByPost.get(p.id) || [] };
   }).sort((a: any, b: any) => b.feedRank - a.feedRank || String(b.created_at).localeCompare(String(a.created_at)));
-  const paged = normalized.slice(from, from + pageSize);
-  return NextResponse.json({ posts: paged, page, pageSize, hasMore: normalized.length > from + pageSize || (posts || []).length === candidateSize, sources: { friends: normalized.filter((p: any) => p.feedSource === "friends").length, discover: normalized.filter((p: any) => p.feedSource === "discover").length } });
+  const filtered = sourceFilter === "all" ? normalized : normalized.filter((p: any) => p.feedSource === sourceFilter || (sourceFilter === "friends" && p.feedSource === "mine"));
+  const paged = filtered.slice(from, from + pageSize);
+  return NextResponse.json({ posts: paged, page, pageSize, hasMore: filtered.length > from + pageSize || (posts || []).length === candidateSize, source: sourceFilter, sources: { friends: normalized.filter((p: any) => p.feedSource === "friends").length, following: normalized.filter((p: any) => p.feedSource === "following").length, discover: normalized.filter((p: any) => p.feedSource === "discover").length } });
 }
 
 export async function POST(request: Request) {
