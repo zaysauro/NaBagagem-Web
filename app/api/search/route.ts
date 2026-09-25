@@ -88,22 +88,36 @@ export async function GET(request: Request) {
 
   // Feed e destinos são complementares: se uma tabela social ainda não estiver
   // disponível, a busca de pessoas continua funcionando.
-  const { data: posts } = await supabase
+  const { data: rawPosts } = await supabase
     .from("feed_posts")
-    .select("id,user_id,trip_id,title,body,visibility,created_at,profiles(id,display_name,username,avatar_url),feed_post_media(id,public_url)")
+    .select("id,user_id,trip_id,title,body,visibility,created_at")
     .or("title.ilike." + pattern + ",body.ilike." + pattern)
     .order("created_at", { ascending: false })
     .limit(30);
 
-  const { data: locations } = await supabase
+  const postUserIds = [...new Set((rawPosts || []).map((p: any) => p.user_id))];
+  const { data: postProfiles } = postUserIds.length
+    ? await supabase.from("profiles").select("id,display_name,username,avatar_url").in("id", postUserIds)
+    : { data: [] };
+  const profileMap = new Map((postProfiles || []).map((p: any) => [p.id, p]));
+  const posts = (rawPosts || []).map((p: any) => ({ ...p, profiles: profileMap.get(p.user_id) || null }));
+
+  const { data: rawLocations } = await supabase
     .from("trip_locations")
-    .select("id,trip_id,name,city,country,latitude,longitude,trips!inner(id,title,user_id)")
+    .select("id,trip_id,name,city,country,latitude,longitude")
     .or("name.ilike." + pattern + ",city.ilike." + pattern + ",country.ilike." + pattern)
     .limit(30);
 
+  const tripIds = [...new Set((rawLocations || []).map((l: any) => l.trip_id).filter(Boolean))];
+  const { data: locationTrips } = tripIds.length
+    ? await supabase.from("trips").select("id,title,user_id").in("id", tripIds)
+    : { data: [] };
+  const tripMap = new Map((locationTrips || []).map((t: any) => [t.id, t]));
+  const destinations = (rawLocations || []).map((l: any) => ({ ...l, trips: tripMap.get(l.trip_id) || null }));
+
   return NextResponse.json({
     users: usersWithFollowState,
-    posts: posts || [],
-    destinations: locations || [],
+    posts,
+    destinations,
   });
 }
