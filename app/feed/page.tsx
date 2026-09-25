@@ -57,6 +57,7 @@ export default function FeedPage() {
   const [hasMore,setHasMore]=useState(false);
   const [message,setMessage]=useState("");
   const [pendingImages,setPendingImages]=useState<File[]>([]);
+  const [source,setSource]=useState<"all"|"friends"|"following"|"discover">("all");
   const [editing,setEditing]=useState<string|null>(null);
   const [editTitle,setEditTitle]=useState("");
   const [editBody,setEditBody]=useState("");
@@ -66,7 +67,7 @@ export default function FeedPage() {
   async function load(reset = true){
     const targetPage = reset ? 0 : page + 1;
     if (!reset) setLoadingMore(true);
-    const r=await fetch("/api/feed?page="+targetPage+"&pageSize=20",{cache:"no-store"});
+    const r=await fetch("/api/feed?page="+targetPage+"&pageSize=20&source="+source,{cache:"no-store"});
     const d=await r.json();
     if(r.ok){
       setPosts(current => reset ? (d.posts||[]) : [...current, ...(d.posts||[])]);
@@ -90,7 +91,7 @@ export default function FeedPage() {
       .on("postgres_changes",{event:"*",schema:"public",table:"feed_comments"},()=>load(true))
       .subscribe();
     return()=>{supabase.removeChannel(channel);};
-  },[]);
+  },[source]);
 
   async function publish(e:React.FormEvent){
     e.preventDefault(); setMessage("");
@@ -184,6 +185,20 @@ export default function FeedPage() {
         <Link href="/dashboard/perfil" className="text-sm font-semibold">Meu perfil</Link>
       </div>
       <h1 className="mt-5 text-3xl font-bold">Feed</h1>
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        {([
+          ["all","Todos"],
+          ["friends","Amigos"],
+          ["following","Seguindo"],
+          ["discover","Descobrir"]
+        ] as const).map(([key,label])=>
+          <button key={key} type="button" onClick={()=>{setSource(key);setPage(0);setPosts([]);setLoading(true);}}
+            className={"shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition "+(source===key?"bg-neutral-950 text-white":"border bg-white text-neutral-600 hover:bg-neutral-100")}>
+            {label}
+          </button>
+        )}
+      </div>
+
       <p className="mt-1 text-neutral-500">Compartilhe textos, fotos, dicas e roteiros. Seus amigos aparecem primeiro e o restante da comunidade ajuda você a descobrir novos viajantes.</p>
 
       <form onSubmit={publish} className="mt-6 rounded-3xl border bg-white p-5 shadow-sm sm:p-6">
