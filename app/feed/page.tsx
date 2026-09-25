@@ -100,7 +100,7 @@ export default function FeedPage() {
       return;
     }
     const r=await fetch("/api/feed",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({title,body,visibility,trip_id:tripId||null})});
+      body:JSON.stringify({title,body,visibility,trip_id:tripId||null,has_media:pendingImages.length>0})});
     const d=await r.json();
     if(!r.ok){setMessage(d.error||"Erro ao publicar.");return;}
     if(pendingImages.length){
