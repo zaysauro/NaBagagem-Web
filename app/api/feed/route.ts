@@ -61,8 +61,9 @@ export async function POST(request: Request) {
   const body = await request.json();
   const requestedTitle = String(body.title || "").trim();
   const postBody = String(body.body || "").trim();
+  const hasMedia = body.has_media === true;
   const title = requestedTitle || postBody.split(/\\r?\\n/).find((line: string) => line.trim())?.trim().slice(0, 80) || "Nova publicação";
-  if (!postBody && !requestedTitle) return NextResponse.json({ error: "Escreva algo para publicar." }, { status: 400 });
+  if (!postBody && !requestedTitle && !hasMedia) return NextResponse.json({ error: "Escreva algo para publicar." }, { status: 400 });
   const tripId = body.trip_id || null;
   if (tripId) { const { data: trip } = await supabase.from("trips").select("id").eq("id", tripId).eq("user_id", user.id).maybeSingle(); if (!trip) return NextResponse.json({ error: "Viagem inválida." }, { status: 400 }); }
   const visibility = ["public", "followers", "private"].includes(body.visibility) ? body.visibility : "public";
