@@ -11,6 +11,7 @@ type User = {
   bio?: string | null;
   isFollowing?: boolean;
   followsMe?: boolean;
+  contributionScore?: number;
 };
 
 export default function SearchUserResult({ user }: { user: User }) {
