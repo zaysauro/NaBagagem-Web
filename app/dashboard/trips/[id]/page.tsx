@@ -63,7 +63,9 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
         <TripCalendar startDate={trip.start_date} endDate={trip.end_date} events={(events ?? []).map((event:any)=>({ ...event, location_name:(locations ?? []).find((l:any)=>l.id===event.location_id)?.name || null }))} />
         <TripTools tripId={trip.id} canEdit={canEdit} />
-        <TripPublicToggle tripId={id} initial={!!trip.is_public} />\n\n        <TripSummary tripId={trip.id} initialEvents={events ?? []} />
+        <TripPublicToggle tripId={id} initial={!!trip.is_public} />
+
+        <TripSummary tripId={trip.id} initialEvents={events ?? []} />
 
         <div className="mt-5 grid gap-5 lg:mt-7 lg:grid-cols-2 lg:gap-7">
           <TripCurrency />
