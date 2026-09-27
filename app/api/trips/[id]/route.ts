@@ -48,6 +48,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!canEdit) return NextResponse.json({ error: "Você não tem permissão para editar esta viagem." }, { status: 403 });
 
   const body = await request.json();
+  if (typeof body.is_public === "boolean") {
+    const { data, error } = await supabase.from("trips").update({ is_public: body.is_public }).eq("id", id).select().single();
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ trip: data });
+  }
   const updates = {
     title: String(body.title || "").trim(),
     description: String(body.description || "").trim() || null,
