@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Notifications from "@/app/dashboard/notifications";
 
-const items=[["/dashboard","Início"],["/buscar","Buscar"],["/feed","Feed"],["/favoritos","Favoritos"],["/dashboard/perfil","Perfil"],["/dashboard/configuracoes","Configurações"]] as const;
+const items=[["/dashboard","Início"],["/buscar","Buscar"],["/feed","Feed"],["/descoberta","Descobrir"],["/favoritos","Favoritos"],["/dashboard/perfil","Perfil"],["/dashboard/configuracoes","Configurações"]] as const;
 
 export default function SiteHeader({name="NaBagagem"}:{name?:string}){
  const [compact,setCompact]=useState(false);
