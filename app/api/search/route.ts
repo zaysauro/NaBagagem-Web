@@ -79,8 +79,14 @@ export async function GET(request: Request) {
     const followingSet = new Set((outgoing || []).map((row) => row.following_id));
     const followsMeSet = new Set((incoming || []).map((row) => row.follower_id));
 
-    usersWithFollowState = users.map((item: SearchUser) => ({
+    const ranked = await Promise.all(users.map(async (item: SearchUser) => {
+      const score = await supabase.rpc("profile_contribution_score", { p_user_id: item.id });
+      return { item, score: Number(score.data || 0) };
+    }));
+    ranked.sort((a, b) => b.score - a.score);
+    usersWithFollowState = ranked.map(({ item, score }) => ({
       ...item,
+      contributionScore: score,
       isFollowing: followingSet.has(item.id),
       followsMe: followsMeSet.has(item.id),
     }));
