@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import WorldMap from "./world-map";
 import { StatsChart } from "./stats-chart";
 import SiteHeader from "@/app/components/site-header";
+import ProfileInterests from "./profile-interests";
 
 type Data = {
   profile:{display_name:string|null;username:string|null;avatar_url:string|null;bio:string|null}|null;
@@ -80,6 +81,8 @@ export default function ProfilePage(){
             <div className="mt-4 flex max-h-80 flex-wrap content-start gap-2 overflow-auto">{data.stats.countriesList.length?data.stats.countriesList.map(c=><span key={c} className="rounded-full bg-neutral-100 px-3 py-1.5 text-sm">{c}</span>):<p className="text-sm text-neutral-500">Adicione destinos às suas viagens para começar.</p>}</div>
           </section>
         </div>
+
+        <ProfileInterests />
 
         <section className="mt-6 rounded-3xl border bg-white p-6">
           <h2 className="mb-5 text-xl font-bold">Histórico</h2>
