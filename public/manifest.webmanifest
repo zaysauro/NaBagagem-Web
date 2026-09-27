@@ -1,11 +1,17 @@
 {
-  "name":"NaBagagem",
+  "name":"NaBagagem — Planeje, viva, guarde",
   "short_name":"NaBagagem",
-  "description":"Organize, planeje e compartilhe suas viagens.",
+  "description":"Planeje roteiros, organize destinos, guarde memórias e descubra viagens de outros viajantes.",
   "start_url":"/dashboard",
+  "scope":"/",
   "display":"standalone",
-  "background_color":"#f7f7f5",
-  "theme_color":"#111827",
+  "background_color":"#f4f1ea",
+  "theme_color":"#171717",
   "lang":"pt-BR",
-  "icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "orientation":"portrait-primary",
+  "icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}],
+  "shortcuts":[
+    {"name":"Nova viagem","short_name":"Nova viagem","url":"/dashboard/trips/new","icons":[{"src":"/icon.svg","sizes":"any"}]},
+    {"name":"Descoberta","short_name":"Descobrir","url":"/descoberta","icons":[{"src":"/icon.svg","sizes":"any"}]}
+  ]
 }
