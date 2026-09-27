@@ -32,12 +32,12 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
   const { data: media }=postIds.length ? await supabase.from("feed_post_media").select("id,post_id,public_url,storage_path").in("post_id",postIds).order("created_at",{ascending:false}) : {data:[]};
   const scoreResult=await supabase.rpc("profile_contribution_score",{p_user_id:profile.id});
   const score=Number(scoreResult.data||0);
-  const cities=[...new Set((await supabase.from("trip_locations").select("city,country").in("trip_id",(trips||[]).map(t=>t.id))).data?.map(x=>[x.city,x.country].filter(Boolean).join(", ")).filter(Boolean)||[])];
+  const tripIds=(trips||[]).map(t=>t.id);\n  const { data: publicLocations } = tripIds.length ? await supabase.from("trip_locations").select("city,country").in("trip_id",tripIds) : { data: [] };\n  const cities=[...new Set((publicLocations||[]).map(x=>[x.city,x.country].filter(Boolean).join(", ")).filter(Boolean))];
   const gallery=(media||[]).slice(0,12);
-  const level=score>=250?"Cartógrafo":score>=100?"Explorador":score>=30?"Viajante ativo":"Viajante";
+  const level=score>=250?"Cartógrafo":score>=100?"Explorador":score>=30?"Viajante ativo":"Viajante";\n  const structuredData={"@context":"https://schema.org","@type":"ProfilePage","name":(profile.display_name||"Viajante")+" no NaBagagem","description":profile.bio||"Perfil de viajante no NaBagagem.","url":(process.env.NEXT_PUBLIC_SITE_URL||"https://nabagagemweb.vercel.app")+"/perfil/"+(profile.username||key),"mainEntity":{"@type":"Person","name":profile.display_name||"Viajante","url":(process.env.NEXT_PUBLIC_SITE_URL||"https://nabagagemweb.vercel.app")+"/perfil/"+(profile.username||key),...(profile.avatar_url?{image:profile.avatar_url}:{}),...(profile.username?{alternateName:"@"+profile.username}:{})}};
 
   return <main className="min-h-screen bg-[#f4f1ea] px-4 pb-16 pt-10 sm:px-6">
-    <div className="mx-auto max-w-6xl">
+    <div className="mx-auto max-w-6xl"><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(structuredData)}} />
       <Link href="/dashboard" className="text-sm font-semibold text-neutral-500">← NaBagagem</Link>
 
       <section className="mt-5 overflow-hidden rounded-[2rem] border border-black/10 bg-[#171717] text-white shadow-xl">
