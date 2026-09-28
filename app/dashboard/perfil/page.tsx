@@ -5,6 +5,7 @@ import WorldMap from "./world-map";
 import { StatsChart } from "./stats-chart";
 import SiteHeader from "@/app/components/site-header";
 import ProfileInterests from "./profile-interests";
+import VisitedCountries from "./visited-countries";
 
 type Data = {
   profile:{display_name:string|null;username:string|null;avatar_url:string|null;bio:string|null}|null;
@@ -82,6 +83,8 @@ export default function ProfilePage(){
             <div className="mt-4 flex max-h-80 flex-wrap content-start gap-2 overflow-auto">{data.stats.countriesList.length?data.stats.countriesList.map(c=><span key={c} className="rounded-full bg-neutral-100 px-3 py-1.5 text-sm">{c}</span>):<p className="text-sm text-neutral-500">Adicione destinos às suas viagens para começar.</p>}</div>
           </section>
         </div>
+
+        <VisitedCountries />
 
         <ProfileInterests />
 
