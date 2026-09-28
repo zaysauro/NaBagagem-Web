@@ -41,14 +41,50 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={submit} className="mt-8 space-y-4">
-      <input required type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full rounded-xl border px-4 py-3" />
-      <input required minLength={6} type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border px-4 py-3" />
-      {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <button type="submit" disabled={loading} className="w-full rounded-xl bg-neutral-950 px-4 py-3 font-semibold text-white disabled:opacity-60">
+      <input
+        required
+        type="email"
+        placeholder="E-mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full rounded-xl border px-4 py-3"
+      />
+      <div>
+        <input
+          required
+          minLength={6}
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-xl border px-4 py-3"
+        />
+        <div className="mt-2 text-right">
+          <Link
+            href="/esqueci-senha"
+            className="text-sm font-semibold text-neutral-600 underline underline-offset-2 hover:text-neutral-950"
+          >
+            Esqueci minha senha
+          </Link>
+        </div>
+      </div>
+      {error && (
+        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full rounded-xl bg-neutral-950 px-4 py-3 font-semibold text-white disabled:opacity-60"
+      >
         {loading ? "Entrando..." : "Entrar"}
       </button>
-      <p className="text-center text-sm text-neutral-600">Não tem conta?{" "}
-        <Link href="/cadastro" className="font-semibold text-neutral-950">Criar conta</Link>
+      <p className="text-center text-sm text-neutral-600">
+        Não tem conta?{" "}
+        <Link href="/cadastro" className="font-semibold text-neutral-950">
+          Criar conta
+        </Link>
       </p>
     </form>
   );
