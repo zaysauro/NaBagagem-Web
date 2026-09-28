@@ -47,7 +47,8 @@ export async function GET() {
   let km=0;
   for(let i=1;i<points.length;i++) km+=haversine(points[i-1],points[i]);
 
-  const visitPoints=(locations||[]).filter(x=>x.latitude!=null&&x.longitude!=null).map(x=>({id:x.id,city:x.city||null,country:x.country||null,latitude:Number(x.latitude),longitude:Number(x.longitude)}));\n  const countries=[...new Set((locations||[]).map(x=>x.country?.trim()).filter(Boolean))] as string[];
+  const visitPoints=(locations||[]).filter(x=>x.latitude!=null&&x.longitude!=null).map(x=>({id:x.id,city:x.city||null,country:x.country||null,latitude:Number(x.latitude),longitude:Number(x.longitude)}));
+  const countries=[...new Set((locations||[]).map(x=>x.country?.trim()).filter(Boolean))] as string[];
   const cities=[...new Set((locations||[]).map(x=>[x.city,x.country].filter(Boolean).join(", ")).filter(Boolean))] as string[];
   const days=(trips||[]).reduce((sum,t)=>sum+tripDays(t.start_date,t.end_date),0);
   const hours=(events||[]).reduce((sum,e)=>sum+eventHours(e.start_time,e.end_time),0);
