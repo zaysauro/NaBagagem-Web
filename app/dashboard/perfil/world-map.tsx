@@ -81,20 +81,19 @@ export default function WorldMap({ countries, visitPoints = [] }: Props) {
     return countries.flatMap((saved) => {
       const normalizedSaved = normalize(saved);
       const mapName = aliases[normalizedSaved] || saved;
+      const knownCoordinates = countryCoordinates[mapName];
 
-      // Prefer a stable geographic coordinate for manual country registrations.
-      // This avoids pins disappearing because of irregular MultiPolygon bounds.
-      const coordinates = countryCoordinates[mapName] ||
-        (geo.features || []).find((feature:any) =>
-          countryMatches(saved, String(feature.properties?.name || ""))
-        );
+      if (knownCoordinates) {
+        return [{ name:saved, mapName, coordinates:knownCoordinates }];
+      }
 
-      const finalCoordinates: [number,number] | null = Array.isArray(coordinates)
-        ? coordinates as [number,number]
-        : geometryCenter(coordinates?.geometry);
+      const feature = (geo.features || []).find((item:any) =>
+        countryMatches(saved, String(item.properties?.name || ""))
+      );
+      const coordinates = geometryCenter(feature?.geometry);
 
-      return finalCoordinates
-        ? [{ name:saved, mapName, coordinates:finalCoordinates }]
+      return coordinates
+        ? [{ name:saved, mapName, coordinates }]
         : [];
     });
   }, [geo, countries]);
