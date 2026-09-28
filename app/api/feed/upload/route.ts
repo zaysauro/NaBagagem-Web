@@ -23,13 +23,13 @@ export async function POST(request: Request) {
   const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${user.id}/${postId}/${crypto.randomUUID()}.${extension}`;
   const { error: uploadError } = await supabase.storage.from("feed-media").upload(path, file, { contentType: file.type, upsert: false });
-  if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 400 });
+  if (uploadError) {\n    return NextResponse.json({\n      error: "Não foi possível salvar a imagem no armazenamento.",\n      details: uploadError.message,\n      stage: "storage_upload"\n    }, { status: 400 });\n  }
 
   const { data: publicData } = supabase.storage.from("feed-media").getPublicUrl(path);
   const { data, error } = await supabase.from("feed_post_media").insert({
     post_id: postId, user_id: user.id, storage_path: path, public_url: publicData.publicUrl, mime_type: file.type, size_bytes: file.size
   }).select().single();
-  if (error) { await supabase.storage.from("feed-media").remove([path]); return NextResponse.json({ error: error.message }, { status: 400 }); }
+  if (error) {\n    await supabase.storage.from("feed-media").remove([path]);\n    return NextResponse.json({\n      error: "A foto foi enviada, mas não conseguimos registrar a mídia da publicação.",\n      details: error.message,\n      stage: "media_insert"\n    }, { status: 400 });\n  }
 
   return NextResponse.json({ media: data }, { status: 201 });
 }
