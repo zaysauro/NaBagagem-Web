@@ -74,7 +74,7 @@ export default function ProfilePage(){
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.7fr_1fr]">
           <section className="rounded-3xl border bg-white p-5">
             <div className="mb-4 flex items-center justify-between"><div><h2 className="text-xl font-bold">Mapa-múndi</h2><p className="text-sm text-neutral-500">Países registrados nas suas viagens</p></div><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold">{data.stats.countries} visitados</span></div>
-            <WorldMap countries={data.stats.countriesList}/>
+            <WorldMap countries={data.stats.countriesList} visitPoints={data.stats.visitPoints}/>
           </section>
           <section className="rounded-3xl border bg-white p-5">
             <h2 className="text-xl font-bold">Países visitados</h2>
