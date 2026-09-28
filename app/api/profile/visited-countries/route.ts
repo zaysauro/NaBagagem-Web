@@ -26,14 +26,34 @@ export async function POST(request: Request) {
   if (!country) return NextResponse.json({ error: "Informe um país." }, { status: 400 });
   if (country.length > 100) return NextResponse.json({ error: "Nome de país inválido." }, { status: 400 });
 
+  // Fazemos INSERT direto em vez de upsert para que o cadastro dependa
+  // somente da policy INSERT (WITH CHECK), sem exigir uma leitura implícita
+  // durante o upsert.
   const { data, error } = await supabase
     .from("profile_visited_countries")
-    .upsert({ user_id: user.id, country }, { onConflict: "user_id,country" })
+    .insert({ user_id: user.id, country })
     .select("id,country,created_at")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ country: data });
+  if (!error) return NextResponse.json({ country: data });
+
+  // País já cadastrado: retorna o registro existente.
+  if (error.code === "23505") {
+    const { data: existing, error: existingError } = await supabase
+      .from("profile_visited_countries")
+      .select("id,country,created_at")
+      .eq("user_id", user.id)
+      .eq("country", country)
+      .maybeSingle();
+
+    if (existingError) {
+      return NextResponse.json({ error: existingError.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ country: existing }, { status: 200 });
+  }
+
+  return NextResponse.json({ error: error.message }, { status: 400 });
 }
 
 export async function DELETE(request: Request) {
