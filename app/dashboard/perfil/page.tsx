@@ -10,7 +10,7 @@ type Data = {
   profile:{display_name:string|null;username:string|null;avatar_url:string|null;bio:string|null}|null;
   stats:{
     trips:number;countries:number;cities:number;kilometers:number;travelDays:number;travelHours:number;
-    countryPercent:number;countriesList:string[];citiesList:string[];totalExpensesBRL:number;
+    countryPercent:number;countriesList:string[];citiesList:string[];totalExpensesBRL:number;\n    visitPoints:{id:string;city:string|null;country:string|null;latitude:number;longitude:number}[];
   };
   monthly:{label:string;trips:number;expenses:number}[];
   badges:string[];
