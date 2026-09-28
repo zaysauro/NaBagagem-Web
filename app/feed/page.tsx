@@ -59,7 +59,7 @@ export default function FeedPage() {
   const [message,setMessage]=useState("");
   const [pendingImages,setPendingImages]=useState<File[]>([]);
   const [source,setSource]=useState<"all"|"friends"|"following"|"discover">("all");
-  const [editing,setEditing]=useState<string|null>(null);
+  const [publishing,setPublishing]=useState(false);\n  const [editing,setEditing]=useState<string|null>(null);
   const [editTitle,setEditTitle]=useState("");
   const [editBody,setEditBody]=useState("");
   const [editVisibility,setEditVisibility]=useState("public");
@@ -95,25 +95,64 @@ export default function FeedPage() {
   },[source]);
 
   async function publish(e:React.FormEvent){
-    e.preventDefault(); setMessage("");
+    e.preventDefault();
+    if(publishing)return;
+    setMessage("");
     if(!body.trim() && pendingImages.length===0){
       setMessage("Escreva alguma coisa ou escolha pelo menos uma foto.");
       return;
     }
-    const r=await fetch("/api/feed",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({title,body,visibility,trip_id:tripId||null,has_media:pendingImages.length>0})});
-    const d=await r.json();
-    if(!r.ok){setMessage(d.error||"Erro ao publicar.");return;}
-    if(pendingImages.length){
-      for(const image of pendingImages.slice(0,5)){
-        const form=new FormData(); form.append("post_id",d.post.id); form.append("file",image);
-        const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
-        if(!upload.ok){const error=await upload.json();setMessage("Publicação criada, mas uma imagem não foi enviada: "+(error.error||"erro"));break;}
+
+    setPublishing(true);
+    try {
+      const r=await fetch("/api/feed",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          title,
+          body,
+          visibility,
+          trip_id:tripId||null,
+          has_media:pendingImages.length>0
+        })
+      });
+      const d=await r.json().catch(()=>({}));
+
+      if(!r.ok){
+        setMessage(d.error||"Não foi possível criar a publicação.");
+        return;
       }
+
+      const images=pendingImages.slice(0,5);
+      for(let index=0; index<images.length; index++){
+        const form=new FormData();
+        form.append("post_id",d.post.id);
+        form.append("file",images[index]);
+
+        const upload=await fetch("/api/feed/upload",{method:"POST",body:form});
+        const result=await upload.json().catch(()=>({}));
+
+        if(!upload.ok){
+          // Do not leave a broken post behind when its photo upload fails.
+          await fetch("/api/feed/"+encodeURIComponent(d.post.id),{method:"DELETE"}).catch(()=>{});
+          setMessage("Não foi possível enviar a foto "+(index+1)+". "+(result.error||"Verifique as permissões de mídia no Supabase e tente novamente."));
+          return;
+        }
+      }
+
+      setTitle("");
+      setBody("");
+      setVisibility("public");
+      setTripId("");
+      setPendingImages([]);
+      if(fileRef.current)fileRef.current.value="";
+      await load(true);
+      setMessage(images.length ? "Publicação com foto publicada com sucesso." : "Publicação publicada com sucesso.");
+    } catch {
+      setMessage("Não foi possível publicar agora. Verifique sua conexão e tente novamente.");
+    } finally {
+      setPublishing(false);
     }
-    setTitle("");setBody("");setVisibility("public");setTripId("");setPendingImages([]);
-    if(fileRef.current)fileRef.current.value="";
-    await load(true);
   }
 
   async function bookmark(post:Post){
@@ -216,7 +255,7 @@ export default function FeedPage() {
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple onChange={async e=>{const files=Array.from(e.target.files||[]).slice(0,5);const compressed=await Promise.all(files.map(compressImage));setPendingImages(compressed);}} className="block w-full rounded-xl border p-2 text-sm"/>
         </div>
         {pendingImages.length>0&&<div className="mt-2"><p className="text-xs text-neutral-500">{pendingImages.length} foto{pendingImages.length===1?"":"s"} selecionada{pendingImages.length===1?"":"s"} · serão comprimidas antes do envio</p><div className="mt-2 grid grid-cols-5 gap-2">{pendingImages.map((image,index)=><div key={index} className="aspect-square overflow-hidden rounded-xl bg-neutral-100"><img src={URL.createObjectURL(image)} alt="" className="h-full w-full object-cover"/></div>)}</div></div>}
-        <button className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white">Publicar no feed</button>
+        <button disabled={publishing} className="mt-3 rounded-xl bg-neutral-950 px-5 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">{publishing?"Publicando...":"Publicar no feed"}</button>
       </form>
 
       {message&&<p className="mt-3 rounded-xl bg-white p-3 text-sm text-neutral-600">{message}</p>}
