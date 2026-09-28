@@ -36,6 +36,8 @@ export async function GET() {
   const {data:locations}=ids.length
     ? await supabase.from("trip_locations").select("id,trip_id,city,country,latitude,longitude,visited_at").in("trip_id",ids)
     : {data:[]};
+  const {data:manualCountries}=await supabase.from("profile_visited_countries").select("country").eq("user_id",user.id);
+
   const {data:events}=ids.length
     ? await supabase.from("trip_events").select("trip_id,event_date,start_time,end_time").in("trip_id",ids)
     : {data:[]};
@@ -48,7 +50,9 @@ export async function GET() {
   for(let i=1;i<points.length;i++) km+=haversine(points[i-1],points[i]);
 
   const visitPoints=(locations||[]).filter(x=>x.latitude!=null&&x.longitude!=null).map(x=>({id:x.id,city:x.city||null,country:x.country||null,latitude:Number(x.latitude),longitude:Number(x.longitude)}));
-  const countries=[...new Set((locations||[]).map(x=>x.country?.trim()).filter(Boolean))] as string[];
+  const tripCountries=(locations||[]).map(x=>x.country?.trim()).filter(Boolean) as string[];
+  const savedCountries=(manualCountries||[]).map(x=>x.country?.trim()).filter(Boolean) as string[];
+  const countries=[...new Set([...tripCountries,...savedCountries])] as string[];
   const cities=[...new Set((locations||[]).map(x=>[x.city,x.country].filter(Boolean).join(", ")).filter(Boolean))] as string[];
   const days=(trips||[]).reduce((sum,t)=>sum+tripDays(t.start_date,t.end_date),0);
   const hours=(events||[]).reduce((sum,e)=>sum+eventHours(e.start_time,e.end_time),0);
