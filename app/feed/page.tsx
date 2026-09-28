@@ -59,7 +59,8 @@ export default function FeedPage() {
   const [message,setMessage]=useState("");
   const [pendingImages,setPendingImages]=useState<File[]>([]);
   const [source,setSource]=useState<"all"|"friends"|"following"|"discover">("all");
-  const [publishing,setPublishing]=useState(false);\n  const [editing,setEditing]=useState<string|null>(null);
+  const [publishing,setPublishing]=useState(false);
+  const [editing,setEditing]=useState<string|null>(null);
   const [editTitle,setEditTitle]=useState("");
   const [editBody,setEditBody]=useState("");
   const [editVisibility,setEditVisibility]=useState("public");
