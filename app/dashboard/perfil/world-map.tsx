@@ -23,6 +23,23 @@ const aliases: Record<string,string> = {
   "africa do sul":"South Africa", "emirados arabes unidos":"United Arab Emirates"
 };
 
+const countryCoordinates: Record<string,[number,number]> = {
+  Brazil:[-51.9,-10.8], Japan:[138.25,36.2], "South Korea":[127.8,36.2],
+  "North Korea":[127.2,40.3], "United States of America":[-100.0,38.0],
+  Canada:[-106.3,56.1], Mexico:[-102.5,23.6], Argentina:[-63.6,-38.4],
+  Chile:[-71.5,-35.7], Uruguay:[-55.8,-32.5], Paraguay:[-58.4,-23.4],
+  Peru:[-75.0,-9.2], Bolivia:[-64.7,-16.7], Colombia:[-74.3,4.6],
+  Ecuador:[-78.2,-1.4], Venezuela:[-66.2,7.1], "Costa Rica":[-84.0,9.9],
+  Panama:[-80.0,8.5], "United Kingdom":[-3.4,55.4], Portugal:[-8.2,39.5],
+  Spain:[-3.7,40.2], France:[2.2,46.2], Italy:[12.6,42.8], Germany:[10.4,51.1],
+  Netherlands:[5.3,52.1], Belgium:[4.6,50.8], Switzerland:[8.2,46.8],
+  Austria:[14.1,47.6], Ireland:[-8.0,53.2], Greece:[22.0,39.1], Turkey:[35.2,39.0],
+  China:[103.8,35.9], India:[78.9,22.6], Thailand:[100.9,15.9], Vietnam:[108.3,14.1],
+  Indonesia:[117.0,-2.5], Philippines:[122.9,11.9], Australia:[134.5,-25.7],
+  "New Zealand":[172.0,-41.3], Egypt:[30.8,26.8], Morocco:[-6.0,31.8],
+  "South Africa":[24.0,-30.6], "United Arab Emirates":[54.3,24.2]
+};
+
 function normalize(value:string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 }
@@ -60,12 +77,25 @@ export default function WorldMap({ countries, visitPoints = [] }: Props) {
 
   const countryPins = useMemo(() => {
     if (!geo) return [];
-    return (geo.features || []).flatMap((feature:any) => {
-      const mapName=String(feature.properties?.name || "");
-      const saved=countries.find(country => countryMatches(country,mapName));
-      if (!saved) return [];
-      const coordinates=geometryCenter(feature.geometry);
-      return coordinates ? [{ name:saved, mapName, coordinates }] : [];
+
+    return countries.flatMap((saved) => {
+      const normalizedSaved = normalize(saved);
+      const mapName = aliases[normalizedSaved] || saved;
+
+      // Prefer a stable geographic coordinate for manual country registrations.
+      // This avoids pins disappearing because of irregular MultiPolygon bounds.
+      const coordinates = countryCoordinates[mapName] ||
+        (geo.features || []).find((feature:any) =>
+          countryMatches(saved, String(feature.properties?.name || ""))
+        );
+
+      const finalCoordinates: [number,number] | null = Array.isArray(coordinates)
+        ? coordinates as [number,number]
+        : geometryCenter(coordinates?.geometry);
+
+      return finalCoordinates
+        ? [{ name:saved, mapName, coordinates:finalCoordinates }]
+        : [];
     });
   }, [geo, countries]);
 
@@ -93,25 +123,31 @@ export default function WorldMap({ countries, visitPoints = [] }: Props) {
         ) : null}
 
         {countryPins.map((pin:any) => (
-          <Marker key={"country-"+pin.name} coordinates={pin.coordinates}>
-            <g role="img" aria-label={"País visitado: "+pin.name}>
-              <circle r="9" fill="#111827" stroke="#fff" strokeWidth="3" />
-              <circle r="3" fill="#fff" />
+          <Marker key={"country-"+normalize(pin.name)} coordinates={pin.coordinates}>
+            <g role="img" aria-label={"País visitado: "+pin.name} style={{ pointerEvents:"none" }}>
+              <circle r="13" fill="#ef4444" stroke="#fff" strokeWidth="3" />
+              <circle r="5" fill="#fff" />
+              <path d="M -4 9 L 0 17 L 4 9 Z" fill="#ef4444" />
             </g>
           </Marker>
         ))}
 
         {uniquePoints.map((point) => (
           <Marker key={point.id} coordinates={[point.longitude, point.latitude]}>
-            <g role="img" aria-label={point.city || point.country || "Lugar visitado"}>
+            <g role="img" aria-label={point.city || point.country || "Lugar visitado"} style={{ pointerEvents:"none" }}>
               <circle r="6" fill="#111827" stroke="#fff" strokeWidth="2" />
               <circle r="2" fill="#fff" />
             </g>
           </Marker>
         ))}
       </ComposableMap>
+
       {!geo && <p className="px-4 pb-4 text-xs text-neutral-500">Carregando mapa-múndi…</p>}
-      {geo && countryPins.length > 0 && <p className="px-4 pb-2 text-xs text-neutral-500">Cada pin representa um país marcado como visitado. Os pins menores mostram cidades/destinos das suas viagens.</p>}
+      {geo && countryPins.length > 0 && (
+        <p className="px-4 pb-2 text-xs text-neutral-500">
+          Pins vermelhos = países visitados. Pins menores = cidades e destinos das suas viagens.
+        </p>
+      )}
     </div>
   );
 }
