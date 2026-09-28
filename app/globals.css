@@ -68,3 +68,9 @@ button,input,textarea,select{font:inherit}
 @keyframes nbgDrift{from{transform:translate3d(-2%,0,0) scale(1.02)}to{transform:translate3d(2%,2%,0) scale(1.06)}}
 @keyframes nbgShimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.nbg-fade-up,.nbg-float,.nbg-drift,.nbg-shimmer{animation:none!important}.travel-gallery-item img{transition:none}}
+
+
+.nbg-skip-link{position:fixed;left:1rem;top:-5rem;z-index:9999;border-radius:.75rem;background:#171717;color:#fff;padding:.75rem 1rem;font-size:.875rem;font-weight:800;box-shadow:0 10px 30px rgba(0,0,0,.2);transition:top .2s ease}
+.nbg-skip-link:focus{top:1rem}
+:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media(max-width:640px){.nbg-skip-link{left:.75rem}.travel-gallery-count{left:8px;bottom:8px}}
