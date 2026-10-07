@@ -59,13 +59,6 @@ export default function Notifications() {
   useEffect(() => {
     load();
 
-    const env =
-      typeof window !== "undefined" &&
-      process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-
-    if (!env) return;
-
     const sb = createClient();
 
     const ch = sb

@@ -83,9 +83,6 @@ export default function FeedPage() {
   useEffect(()=>{
     load(true);
     fetch("/api/trips").then(async r=>{const d=await r.json();if(r.ok)setTrips(d.trips||[]);}).catch(()=>{});
-    const url=process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if(!url||!key)return;
     const supabase=createClient();
     const channel=supabase.channel("na-bagagem-feed")
       .on("postgres_changes",{event:"*",schema:"public",table:"feed_posts"},()=>load(true))
@@ -136,7 +133,7 @@ export default function FeedPage() {
         if(!upload.ok){
           // Do not leave a broken post behind when its photo upload fails.
           await fetch("/api/feed/"+encodeURIComponent(d.post.id),{method:"DELETE"}).catch(()=>{});
-          setMessage("Não foi possível enviar a foto "+(index+1)+". "+(result.error||"Verifique as permissões de mídia no Supabase e tente novamente."));
+          setMessage("Não foi possível enviar a foto "+(index+1)+". "+(result.error||"Verifique as permissões de mídia no Neon Storage e tente novamente."));
           return;
         }
       }
