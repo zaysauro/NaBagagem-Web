@@ -33,7 +33,7 @@ export default function SignupForm() {
         return;
       }
 
-      if (result.user && result.session) {
+      if (result.user && result.token) {
         router.push("/dashboard");
         router.refresh();
         return;
