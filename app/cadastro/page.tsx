@@ -11,7 +11,6 @@ export default function CadastroPage(){
         <p className="mt-2 text-neutral-600">Comece a guardar suas viagens.</p>
       </div>
       <SignupForm/>
-      <p className="mt-6 text-center text-sm text-neutral-500">Já tem uma conta? <Link href="/login" className="font-semibold text-neutral-950 underline">Entrar</Link></p>
     </div>
   </main>
 }
