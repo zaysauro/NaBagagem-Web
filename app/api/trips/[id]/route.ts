@@ -14,6 +14,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { supabase, user, trip } = await context(id);
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   if (!trip) return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
+  const { data: accessMember } = await supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle();
+  if (trip.user_id !== user.id && !accessMember) {
+    return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
+  }
 
   const [{ data: locations, error: locationsError }, { data: events, error: eventsError }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
@@ -27,7 +31,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   if (locationsError || eventsError) return NextResponse.json({ error: "Não foi possível carregar a viagem." }, { status: 500 });
   const isOwner = trip.user_id === user.id;
-  const currentMember = (members || []).find((member: any) => member.user_id === user.id);
+  const currentMember = accessMember;
   return NextResponse.json({
     trip,
     locations: locations ?? [],
