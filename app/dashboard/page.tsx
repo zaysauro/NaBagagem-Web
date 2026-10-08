@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Luggage, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/neon/auth";
+import { query } from "@/lib/neon/db";
 import SiteHeader from "@/app/components/site-header";
 
 function formatDate(value:string|null){
@@ -10,11 +11,21 @@ function formatDate(value:string|null){
 }
 
 export default async function DashboardPage(){
-  const supabase=await createClient();
-  const {data:{user}}=await supabase.auth.getUser();
-  if(!user)redirect("/login");
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
 
-  const {data:trips,error}=await supabase.from("trips").select("id,title,description,start_date,end_date,created_at").eq("user_id",user.id).order("start_date",{ascending:false,nullsFirst:false}).order("created_at",{ascending:false});
+  let trips: Array<{id:string;title:string;description:string|null;start_date:string|null;end_date:string|null}> = [];
+  let error = false;
+  try {
+    const result = await query<typeof trips[number]>(
+      "select id, title, description, start_date, end_date from trips where user_id = $1 order by start_date desc nulls last, created_at desc",
+      [user.id],
+    );
+    trips = result.rows;
+  } catch (cause) {
+    console.error("dashboard trips query failed", cause);
+    error = true;
+  }
   const name=user.user_metadata?.display_name||user.email?.split("@")[0]||"Viajante";
   const count=trips?.length??0;
 
