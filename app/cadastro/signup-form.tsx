@@ -21,7 +21,7 @@ export default function SignupForm() {
     setMsg("");
 
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/sign-up/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, name }),
@@ -29,19 +29,19 @@ export default function SignupForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || "Erro ao criar conta.");
+        setError(result.message || result.error?.message || "Não foi possível criar sua conta.");
         return;
       }
 
-      if (result.authenticated) {
+      if (result.user && result.session) {
         router.push("/dashboard");
         router.refresh();
         return;
       }
 
-      setMsg(result.message);
+      setMsg(result.user ? "Conta criada. Entre com seu e-mail e senha." : "Cadastro recebido. Confira seu e-mail se for solicitada confirmação.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro de conexão.");
+      setError("Não foi possível conectar ao serviço de cadastro. Tente novamente.");
     } finally {
       setLoading(false);
     }
