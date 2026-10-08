@@ -18,7 +18,7 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/auth/sign-in/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -26,14 +26,14 @@ export default function LoginForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.error || "Erro ao entrar.");
+        setError(result.message || result.error?.message || "Não foi possível entrar.");
         return;
       }
 
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro de conexão.");
+      setError("Não foi possível conectar ao serviço de login. Tente novamente.");
     } finally {
       setLoading(false);
     }
