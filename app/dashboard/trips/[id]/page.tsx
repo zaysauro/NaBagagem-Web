@@ -22,15 +22,17 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   const { data: trip } = await supabase.from("trips").select("*").eq("id", id).maybeSingle();
   if (!trip) notFound();
+  // Authorization must happen before loading locations, events, or other private trip data.
+  const { data: accessMember } = await supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle();
+  if (trip.user_id !== user.id && !accessMember) notFound();
 
-  const [{ data: locations }, { data: events }, { data: member }] = await Promise.all([
+  const [{ data: locations }, { data: events }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
     supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("order_index").order("event_date").order("start_time"),
-    supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle(),
   ]);
 
   const isOwner = trip.user_id === user.id;
-  const canEdit = isOwner || member?.role === "editor";
+  const canEdit = isOwner || accessMember?.role === "editor";
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-neutral-50 px-3 pb-8 pt-24 sm:px-6">
