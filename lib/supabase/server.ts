@@ -1,5 +1,5 @@
 import { createCompatClient } from "@/lib/neon/supabase-compat";
 
-export async function createClient(): Promise<any> {
-  return createCompatClient();
+export async function createClient(shareToken?: string): Promise<any> {
+  return createCompatClient(shareToken);
 }

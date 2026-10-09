@@ -3,7 +3,7 @@ import { createNeonAuth } from "@neondatabase/auth/next/server";
 export type AppUser = {
   id: string;
   email?: string | null;
-  user_metadata?: Record<string, unknown>;
+  user_metadata?: { display_name?: string; name?: string };
 };
 
 export const auth = createNeonAuth({
@@ -16,6 +16,7 @@ export const auth = createNeonAuth({
 });
 
 export async function getCurrentUser(): Promise<AppUser | null> {
+  if (!process.env.NEON_AUTH_BASE_URL || !process.env.NEON_AUTH_COOKIE_SECRET) return null;
   const { data } = await auth.getSession();
   const sessionData = data as any;
   const user = sessionData?.session?.user || sessionData?.user;

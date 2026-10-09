@@ -1,4 +1,4 @@
-import { query, quoteIdentifier } from "./db";
+import { query, quoteIdentifier, transaction } from "./db";
 import { getCurrentUser, type AppUser } from "./auth";
 import { storage } from "./storage";
 
@@ -15,7 +15,7 @@ const OPERATORS: Record<string, string> = {
   ilike: "ILIKE",
 };
 
-export function createCompatClient() {
+export function createCompatClient(shareToken?: string) {
   return {
     auth: {
       async getUser(): Promise<{ data: { user: AppUser | null }; error: Error | null }> {
@@ -25,28 +25,11 @@ export function createCompatClient() {
           return { data: { user: null }, error: normalizeError(error) };
         }
       },
-      async signInWithPassword(..._args: any[]) {
-        return unsupportedAuth("Use o fluxo Neon Auth em /api/auth/[...path].");
-      },
-      async signUp(..._args: any[]) {
-        return unsupportedAuth("Use o fluxo Neon Auth em /api/auth/[...path].");
-      },
-      async resetPasswordForEmail(..._args: any[]) {
-        return unsupportedAuth("Recuperação de senha deve passar pelo Managed Better Auth.");
-      },
-      async updateUser(..._args: any[]) {
-        return unsupportedAuth("Managed Better Auth não permite alterar senha por updateUser().");
-      },
-      async exchangeCodeForSession(..._args: any[]) {
-        return { data: null, error: null };
-      },
-      async signOut(..._args: any[]) {
-        return { error: null };
-      },
+
     },
     storage,
     from(table: string) {
-      return new QueryBuilder(table);
+      return new QueryBuilder(table, shareToken);
     },
     rpc(name: string, args: Record<string, unknown> = {}) {
       return runRpc(name, args);
@@ -69,7 +52,11 @@ class QueryBuilder implements PromiseLike<Result<any>> {
   private conflictColumns: string[] = [];
   private ignoreDuplicates = false;
 
-  constructor(private table: string) {}
+  constructor(private table: string, private shareToken?: string) {}
+
+  private query(sql: string, values: unknown[] = []) {
+    return this.shareToken ? transaction(client => client.query(sql, values), this.shareToken) : query(sql, values);
+  }
 
   select(columns = "*", options?: { count?: "exact"; head?: boolean }) {
     this.selected = columns || "*";
@@ -85,8 +72,8 @@ class QueryBuilder implements PromiseLike<Result<any>> {
   upsert(payload: any, options?: { onConflict?: string; ignoreDuplicates?: boolean }) {
     this.mode = "upsert";
     this.payload = payload;
-    this.conflictColumns = (options?.onConflict || "").split(",").map((x) => x.trim()).filter(Boolean);
-    this.ignoreDuplicates = options?.ignoreDuplicates === true;
+    this.conflictColumns = (options?.onConflict || ({ profiles: "id", feed_likes: "post_id,user_id", feed_bookmarks: "post_id,user_id", feed_reports: "post_id,user_id", user_follows: "follower_id,following_id", notification_preferences: "user_id", travel_stats: "user_id" }[this.table] || "id")).split(",").map((x) => x.trim()).filter(Boolean);
+    this.ignoreDuplicates = options?.ignoreDuplicates === true || ["feed_likes", "feed_bookmarks", "feed_reports", "user_follows"].includes(this.table);
     return this;
   }
 
@@ -188,19 +175,19 @@ class QueryBuilder implements PromiseLike<Result<any>> {
   private executeSelect() {
     const values: unknown[] = [];
     const columns = this.countMode && this.head ? "count(*)::int as __count" : selectedColumns(this.selected);
-    return query(`select ${columns} from ${quoteIdentifier(this.table)}${this.whereClause(values)}${this.orderClause()}${this.limitClause(values)}`, values);
+    return this.query(`select ${columns} from ${quoteIdentifier(this.table)}${this.whereClause(values)}${this.orderClause()}${this.limitClause(values)}`, values);
   }
 
   private executeInsert() {
     const rows = Array.isArray(this.payload) ? this.payload : [this.payload];
-    if (!rows.length) return query("select null where false");
+    if (!rows.length) return this.query("select null where false");
     const columns = Object.keys(rows[0]);
     const values: unknown[] = [];
     const tuples = rows.map((row) => `(${columns.map((column) => {
       values.push(row[column]);
       return `$${values.length}`;
     }).join(", ")})`).join(", ");
-    return query(`insert into ${quoteIdentifier(this.table)} (${columns.map(quoteIdentifier).join(", ")}) values ${tuples} returning ${selectedColumns(this.selected)}`, values);
+    return this.query(`insert into ${quoteIdentifier(this.table)} (${columns.map(quoteIdentifier).join(", ")}) values ${tuples} returning ${selectedColumns(this.selected)}`, values);
   }
 
   private executeUpdate() {
@@ -209,17 +196,17 @@ class QueryBuilder implements PromiseLike<Result<any>> {
       values.push(value);
       return `${quoteIdentifier(column)} = $${values.length}`;
     }).join(", ");
-    return query(`update ${quoteIdentifier(this.table)} set ${assignments}${this.whereClause(values)} returning ${selectedColumns(this.selected)}`, values);
+    return this.query(`update ${quoteIdentifier(this.table)} set ${assignments}${this.whereClause(values)} returning ${selectedColumns(this.selected)}`, values);
   }
 
   private executeDelete() {
     const values: unknown[] = [];
-    return query(`delete from ${quoteIdentifier(this.table)}${this.whereClause(values)} returning ${selectedColumns(this.selected)}`, values);
+    return this.query(`delete from ${quoteIdentifier(this.table)}${this.whereClause(values)} returning ${selectedColumns(this.selected)}`, values);
   }
 
   private executeUpsert() {
     const rows = Array.isArray(this.payload) ? this.payload : [this.payload];
-    if (!rows.length) return query("select null where false");
+    if (!rows.length) return this.query("select null where false");
     const columns = Object.keys(rows[0]);
     const values: unknown[] = [];
     const tuples = rows.map((row) => `(${columns.map((column) => {
@@ -230,7 +217,7 @@ class QueryBuilder implements PromiseLike<Result<any>> {
     const update = this.ignoreDuplicates
       ? "do nothing"
       : `do update set ${columns.map((column) => `${quoteIdentifier(column)} = excluded.${quoteIdentifier(column)}`).join(", ")}`;
-    return query(`insert into ${quoteIdentifier(this.table)} (${columns.map(quoteIdentifier).join(", ")}) values ${tuples} on conflict ${conflict} ${update} returning ${selectedColumns(this.selected)}`, values);
+    return this.query(`insert into ${quoteIdentifier(this.table)} (${columns.map(quoteIdentifier).join(", ")}) values ${tuples} on conflict ${conflict} ${update} returning ${selectedColumns(this.selected)}`, values);
   }
 
   private whereClause(values: unknown[]) {
@@ -312,7 +299,7 @@ function groupBy(rows: any[], key: string) {
 async function runRpc(name: string, args: Record<string, unknown>) {
   try {
     if (name === "search_profiles") {
-      const result = await query("select * from search_profiles($1, $2)", [args.search_query, args.limit_count ?? 20]);
+      const result = await query("select * from search_profiles($1, $2)", [args.search_query ?? args.search_term, args.limit_count ?? 20]);
       return { data: result.rows, error: null };
     }
     if (name === "profile_contribution_score") {
@@ -325,10 +312,6 @@ async function runRpc(name: string, args: Record<string, unknown>) {
   }
 }
 
-function unsupportedAuth(message: string) {
-  return { data: null, error: new Error(message) };
-}
-
 function normalizeError(error: unknown) {
-  return error instanceof Error ? error : new Error(String(error));
+  return new Error("Não foi possível acessar os dados. Tente novamente.");
 }
