@@ -2,6 +2,7 @@ import next from "eslint-config-next";
 
 export default [
   ...next,
+  { ignores: ["work/**"] },
   {
     rules: {
       "react-hooks/set-state-in-effect": "off",

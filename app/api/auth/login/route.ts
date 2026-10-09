@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/neon/auth";
 
 export async function POST(request: Request) {
   try {
@@ -11,16 +11,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Informe e-mail e senha." }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await auth.signIn.email({ email, password });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 401 });
+    if (error) return NextResponse.json({ error: "Não foi possível entrar. Confira seus dados." }, { status: 401 });
 
     return NextResponse.json({ authenticated: true });
   } catch (error) {
-    console.error("Login error:", error);
+    console.error("login_failed");
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Erro ao entrar." },
+      { error: "Não foi possível entrar agora." },
       { status: 500 }
     );
   }

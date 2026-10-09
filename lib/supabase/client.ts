@@ -24,10 +24,12 @@ export function createClient() {
         });
       },
       async signOut() {
-        return authClient.signOut();
+        const result = await authClient.signOut();
+        if (!result.error) { for (const storage of [localStorage, sessionStorage]) for (const key of Object.keys(storage)) if (key.startsWith("nabagagem:offline-trip:")) storage.removeItem(key); }
+        return result;
       },
       async resetPasswordForEmail(email: string) {
-        return authClient.forgetPassword?.({ email }) || {
+        return authClient.requestPasswordReset({ email, redirectTo: new URL("/redefinir-senha", window.location.origin).toString() }) || {
           error: new Error("Fluxo de recuperação não configurado no Managed Better Auth."),
         };
       },
@@ -37,17 +39,17 @@ export function createClient() {
         };
       },
     },
+    // Neon PostgreSQL has no Supabase realtime channel. Poll real protected APIs.
     channel(_name?: string) {
+      const listeners = new Set<() => void>();
+      let timer: ReturnType<typeof setInterval> | undefined;
       return {
-        on(..._args: any[]) {
-          return this;
-        },
-        subscribe(..._args: any[]) {
-          return this;
-        },
+        on(_event: string, _filter: unknown, callback: () => void) { listeners.add(callback); return this; },
+        subscribe() { if (!timer) timer = setInterval(() => { if (document.visibilityState === "visible" && navigator.onLine) listeners.forEach(callback => callback()); }, 30000); return this; },
+        unsubscribe() { if (timer) clearInterval(timer); listeners.clear(); },
       };
     },
-    removeChannel(..._args: any[]) {},
+    removeChannel(channel: { unsubscribe: () => void }) { channel.unsubscribe(); },
     from(..._args: any[]) {
       throw new Error("Consultas no navegador devem passar por rotas API protegidas.");
     },

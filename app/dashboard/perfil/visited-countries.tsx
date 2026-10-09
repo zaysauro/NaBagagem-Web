@@ -1,16 +1,11 @@
 "use client";
 
+import { COUNTRY_CODES, countryName } from "@/lib/countries";
 import { useEffect, useState } from "react";
 
 type Country = { id: string; country: string };
 
-const suggestions = [
-  "Brasil", "Argentina", "Chile", "Uruguai", "Paraguai", "Peru", "Bolívia", "Colômbia",
-  "Estados Unidos", "Canadá", "México", "Portugal", "Espanha", "França", "Itália",
-  "Alemanha", "Reino Unido", "Irlanda", "Japão", "Coreia do Sul", "China", "Tailândia",
-  "Austrália", "Nova Zelândia", "Marrocos", "Egito", "África do Sul", "Turquia", "Grécia",
-  "Suíça", "Holanda", "Bélgica", "Áustria", "Emirados Árabes Unidos"
-];
+const suggestions = COUNTRY_CODES.map(code => countryName(code)).sort((a,b) => a.localeCompare(b, "pt-BR"));
 
 export default function VisitedCountries() {
   const [items, setItems] = useState<Country[]>([]);

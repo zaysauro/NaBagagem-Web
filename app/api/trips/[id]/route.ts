@@ -1,3 +1,4 @@
+import { cleanupDeletedObjects } from "@/lib/neon/storage-cleanup";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -52,7 +53,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (!canEdit) return NextResponse.json({ error: "Você não tem permissão para editar esta viagem." }, { status: 403 });
 
   const body = await request.json();
+  if (typeof body.status === "string") {
+    if (trip.user_id !== user.id || !["planned","ongoing","completed","archived"].includes(body.status)) return NextResponse.json({ error: "Status ou permissão inválida." }, { status: 400 });
+    const { data, error } = await supabase.from("trips").update({ status: body.status }).eq("id", id).select().single();
+    return error ? NextResponse.json({ error: error.message }, { status: 400 }) : NextResponse.json({ trip: data });
+  }
   if (typeof body.is_public === "boolean") {
+    if (trip.user_id !== user.id) return NextResponse.json({ error: "Somente o proprietário pode publicar a viagem." }, { status: 403 });
     const { data, error } = await supabase.from("trips").update({ is_public: body.is_public }).eq("id", id).select().single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
     return NextResponse.json({ trip: data });
@@ -62,8 +69,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     description: String(body.description || "").trim() || null,
     start_date: body.start_date || null,
     end_date: body.end_date || null,
-    budget_amount: body.budget_amount === "" || body.budget_amount == null ? null : Number(body.budget_amount),
-    budget_currency: String(body.budget_currency || "BRL").trim().toUpperCase().slice(0,8) || "BRL",
+    budget_amount: body.budget_amount === undefined ? trip.budget_amount : body.budget_amount === "" || body.budget_amount == null ? null : Number(body.budget_amount),
+    budget_currency: String(body.budget_currency || trip.budget_currency || "BRL").trim().toUpperCase().slice(0,8) || "BRL",
   };
   if (!updates.title) return NextResponse.json({ error: "Informe o nome da viagem." }, { status: 400 });
 
@@ -80,5 +87,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
   const { error } = await supabase.from("trips").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  await cleanupDeletedObjects();
   return NextResponse.json({ ok: true });
 }

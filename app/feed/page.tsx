@@ -8,7 +8,7 @@ import TravelGallery from "@/app/feed/travel-gallery";
 
 type Media = { id: string; public_url: string };
 type Comment = {
-  id:string; user_id:string; body:string; approved:boolean; created_at:string;
+  id:string; user_id:string; body:string; approved:boolean; moderation_state?:string; created_at:string;
   profiles?: {display_name?:string; username?:string}|null;
 };
 type Trip = { id: string; title: string; start_date: string | null; end_date: string | null };
@@ -199,7 +199,7 @@ export default function FeedPage() {
   async function moderateComment(commentId:string,approved:boolean,postId:string){
     const r=await fetch("/api/feed/comments",{method:"PATCH",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({comment_id:commentId,approved})});
-    if(r.ok)setPosts(x=>x.map(p=>p.id===postId?{...p,comments:p.comments.map(c=>c.id===commentId?{...c,approved}:c)}:p));
+    if(r.ok)setPosts(x=>x.map(p=>p.id===postId?{...p,comments:p.comments.map(c=>c.id===commentId?{...c,approved,moderation_state:approved?"approved":"hidden"}:c)}:p));
     else{const d=await r.json();setMessage(d.error||"Não foi possível moderar.");}
   }
 
@@ -294,9 +294,9 @@ export default function FeedPage() {
                 {p.comments.length>0&&<div className="mt-4 space-y-2 border-t pt-4">
                   {p.comments.map(c=><div key={c.id} className={"rounded-xl p-3 text-sm "+(c.approved?"bg-neutral-50":"border border-dashed bg-amber-50")}>
                     <div className="flex items-start justify-between gap-3">
-                      <div><b>{c.profiles?.display_name||"Viajante"}</b><p className="mt-1">{c.body}</p>{!c.approved&&<span className="text-xs text-amber-700">Aguardando aprovação</span>}</div>
+                      <div><b>{c.profiles?.display_name||"Viajante"}</b><p className="mt-1">{c.body}</p>{!c.approved&&<span className="text-xs text-amber-700">{c.moderation_state==="hidden"?"Comentário oculto":"Aguardando aprovação"}</span>}</div>
                       <div className="flex shrink-0 gap-2 text-xs">
-                        {p.user_id===c.user_id&&<button onClick={()=>moderateComment(c.id,!c.approved,p.id)} className="font-semibold">{c.approved?"Ocultar":"Aprovar"}</button>}
+                        {p.isMine&&<button onClick={()=>moderateComment(c.id,!c.approved,p.id)} className="font-semibold">{c.approved?"Ocultar":"Aprovar"}</button>}
                         <button onClick={()=>deleteComment(c.id,p.id)} className="text-red-600">Excluir</button>
                       </div>
                     </div>

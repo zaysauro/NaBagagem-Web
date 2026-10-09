@@ -1,3 +1,4 @@
+import DashboardOverview from "./dashboard-overview";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, Luggage, Plus } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -18,7 +19,7 @@ export default async function DashboardPage(){
   let error = false;
   try {
     const result = await query<typeof trips[number]>(
-      "select id, title, description, start_date, end_date from trips where user_id = $1 order by start_date desc nulls last, created_at desc",
+      "select id, title, description, start_date, end_date from trips where user_id = $1 or exists(select 1 from trip_members m where m.trip_id=trips.id and m.user_id=$1) order by start_date desc nulls last, created_at desc",
       [user.id],
     );
     trips = result.rows;
@@ -49,8 +50,9 @@ export default async function DashboardPage(){
           </Link>
         </div>
 
+        {!error && <DashboardOverview userId={user.id} />}
         {error ? (
-          <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">Não foi possível carregar suas viagens. Verifique se a estrutura do banco foi aplicada no Neon.</div>
+          <div role="alert" className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">Não foi possível carregar suas viagens. Tente novamente em alguns instantes.</div>
         ) : trips&&trips.length>0 ? (
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {trips.map(trip=>

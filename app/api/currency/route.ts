@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
   try {
     const url = new URL("https://api.frankfurter.app/latest");
-    url.searchParams.set("amount", String(amount));
+    url.searchParams.set("amount", "1");
     url.searchParams.set("from", from);
     url.searchParams.set("to", to);
     const response = await fetch(url, { next: { revalidate: 900 } });
@@ -21,8 +21,9 @@ export async function GET(request: Request) {
     if (!response.ok || typeof data.rates?.[to] !== "number") {
       return NextResponse.json({ error: "Não foi possível obter a cotação." }, { status: 502 });
     }
-    const converted = data.rates[to];
-    return NextResponse.json({ from, to, amount, rate: converted / amount, converted, date: data.date });
+    const rate = data.rates[to];
+    const converted = amount * rate;
+    return NextResponse.json({ from, to, amount, rate, converted, date: data.date });
   } catch {
     return NextResponse.json({ error: "Serviço de câmbio indisponível." }, { status: 502 });
   }

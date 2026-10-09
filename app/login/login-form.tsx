@@ -44,7 +44,7 @@ export default function LoginForm() {
       <input
         required
         type="email"
-        placeholder="E-mail"
+        aria-label="E-mail" placeholder="E-mail"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="w-full rounded-xl border px-4 py-3"
@@ -54,7 +54,7 @@ export default function LoginForm() {
           required
           minLength={6}
           type="password"
-          placeholder="Senha"
+          aria-label="Senha" placeholder="Senha"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="w-full rounded-xl border px-4 py-3"

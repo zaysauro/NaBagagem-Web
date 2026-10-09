@@ -1,12 +1,17 @@
 "use client";
 
+import {browserLocale,dictionaries,type Locale} from "@/lib/i18n/dictionaries";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Notifications from "@/app/dashboard/notifications";
 
-const items=[["/dashboard","Início"],["/buscar","Buscar"],["/feed","Feed"],["/descoberta","Descobrir"],["/favoritos","Favoritos"],["/dashboard/perfil","Perfil"],["/dashboard/configuracoes","Configurações"]] as const;
+
 
 export default function SiteHeader({name="NaBagagem"}:{name?:string}){
+ const [locale,setLocale]=useState<Locale>("pt-BR");
+ const t=dictionaries[locale];
+ const items=[["/dashboard",t.home],["/buscar",t.search],["/feed",t.feed],["/descoberta",t.discover],["/favoritos",t.favorites],["/dashboard/perfil",t.profile],["/dashboard/configuracoes",t.settings]];
+ useEffect(()=>{const update=()=>setLocale(browserLocale());update();window.addEventListener("nabagagem-locale",update);return()=>window.removeEventListener("nabagagem-locale",update);},[]);
  const [compact,setCompact]=useState(false);
  const [dark,setDark]=useState(false);
  const [menuOpen,setMenuOpen]=useState(false);

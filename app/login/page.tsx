@@ -11,7 +11,6 @@ export default function LoginPage(){
         <p className="mt-2 text-neutral-600">Acesse sua conta do NaBagagem.</p>
       </div>
       <LoginForm/>
-      <p className="mt-6 text-center text-sm text-neutral-500">Ainda não tem conta? <Link href="/cadastro" className="font-semibold text-neutral-950 underline">Criar conta</Link></p>
     </div>
   </main>
 }

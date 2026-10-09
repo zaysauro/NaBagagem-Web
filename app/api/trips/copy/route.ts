@@ -1,47 +1,26 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-
+import { getCurrentUser } from "@/lib/neon/auth";
+import { transaction } from "@/lib/neon/db";
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Faça login para copiar a viagem." }, { status: 401 });
-  const body = await request.json();
-  const token = String(body.token || "").trim();
-  if (!token) return NextResponse.json({ error: "Link de compartilhamento inválido." }, { status: 400 });
-
-  const { data: source } = await supabase.from("trips")
-    .select("id,title,description,start_date,end_date").eq("share_token", token).maybeSingle();
-  if (!source) return NextResponse.json({ error: "Viagem não encontrada." }, { status: 404 });
-
-  const { data: copy, error: tripError } = await supabase.from("trips").insert({
-    user_id: user.id,
-    title: source.title + " (cópia)",
-    description: source.description,
-    start_date: source.start_date,
-    end_date: source.end_date
-  }).select("id").single();
-  if (tripError || !copy) return NextResponse.json({ error: tripError?.message || "Não foi possível copiar a viagem." }, { status: 400 });
-
-  const { data: locations } = await supabase.from("trip_locations")
-    .select("id,name,city,country,latitude,longitude,visited_at,notes,order_index")
-    .eq("trip_id", source.id).order("order_index").order("created_at");
-
-  const locationMap = new Map<string,string>();
-  if (locations?.length) {
-    const rows = locations.map((l:any)=>({trip_id:copy.id,name:l.name,city:l.city,country:l.country,latitude:l.latitude,longitude:l.longitude,visited_at:l.visited_at,notes:l.notes,order_index:l.order_index}));
-    const { data: insertedLocations, error } = await supabase.from("trip_locations").insert(rows).select("id,order_index");
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    (insertedLocations || []).forEach((l:any,i:number)=>locationMap.set(String(locations[i].id),String(l.id)));
-  }
-
-  const { data: events } = await supabase.from("trip_events")
-    .select("title,description,event_date,start_time,end_time,location_id,day_index,status,color")
-    .eq("trip_id", source.id).order("day_index").order("event_date").order("start_time");
-  if (events?.length) {
-    const rows = events.map((e:any)=>({trip_id:copy.id,title:e.title,description:e.description,event_date:e.event_date,start_time:e.start_time,end_time:e.end_time,location_id:e.location_id?locationMap.get(String(e.location_id))||null:null,day_index:e.day_index,status:e.status,color:e.color}));
-    const { error } = await supabase.from("trip_events").insert(rows);
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  }
-
-  return NextResponse.json({ trip_id: copy.id }, { status: 201 });
+ const user = await getCurrentUser();
+ if (!user) return NextResponse.json({ error: "Faça login para copiar a viagem." }, { status: 401 });
+ try {
+  const body = await request.json(); const token = typeof body.token === "string" ? body.token : "";
+  const copy = await transaction(async client => {
+   const source = await client.query("select id,title,description,start_date,end_date from trips where ($1::uuid is not null and id=$1 and (user_id::text=$3 or is_public)) or ($2<>'' and share_token=$2)", [body.trip_id || null,token,user.id]);
+   if (!source.rows[0]) return null;
+   const trip = source.rows[0];
+   const created = await client.query("insert into trips(user_id,title,description,start_date,end_date,source_trip_id) values($1,$2,$3,$4,$5,$6) returning id",[user.id,`${trip.title.slice(0,110)} (cópia)`,trip.description,trip.start_date,trip.end_date,trip.id]);
+   const newId = created.rows[0].id; const locations = await client.query("select id,name,city,country,latitude,longitude,order_index from trip_locations where trip_id=$1 order by order_index",[trip.id]);
+   const mapping = new Map<string,string>();
+   for (const location of locations.rows) {
+    const inserted = await client.query("insert into trip_locations(trip_id,name,city,country,latitude,longitude,order_index) values($1,$2,$3,$4,$5,$6,$7) returning id",[newId,location.name,location.city,location.country,location.latitude,location.longitude,location.order_index]);
+    mapping.set(location.id,inserted.rows[0].id);
+   }
+   const events = await client.query("select title,event_date,start_time,end_time,location_id,day_index,color,order_index,activity_type from trip_events where trip_id=$1 order by day_index,order_index",[trip.id]);
+   for (const e of events.rows) await client.query("insert into trip_events(trip_id,title,event_date,start_time,end_time,location_id,day_index,color,order_index,activity_type) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",[newId,e.title,e.event_date,e.start_time,e.end_time,mapping.get(e.location_id)||null,e.day_index,e.color,e.order_index,e.activity_type]);
+   return newId;
+  },token);
+  return copy ? NextResponse.json({ trip_id: copy },{ status: 201 }) : NextResponse.json({error:"Viagem não encontrada."},{status:404});
+ } catch { return NextResponse.json({ error: "Não foi possível copiar a viagem." },{status:400}); }
 }

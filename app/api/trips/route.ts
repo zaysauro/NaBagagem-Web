@@ -13,7 +13,7 @@ export async function GET() {
 
     const result = await query(
       `select id, user_id, title, description, start_date, end_date, created_at
-         from trips where user_id = $1
+         from trips where user_id = $1 or exists(select 1 from trip_members m where m.trip_id=trips.id and m.user_id=$1)
          order by start_date desc nulls last, created_at desc`,
       [user.id],
     );
