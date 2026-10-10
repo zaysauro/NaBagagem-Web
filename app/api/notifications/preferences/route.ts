@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/neon/auth";
+import { query } from "@/lib/neon/db";
 
+export const runtime = "nodejs";
 const defaults = {
   trip_reminders: true,
   reservation_reminders: true,
@@ -8,56 +10,37 @@ const defaults = {
   weather_alerts: true,
   system_notifications: true,
 };
+const fields = Object.keys(defaults) as (keyof typeof defaults)[];
+const selection = fields.join(",");
 
 export async function GET() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
-
-  const { data, error } = await supabase
-    .from("notification_preferences")
-    .select("trip_reminders,reservation_reminders,social_notifications,weather_alerts,system_notifications")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-
-  if (data) return NextResponse.json({ preferences: data });
-
-  const { data: created, error: createError } = await supabase
-    .from("notification_preferences")
-    .insert({ user_id: user.id, ...defaults })
-    .select("trip_reminders,reservation_reminders,social_notifications,weather_alerts,system_notifications")
-    .single();
-
-  if (createError) return NextResponse.json({ error: createError.message }, { status: 400 });
-  return NextResponse.json({ preferences: created });
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+    const result = await query(`select ${selection} from notification_preferences where user_id=$1`, [user.id]);
+    return NextResponse.json({ preferences: { ...defaults, ...(result.rows[0] ?? {}) } });
+  } catch {
+    return NextResponse.json({ error: "Não foi possível carregar as notificações." }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
-
-  const body = await request.json().catch(() => ({}));
-  const updates: Record<string, boolean> = {};
-
-  for (const key of Object.keys(defaults)) {
-    if (body[key] !== undefined) updates[key] = Boolean(body[key]);
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+    const body = await request.json().catch(() => ({}));
+    const changes = fields.filter(key => Object.prototype.hasOwnProperty.call(body, key));
+    if (!changes.length) return NextResponse.json({ error: "Nenhuma preferência informada." }, { status: 400 });
+    if (changes.some(key => typeof body[key] !== "boolean")) return NextResponse.json({ error: "Preferências inválidas." }, { status: 400 });
+    const values = fields.map(key => body[key] ?? defaults[key]);
+    const result = await query(
+      `insert into notification_preferences (user_id,${selection}) values ($1,$2,$3,$4,$5,$6)
+       on conflict (user_id) do update set ${changes.map(key => `${key}=excluded.${key}`).join(",")}, updated_at=now()
+       returning ${selection}`,
+      [user.id, ...values],
+    );
+    return NextResponse.json({ preferences: result.rows[0] });
+  } catch {
+    return NextResponse.json({ error: "Não foi possível salvar as notificações." }, { status: 500 });
   }
-
-  if (!Object.keys(updates).length) {
-    return NextResponse.json({ error: "Nenhuma preferência informada." }, { status: 400 });
-  }
-
-  const { data, error } = await supabase
-    .from("notification_preferences")
-    .upsert({ user_id: user.id, ...updates, updated_at: new Date().toISOString() }, { onConflict: "user_id" })
-    .select("trip_reminders,reservation_reminders,social_notifications,weather_alerts,system_notifications")
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ preferences: data });
 }
