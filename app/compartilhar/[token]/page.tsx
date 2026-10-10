@@ -4,7 +4,7 @@ import SharedTripActions from "../../viagem/shared-trip-actions";
 
 export default async function SharedTripPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const supabase = await createClient();
+  const supabase = await createClient(token);
   const { data: trip } = await supabase.from("trips").select("id,title,description,start_date,end_date,share_token").eq("share_token", token).maybeSingle();
   if (!trip) return <main className="min-h-screen p-8"><h1 className="text-2xl font-bold">Viagem não encontrada</h1><p className="mt-2 text-neutral-500">O link pode ter expirado ou sido removido.</p></main>;
   const [{ data: locations }, { data: events }] = await Promise.all([

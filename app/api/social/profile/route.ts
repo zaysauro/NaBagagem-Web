@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     .eq("user_id", profile.id)
     .maybeSingle();
 
-  if (stats?.is_public === false) return NextResponse.json({ error: "Perfil privado." }, { status: 403 });
+  if (stats?.is_public !== true) return NextResponse.json({ error: "Perfil privado." }, { status: 403 });
 
   const [{ count: followers }, { count: following }, { data: { user } }] = await Promise.all([
     supabase.from("user_follows").select("*", { count: "exact", head: true }).eq("following_id", profile.id),

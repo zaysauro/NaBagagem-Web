@@ -8,7 +8,7 @@ Criar uma versão web completa e persistente do NaBagagem usando:
 
 - Next.js + TypeScript
 - Tailwind CSS
-- Supabase Auth, Postgres, Storage e Realtime
+- Neon Auth, Lakebase Postgres e Object Storage
 - Vercel para deploy
 - GitHub para versionamento
 
@@ -31,7 +31,7 @@ O aplicativo iOS original permanece intacto em [zaysauro/NaBagagem-App](https://
 ## Desenvolvimento local
 
 1. Copie `.env.example` para `.env.local`.
-2. Preencha as credenciais do projeto Supabase.
+2. Preencha as credenciais do projeto Neon.
 3. Instale as dependências:
 
 ```bash
@@ -46,6 +46,6 @@ npm run dev
 
 ## Arquitetura
 
-O banco será criado com migrations SQL e Row Level Security. O frontend usa Supabase SSR para autenticação segura no App Router.
+O banco será criado com migrations SQL. O frontend usa Neon Auth para autenticação segura no App Router.
 
 > Esta versão é uma reconstrução web do produto. O código Swift do aplicativo original é usado como referência funcional e visual, não como código a ser convertido literalmente.

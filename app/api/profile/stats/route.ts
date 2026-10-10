@@ -1,3 +1,4 @@
+import { countryCode, countryName, COUNTRY_BASE } from "@/lib/countries";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -50,9 +51,10 @@ export async function GET() {
   for(let i=1;i<points.length;i++) km+=haversine(points[i-1],points[i]);
 
   const visitPoints=(locations||[]).filter(x=>x.latitude!=null&&x.longitude!=null).map(x=>({id:x.id,city:x.city||null,country:x.country||null,latitude:Number(x.latitude),longitude:Number(x.longitude)}));
-  const tripCountries=(locations||[]).map(x=>x.country?.trim()).filter(Boolean) as string[];
+  const tripCountries=(locations||[]).filter(x=>x.visited_at && x.visited_at <= new Date().toISOString().slice(0,10)).map(x=>x.country?.trim()).filter(Boolean) as string[];
   const savedCountries=(manualCountries||[]).map(x=>x.country?.trim()).filter(Boolean) as string[];
-  const countries=[...new Set([...tripCountries,...savedCountries])] as string[];
+  const countryCodes=[...new Set([...tripCountries,...savedCountries].map(countryCode).filter((code): code is string => !!code))];
+  const countries=countryCodes.map(code=>countryName(code));
   const cities=[...new Set((locations||[]).map(x=>[x.city,x.country].filter(Boolean).join(", ")).filter(Boolean))] as string[];
   const days=(trips||[]).reduce((sum,t)=>sum+tripDays(t.start_date,t.end_date),0);
   const hours=(events||[]).reduce((sum,e)=>sum+eventHours(e.start_time,e.end_time),0);
@@ -90,8 +92,8 @@ export async function GET() {
     stats:{
       trips:trips?.length||0,countries:countries.length,cities:cities.length,
       kilometers:Math.round(km),travelDays:days,travelHours:Math.round(hours*10)/10,
-      countryPercent:Math.min(100,(countries.length/195)*100),
-      countriesList:countries,citiesList:cities,visitPoints,totalExpensesBRL:(expenses||[]).filter(e=>e.currency==="BRL").reduce((s,e)=>s+Number(e.amount||0),0)
+      countryPercent:Math.min(100,(countries.length/COUNTRY_BASE)*100),
+      countryBase:COUNTRY_BASE,countryCodes,countriesList:countries,citiesList:cities,visitPoints,totalExpensesBRL:(expenses||[]).filter(e=>e.currency==="BRL").reduce((s,e)=>s+Number(e.amount||0),0)
     },
     monthly,badges,earnedBadges:earned||[]
   });

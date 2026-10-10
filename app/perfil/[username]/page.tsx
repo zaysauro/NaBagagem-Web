@@ -65,8 +65,8 @@ export default async function PublicProfile({ params }: { params: Promise<{ user
   ]);
 
   const gallery = (media || []).slice(0, 12);
-  const countries = [...new Set((locations || []).map((x) => x.country).filter(Boolean))];
-  const cities = [...new Set((locations || []).map((x) => [x.city, x.country].filter(Boolean).join(", ")).filter(Boolean))];
+  const countries = [...new Set((locations || []).map((x: any) => x.country).filter(Boolean))] as string[];
+  const cities = [...new Set((locations || []).map((x: any) => [x.city, x.country].filter(Boolean).join(", ")).filter(Boolean))] as string[];
 
   const score = (trips || []).length * 20 + (posts || []).length * 8 + gallery.length * 4 + (interests || []).length * 2 + (followers || 0);
   const level = levelFor(score);

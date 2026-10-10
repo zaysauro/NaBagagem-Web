@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import AccountPreferences from "./account-preferences";
 import NotificationPreferences from "./notification-preferences";
 import SiteHeader from "@/app/components/site-header";
 
@@ -35,6 +36,7 @@ export default async function SettingsPage() {
             </p>
           </Link>
 
+          <AccountPreferences />
           <NotificationPreferences />
         </div>
       </div>

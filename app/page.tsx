@@ -1,102 +1,22 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Compass, Map, Sparkles } from "lucide-react";
+import Image from "next/image";
+import { ArrowDown, ArrowRight, ArrowUpRight, Check, Compass, MapPin, Route, Luggage, Wallet, BookOpen, Globe2 } from "lucide-react";
+import styles from "./landing.module.css";
 
-const cards = [
-  { icon: CalendarDays, k: "01", title: "Planeje sem perder a viagem", text: "Dias, horários, lugares, reservas, mapa, clima, gastos e checklist convivem no mesmo roteiro." },
-  { icon: Compass, k: "02", title: "Guarde como um caderno", text: "Fotos, notas e lugares ficam organizados pela história da viagem — não por um feed infinito." },
-  { icon: Map, k: "03", title: "Encontre quem já esteve lá", text: "Marque destinos que quer conhecer e descubra roteiros públicos de outros viajantes." },
+const features = [
+ {icon:Route,number:"01",title:"Um roteiro com a sua cara.",text:"Organize lugares e atividades por dia. Veja o caminho no mapa e deixe espaço para o inesperado."},
+ {icon:Luggage,number:"02",title:"Leve só o que importa.",text:"Monte suas malas, prepare o checklist e guarde os documentos da viagem no mesmo lugar."},
+ {icon:Wallet,number:"03",title:"Os gastos, sem surpresas.",text:"Defina seu orçamento e acompanhe as despesas de cada viagem, separadas por moeda."},
 ];
-
-export default function Home() {
-  return (
-    <main className="min-h-screen overflow-hidden bg-[#f4f1ea] text-neutral-950">
-      <a href="#conteudo" className="nbg-skip-link">Pular para o conteúdo</a>
-
-      <section className="relative min-h-[92vh] overflow-hidden px-5 pb-16 pt-8 sm:px-8 lg:px-12">
-        <div aria-hidden="true" className="nbg-drift pointer-events-none absolute -right-40 -top-48 h-[42rem] w-[42rem] rounded-full bg-[radial-gradient(circle,#cfc5ae,transparent_65%)] opacity-80" />
-        <div aria-hidden="true" className="nbg-float pointer-events-none absolute left-[8%] top-[38%] hidden h-36 w-36 rounded-[2rem] border border-black/10 bg-white/40 backdrop-blur-xl sm:block" />
-
-        <div className="mx-auto max-w-7xl">
-          <nav aria-label="Navegação principal" className="flex items-center justify-between py-3">
-            <Link href="/" aria-label="NaBagagem — página inicial" className="flex items-center gap-3 font-black tracking-tight">
-              <span aria-hidden="true" className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-950 text-white">N</span>
-              NaBagagem
-            </Link>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <Link href="/login" className="rounded-xl px-3 py-2 text-sm font-bold transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 sm:px-4">Entrar</Link>
-              <Link href="/cadastro" className="rounded-xl bg-neutral-950 px-3 py-2 text-sm font-bold text-white shadow-lg shadow-black/10 transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2 sm:px-4">Criar conta</Link>
-            </div>
-          </nav>
-
-          <div id="conteudo" className="grid min-h-[72vh] items-center gap-12 py-16 lg:grid-cols-[1.05fr_.95fr]">
-            <div className="nbg-fade-up max-w-3xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/55 px-3 py-1.5 text-xs font-black uppercase tracking-[.2em] backdrop-blur">
-                <Sparkles aria-hidden="true" size={13} />
-                Seu próximo capítulo começa aqui
-              </span>
-              <h1 className="mt-6 text-5xl font-black leading-[.94] tracking-[-.055em] sm:text-7xl lg:text-[5.8rem]">Viajar é mais do que chegar.</h1>
-              <p className="mt-7 max-w-xl text-lg leading-8 text-neutral-600">O NaBagagem junta o planejamento e a memória da viagem em um só lugar — com mapas, roteiros, fotos, gastos, clima e uma comunidade feita para descobrir caminhos.</p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Link href="/cadastro" className="group rounded-2xl bg-neutral-950 px-6 py-4 text-center text-sm font-black text-white shadow-xl shadow-black/10 transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950 focus-visible:ring-offset-2">
-                  Começar gratuitamente <ArrowRight aria-hidden="true" className="ml-1 inline-block transition-transform group-hover:translate-x-1" size={16} />
-                </Link>
-                <Link href="/descoberta" className="rounded-2xl border border-black/10 bg-white/65 px-6 py-4 text-center text-sm font-black backdrop-blur transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-950">Ver como funciona →</Link>
-              </div>
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-xs font-bold uppercase tracking-[.12em] text-neutral-400" aria-label="Recursos">
-                <span>Roteiros</span><span>Mapas</span><span>Memórias</span><span>Descoberta</span>
-              </div>
-            </div>
-
-            <div className="relative nbg-float" aria-hidden="true">
-              <div className="relative mx-auto max-w-md rotate-2 rounded-[2.5rem] border border-black/10 bg-[#171717] p-3 shadow-2xl">
-                <div className="rounded-[2rem] bg-[#f8f7f3] p-5">
-                  <div className="flex items-center justify-between"><span className="text-xs font-black uppercase tracking-[.15em] text-neutral-400">Caderno de viagem</span><span className="rounded-full bg-neutral-950 px-2 py-1 text-[10px] font-bold text-white">NaBagagem</span></div>
-                  <div className="mt-5 h-64 overflow-hidden rounded-[1.5rem] bg-[radial-gradient(circle_at_35%_25%,#ded5c5,transparent_32%),linear-gradient(145deg,#c5bba8,#817b70)]"><div className="h-full w-full bg-[linear-gradient(115deg,transparent_45%,rgba(255,255,255,.22)_46%,transparent_48%)]" /></div>
-                  <p className="mt-5 text-xs font-bold uppercase tracking-[.15em] text-neutral-400">12 — 18 outubro</p><h2 className="mt-1 text-2xl font-black">Japão, pelo caminho</h2>
-                  <div className="mt-4 flex flex-wrap gap-2"><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold">Kyoto</span><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold">Nara</span><span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold">Tokyo</span></div>
-                </div>
-              </div>
-              <div className="absolute -bottom-5 -left-4 rounded-2xl border border-black/10 bg-white/85 p-4 shadow-xl backdrop-blur"><p className="text-[10px] font-black uppercase tracking-[.15em] text-neutral-400">Descoberta</p><p className="mt-1 text-sm font-bold">“Alguém já fez esse caminho.”</p></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-black/10 bg-white px-5 py-20 sm:px-8" aria-labelledby="recursos-title">
-        <div className="mx-auto max-w-7xl">
-          <div className="max-w-2xl">
-            <p className="text-xs font-black uppercase tracking-[.18em] text-neutral-400">Uma plataforma para viajantes</p>
-            <h2 id="recursos-title" className="mt-3 text-4xl font-black tracking-tight sm:text-5xl">Menos rolagem. Mais caminho.</h2>
-            <p className="mt-4 text-neutral-500">Não queremos que sua viagem vire mais uma rede social. Queremos que o digital ajude você a viver, organizar e lembrar do que aconteceu.</p>
-          </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-3">
-            {cards.map((c, i) => {
-              const Icon = c.icon;
-              return (
-                <article key={c.k} className="nbg-fade-up rounded-[2rem] border border-black/10 bg-[#f8f7f3] p-6 transition duration-500 hover:-translate-y-1 hover:shadow-xl" style={{ animationDelay: (i * 120) + "ms" }}>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-neutral-400">{c.k}</span>
-                    <Icon aria-hidden="true" size={21} className="text-neutral-500" />
-                  </div>
-                  <h3 className="mt-12 text-2xl font-black">{c.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-neutral-600">{c.text}</p>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="px-5 py-24 sm:px-8">
-        <div className="mx-auto max-w-5xl rounded-[2.5rem] bg-neutral-950 p-8 text-white shadow-2xl sm:p-14">
-          <p className="text-xs font-black uppercase tracking-[.18em] text-white/40">Sua bússola digital</p>
-          <h2 className="mt-4 max-w-3xl text-4xl font-black tracking-tight sm:text-6xl">Marque um destino. Encontre uma história.</h2>
-          <p className="mt-5 max-w-2xl leading-7 text-white/60">Quando você disser que quer conhecer Kyoto, Lisboa ou qualquer outro lugar, a descoberta pode mostrar roteiros públicos de pessoas que já passaram por lá.</p>
-          <Link href="/cadastro" className="mt-8 inline-flex rounded-2xl bg-white px-6 py-4 text-sm font-black text-neutral-950 transition hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950">Entrar no NaBagagem</Link>
-        </div>
-      </section>
-
-      <footer className="border-t border-black/10 px-5 py-8 text-center text-xs font-semibold text-neutral-400">NaBagagem · planeje, viva, guarde.</footer>
-    </main>
-  );
-}
+export default function Home(){return <main className={styles.page}>
+ <a href="#conteudo" className="nbg-skip-link">Pular para o conteúdo</a>
+ <header className={styles.header}><Link href="/" className={styles.brand} aria-label="NaBagagem, página inicial"><Compass aria-hidden="true" size={29}/><span>NaBagagem<span className={styles.brandDot}>.</span></span></Link><nav className={styles.nav} aria-label="Navegação principal"><a href="#como-funciona">Como funciona</a><a href="#descubra">Inspire-se</a></nav><div className={styles.headerActions}><Link href="/login">Entrar</Link><Link className={styles.smallButton} href="/cadastro">Criar conta <ArrowUpRight size={15} aria-hidden="true"/></Link></div></header>
+ <section id="conteudo" className={styles.hero}><div className={styles.heroCopy}><p className={styles.eyebrow}><span/> PARA QUEM TEM O MUNDO NOS PLANOS</p><h1>A próxima história<br/> começa <em>na bagagem.</em></h1><p className={styles.lead}>Do primeiro “vamos?” à última lembrança.<br className={styles.desktopBreak}/> Planeje, organize e guarde suas viagens em um só lugar.</p><div className={styles.heroActions}><Link href="/cadastro" className={styles.button}>Planejar minha viagem <ArrowUpRight size={19} aria-hidden="true"/></Link><a href="#como-funciona" className={styles.textLink}>Conhecer o NaBagagem <ArrowDown size={16} aria-hidden="true"/></a></div><p className={styles.heroNote}><Check size={14} aria-hidden="true"/> Roteiro, bagagem e memórias. Tudo junto.</p></div>
+ <div className={styles.heroVisual}><div className={styles.photoFrame}><Image src="/images/lake-journey.jpg" alt="Vista de um barco de madeira em um lago cercado por montanhas" fill priority sizes="(max-width: 800px) 100vw, 50vw" className={styles.heroImage}/><div className={styles.photoShade}/><span className={styles.photoTag}><MapPin size={13} aria-hidden="true"/> UM DESTINO. MIL POSSIBILIDADES.</span><div className={styles.photoCaption}><span>Vá onde você<br/>se sente vivo.</span><ArrowUpRight size={36} aria-hidden="true"/></div></div><div className={styles.routeCard}><div className={styles.routeIcon}><Route size={21} aria-hidden="true"/></div><div><small>SEU PRÓXIMO ROTEIRO</small><strong>Um dia de cada vez.</strong><span>Planejado por você. Vivido do seu jeito.</span></div><Check size={17} aria-hidden="true"/></div><div className={styles.stamp} aria-hidden="true"><Globe2 size={23}/><span>COLECIONE<br/>CAMINHOS</span></div></div></section>
+ <div className={styles.ribbon}><span>ANTES, DURANTE E DEPOIS.</span><span><Route size={17} aria-hidden="true"/> Roteiros</span><span><Luggage size={17} aria-hidden="true"/> Bagagem</span><span><Wallet size={17} aria-hidden="true"/> Gastos</span><span><BookOpen size={17} aria-hidden="true"/> Memórias</span></div>
+ <section id="como-funciona" className={styles.features}><div className={styles.sectionHead}><div><p className={styles.eyebrow}>MENOS ABAS ABERTAS. MAIS MUNDO.</p><h2>Uma viagem inteira.<br/><em>Um lugar para organizar.</em></h2></div><p>Passagens aqui, reservas ali, uma lista perdida nas notas. Reúna os detalhes e aproveite o que realmente fez você sair de casa.</p></div><div className={styles.featureGrid}>{features.map(({icon:Icon,number,title,text})=><article key={number} className={styles.feature}><div className={styles.featureTop}><Icon size={25} strokeWidth={1.5} aria-hidden="true"/><span>{number}</span></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+ <section className={styles.planner}><div className={styles.plannerCopy}><p className={styles.eyebrow}>DA IDEIA AO ITINERÁRIO</p><h2>O melhor plano<br/>é <em>o seu.</em></h2><p>Uma manhã sem pressa. Aquele café que você salvou. Um desvio que vale a pena. Dê um lugar para cada ideia no seu roteiro.</p><ul><li><Check size={17} aria-hidden="true"/> Destinos e atividades organizados por dia</li><li><Check size={17} aria-hidden="true"/> Convites para planejar com sua companhia</li><li><Check size={17} aria-hidden="true"/> Fotos e documentos junto da viagem</li></ul><Link href="/cadastro" className={styles.textLink}>Tirar uma viagem do papel <ArrowRight size={17} aria-hidden="true"/></Link></div><div className={styles.itinerary}><div className={styles.itineraryTop}><span>MEU ROTEIRO</span><small>Exemplo de planejamento</small></div><div className={styles.itineraryTitle}><div><h3>Uma semana no Japão</h3><p><MapPin size={13} aria-hidden="true"/> Kyoto · Nara · Tokyo</p></div><span className={styles.tripBadge}>7 dias</span></div><div className={styles.days}><span>Dia 01</span><span>Dia 02</span><span>Dia 03</span><span>Dia 04</span></div><div className={styles.timeline}>{[{time:"09:00",title:"Uma manhã em Higashiyama",detail:"Caminhar, explorar e se perder um pouco."},{time:"12:30",title:"Pausa para um ramen",detail:"Um sabor novo também é uma lembrança."},{time:"16:00",title:"O pôr do sol no templo",detail:"O último compromisso: aproveitar."}].map((item,i)=><div className={styles.timelineItem} key={item.time}><time>{item.time}</time><span className={styles.timelineDot}>{i+1}</span><div><strong>{item.title}</strong><p>{item.detail}</p></div></div>)}</div><div className={styles.itineraryBottom}><Check size={14} aria-hidden="true"/> Espaço para os planos. E para mudar de ideia.</div></div></section>
+ <section id="descubra" className={styles.discovery}><div className={styles.discoveryPhoto}><Image src="/images/kyoto-journey.jpg" alt="Rua tradicional de Kyoto com um pagode ao fundo" fill sizes="(max-width: 800px) 100vw, 50vw"/><span><MapPin size={14} aria-hidden="true"/> Kyoto, Japão</span></div><div className={styles.discoveryCopy}><p className={styles.eyebrow}>O MUNDO CONTINUA CHAMANDO</p><h2>Seu próximo destino<br/>pode começar com<br/><em>uma boa história.</em></h2><p>Explore roteiros públicos, descubra lugares por outros olhares e encontre inspiração para a viagem que ainda vem.</p><Link className={styles.button} href="/descoberta">Explorar destinos <ArrowUpRight size={18} aria-hidden="true"/></Link></div></section>
+ <section className={styles.finalCta}><Compass size={35} strokeWidth={1.3} aria-hidden="true"/><p className={styles.eyebrow}>BORA COLOCAR O PÉ NA ESTRADA?</p><h2>Tem muita vida<br/><em>lá fora.</em></h2><Link href="/cadastro" className={styles.lightButton}>Começar minha próxima história <ArrowUpRight size={18} aria-hidden="true"/></Link><p>Você escolhe o destino. A gente ajuda com os detalhes.</p></section>
+ <footer className={styles.footer}><Link href="/" className={styles.brand}><Compass size={23} aria-hidden="true"/>NaBagagem.</Link><p>Planeje. Viva. Guarde.</p><div><Link href="/login">Entrar</Link><Link href="/cadastro">Criar conta</Link><a href="#conteudo">Voltar ao topo ↑</a></div></footer>
+ </main>}

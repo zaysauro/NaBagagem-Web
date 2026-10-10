@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const [profilesResult, likesResult, commentsResult, bookmarksResult, mediaResult] = await Promise.all([
     userIds.length ? supabase.from("profiles").select("id,display_name,username,avatar_url").in("id", userIds) : Promise.resolve({ data: [], error: null }),
     postIds.length ? supabase.from("feed_likes").select("post_id,user_id").in("post_id", postIds) : Promise.resolve({ data: [], error: null }),
-    postIds.length ? supabase.from("feed_comments").select("id,post_id,user_id,body,approved,created_at").in("post_id", postIds).order("created_at", { ascending: true }) : Promise.resolve({ data: [], error: null }),
+    postIds.length ? supabase.from("feed_comments").select("id,post_id,user_id,body,approved,moderation_state,created_at").in("post_id", postIds).order("created_at", { ascending: true }) : Promise.resolve({ data: [], error: null }),
     postIds.length ? supabase.from("feed_bookmarks").select("post_id,user_id").eq("user_id", user.id).in("post_id", postIds) : Promise.resolve({ data: [], error: null }),
     postIds.length ? supabase.from("feed_post_media").select("id,post_id,public_url,storage_path,created_at").in("post_id", postIds).order("created_at", { ascending: true }) : Promise.resolve({ data: [], error: null }),
   ]);

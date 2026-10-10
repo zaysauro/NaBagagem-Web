@@ -21,7 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     const { data: events } = await supabase.from("trip_events").select("id,title,description,event_date,start_time,end_time,location_id").eq("trip_id", id).order("event_date").order("start_time");
     const locationIds = (events || []).map((e: any) => e.location_id).filter(Boolean);
     const { data: locations } = locationIds.length ? await supabase.from("trip_locations").select("id,name,city,country").in("id", locationIds) : { data: [] as any[] };
-    const locationMap = new Map((locations || []).map((l: any) => [l.id, l]));
+    const locationMap = new Map<string, any>((locations || []).map((l: any) => [l.id, l]));
     const escIcs = (value: any) => String(value ?? "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\\\n");
     const dt = (date: any, time: any) => { if (!date) return null; const raw = String(time || "00:00").slice(0,5).replace(":", ""); return String(date).replace(/-/g, "") + "T" + raw + "00"; };
     const lines = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//NaBagagem//Trip Calendar//PT-BR","CALSCALE:GREGORIAN","METHOD:PUBLISH"];

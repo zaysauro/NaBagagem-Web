@@ -3,6 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import TripDetailClient from "./trip-detail-client";
 import TripMap from "./trip-map";
+import TripLifecycle from "./trip-lifecycle";
+import TripPacking from "./trip-packing";
+import TripFiles from "./trip-files";
 import TripTools from "./trip-tools";
 import TripWeather from "./trip-weather";
 import TripCurrency from "./trip-currency";
@@ -22,15 +25,17 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
 
   const { data: trip } = await supabase.from("trips").select("*").eq("id", id).maybeSingle();
   if (!trip) notFound();
+  // Authorization must happen before loading locations, events, or other private trip data.
+  const { data: accessMember } = await supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle();
+  if (trip.user_id !== user.id && !accessMember) notFound();
 
-  const [{ data: locations }, { data: events }, { data: member }] = await Promise.all([
+  const [{ data: locations }, { data: events }] = await Promise.all([
     supabase.from("trip_locations").select("*").eq("trip_id", id).order("order_index").order("created_at"),
     supabase.from("trip_events").select("*").eq("trip_id", id).order("day_index").order("order_index").order("event_date").order("start_time"),
-    supabase.from("trip_members").select("role").eq("trip_id", id).eq("user_id", user.id).maybeSingle(),
   ]);
 
   const isOwner = trip.user_id === user.id;
-  const canEdit = isOwner || member?.role === "editor";
+  const canEdit = isOwner || accessMember?.role === "editor";
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-neutral-50 px-3 pb-8 pt-24 sm:px-6">
@@ -63,7 +68,11 @@ export default async function TripPage({ params }: { params: Promise<{ id: strin
         <TripDetailClient tripId={trip.id} initialLocations={locations ?? []} initialEvents={events ?? []} canEdit={canEdit} />
         <TripCalendar startDate={trip.start_date} endDate={trip.end_date} events={(events ?? []).map((event:any)=>({ ...event, location_name:(locations ?? []).find((l:any)=>l.id===event.location_id)?.name || null }))} />
         <TripTools tripId={trip.id} canEdit={canEdit} />
-        <TripPublicToggle tripId={id} initial={!!trip.is_public} />
+        {isOwner && <TripLifecycle tripId={trip.id} status={trip.status} title={trip.title} description={trip.description} startDate={trip.start_date} endDate={trip.end_date} />}
+        <TripPacking tripId={trip.id} canEdit={canEdit} />
+        <TripFiles tripId={trip.id} canEdit={canEdit} kind="photo" />
+        <TripFiles tripId={trip.id} canEdit={canEdit} kind="document" />
+        {isOwner && <TripPublicToggle tripId={id} initial={!!trip.is_public} />}
 
         <TripSummary tripId={trip.id} initialEvents={events ?? []} />
 

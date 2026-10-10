@@ -11,15 +11,16 @@ const keyFor = (tripId: string) => `nabagagem:offline-trip:${tripId}`;
 
 export function saveOfflineTrip(tripId: string, snapshot: Omit<OfflineTripSnapshot, "cachedAt">) {
   try {
-    localStorage.setItem(keyFor(tripId), JSON.stringify({ ...snapshot, cachedAt: Date.now() }));
+    sessionStorage.setItem(keyFor(tripId), JSON.stringify({ ...snapshot, cachedAt: Date.now() }));
   } catch {}
 }
 
 export function readOfflineTrip(tripId: string): OfflineTripSnapshot | null {
   try {
-    const raw = localStorage.getItem(keyFor(tripId));
+    const raw = sessionStorage.getItem(keyFor(tripId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as OfflineTripSnapshot;
+    if (Date.now() - parsed.cachedAt > 3600000) { sessionStorage.removeItem(keyFor(tripId)); return null; }
     if (!Array.isArray(parsed.locations) || !Array.isArray(parsed.events)) return null;
     return parsed;
   } catch {
@@ -29,6 +30,6 @@ export function readOfflineTrip(tripId: string): OfflineTripSnapshot | null {
 
 export function clearOfflineTrip(tripId: string) {
   try {
-    localStorage.removeItem(keyFor(tripId));
+    sessionStorage.removeItem(keyFor(tripId));
   } catch {}
 }

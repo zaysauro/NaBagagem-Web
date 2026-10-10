@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { createAuthClient } from "@neondatabase/auth/next";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -15,13 +15,15 @@ export default function ResetPasswordPage() {
     event.preventDefault();
     if (loading) return;
     setError("");
-    if (password.length < 6) return setError("A senha precisa ter pelo menos 6 caracteres.");
+    if (password.length < 8) return setError("A senha precisa ter pelo menos 8 caracteres.");
     if (password !== confirmation) return setError("As senhas não são iguais.");
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { error: updateError } = await supabase.auth.updateUser({ password });
-      if (updateError) { setError(updateError.message); return; }
+      const auth = createAuthClient();
+      const token = new URLSearchParams(window.location.search).get("token");
+      if (!token) { setError("Link inválido. Solicite uma nova recuperação de senha."); return; }
+      const { error: updateError } = await auth.resetPassword({ newPassword: password, token });
+      if (updateError) { setError("Link inválido ou expirado. Solicite uma nova recuperação."); return; }
       setSuccess(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível redefinir a senha.");
@@ -46,8 +48,8 @@ export default function ResetPasswordPage() {
         <p className="mt-2 text-neutral-600">Escolha uma nova senha para sua conta.</p>
       </div>
       <form onSubmit={submit} className="mt-8 space-y-4">
-        <input required minLength={6} type="password" autoComplete="new-password" placeholder="Nova senha" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-neutral-950 focus:ring-2 focus:ring-neutral-200" />
-        <input required minLength={6} type="password" autoComplete="new-password" placeholder="Confirmar nova senha" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-neutral-950 focus:ring-2 focus:ring-neutral-200" />
+        <input required minLength={8} type="password" autoComplete="new-password" aria-label="Nova senha" placeholder="Nova senha" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-neutral-950 focus:ring-2 focus:ring-neutral-200" />
+        <input required minLength={8} type="password" autoComplete="new-password" aria-label="Confirmar nova senha" placeholder="Confirmar nova senha" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} className="w-full rounded-xl border border-neutral-300 px-4 py-3 outline-none transition focus:border-neutral-950 focus:ring-2 focus:ring-neutral-200" />
         {error && <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         <button type="submit" disabled={loading} className="w-full rounded-xl bg-neutral-950 px-4 py-3 font-semibold text-white disabled:opacity-60">{loading ? "Atualizando..." : "Atualizar senha"}</button>
       </form>

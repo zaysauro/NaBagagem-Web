@@ -1,5 +1,7 @@
 "use client";
 
+import { feature } from "topojson-client";
+import { countryCode, countryName } from "@/lib/countries";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { useEffect, useMemo, useState } from "react";
 
@@ -46,7 +48,8 @@ function normalize(value:string) {
 
 function countryMatches(saved:string, mapName:string) {
   const normalized = normalize(saved);
-  const target = aliases[normalized] || saved;
+  const code = countryCode(saved);
+  const target = aliases[normalized] || (code ? countryName(code,"en") : saved);
   return normalize(target) === normalize(mapName);
 }
 
@@ -72,7 +75,9 @@ export default function WorldMap({ countries, visitPoints = [] }: Props) {
   const uniquePoints = Array.from(new Map(visitPoints.map((p) => [((p.city || "") + "|" + (p.country || "")) || p.id, p])).values());
 
   useEffect(() => {
-    fetch(GEO_URL).then((r) => r.json()).then(setGeo).catch(() => setGeo(null));
+    let active=true;
+    fetch(GEO_URL).then(r=>{if(!r.ok)throw new Error("Map unavailable");return r.json();}).then(data=>{if(active)setGeo(data.type==="Topology"?feature(data,data.objects.countries):data);}).catch(()=>{if(active)setGeo(null);});
+    return()=>{active=false;};
   }, []);
 
   const countryPins = useMemo(() => {
@@ -80,7 +85,8 @@ export default function WorldMap({ countries, visitPoints = [] }: Props) {
 
     return countries.flatMap((saved) => {
       const normalizedSaved = normalize(saved);
-      const mapName = aliases[normalizedSaved] || saved;
+      const code = countryCode(saved);
+      const mapName = aliases[normalizedSaved] || (code ? countryName(code,"en") : saved);
       const knownCoordinates = countryCoordinates[mapName];
 
       if (knownCoordinates) {
