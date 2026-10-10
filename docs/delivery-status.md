@@ -21,9 +21,9 @@ O principal bloqueio continua externo: não há ferramenta Neon conectada nesta 
 | Duplicar roteiro | IMPLEMENTADA, AGUARDANDO VALIDAÇÃO | Transação; remapeamento explícito de locations; autoria; exclui reservas, despesas e arquivos | Teste HTTP autenticado e UX para copiar roteiro público por ID |
 | Roteiro diário e mapa | PARCIALMENTE IMPLEMENTADA | UI existente preservada; integridade event/location testada | Completar novos campos de atividade/custo/duração na UI e testes de geocodificação |
 | Passaporte | PARCIALMENTE IMPLEMENTADA | 195 códigos ISO testados; nomes pt/en/ja; correção TopoJSON → GeoJSON | Data/notas/vínculo na UI; estatísticas de continentes e validação de todos os marcadores |
-| Bagagem | PARCIALMENTE IMPLEMENTADA | Múltiplas listas, itens, quantidade, três status, progresso, filtro, duplicação e exclusão | Edição completa, responsáveis e interface de modelos reutilizáveis |
-| Checklist | PARCIALMENTE IMPLEMENTADA | CRUD/progresso existente; categoria compatível; schema de prazo/prioridade/responsável | Filtros e campos avançados na interface |
-| Financeiro/câmbio | PARCIALMENTE IMPLEMENTADA | NUMERIC; valores decimais preservados na escrita; serviço real de câmbio corrigido para zero | Persistir taxa/data por despesa e testes externos completos |
+| Bagagem | PARCIALMENTE IMPLEMENTADA | Múltiplas listas, edição de nome/quantidade/categoria/notas, três status, progresso, filtro, duplicação, exclusão e modelos privados reutilizáveis | Responsáveis, renomear listas e E2E autenticado |
+| Checklist | PARCIALMENTE IMPLEMENTADA | CRUD/progresso; edição de título/categoria/descrição/prazo/prioridade; validação de datas e campos testada | Filtros, responsáveis e E2E autenticado |
+| Financeiro/câmbio | PARCIALMENTE IMPLEMENTADA | NUMERIC; valores decimais preservados na escrita; serviço real de câmbio corrigido para zero; resumo por categoria separa moedas | Persistir taxa/data por despesa e testes externos completos |
 | Fotos privadas | IMPLEMENTADA, AGUARDANDO VALIDAÇÃO | API/UI; compressão no dispositivo; validação MIME/assinatura; autorização e URL assinada | Bucket/credenciais; envio e leitura reais; miniaturas derivadas e metadados completos |
 | Documentos privados | IMPLEMENTADA, AGUARDANDO VALIDAÇÃO | API/UI; PDFs/imagens; controle por participante e URLs temporárias | Bucket/credenciais; categorias/descrição na UI e testes reais |
 | Limpeza de storage | PARCIALMENTE IMPLEMENTADA | Outbox sobre cascatas testada; tentativa de limpeza no servidor | Worker periódico para retries garantidos e reconciliação de uploads interrompidos |
@@ -37,16 +37,16 @@ O principal bloqueio continua externo: não há ferramenta Neon conectada nesta 
 | Segurança | PARCIALMENTE IMPLEMENTADA | RLS para todas as tabelas, queries parametrizadas, owner imutável, CSRF, limite persistente social, arquivos privados | Auditoria dinâmica de todas as APIs e limites de abuso de provedores externos |
 | Migração de dados Supabase | BLOQUEADA | Runtime sem SDK Supabase; migrations antigas preservadas | Inspecionar dados antigos pela integração antes de planejar transferência |
 | Neon remoto/Auth/Storage | BLOQUEADA | Descoberta de ferramentas e catálogo: Neon não conectado | Conectar plugin e verificar projeto/branch/endpoint/bucket |
-| Preview Vercel | IMPLEMENTADA, AGUARDANDO VALIDAÇÃO | Projeto e branch conferidos via plugin | Resultado do novo deploy registrado no relatório final da execução |
+| Preview Vercel | IMPLEMENTADA, AGUARDANDO VALIDAÇÃO | Deploy 94b7f5e READY via plugin; 21 checks HTTP sem sessão aprovados | Validar próximo commit e fluxos com banco/Auth/Storage |
 
 ## Testes
 
-- `npm run test`: **5 testes aprovados**. Dois cenários completos de schema/RLS (text e UUID), normalização dos 195 países, validação de upload e compatibilidade das projeções/escritas literais existentes com as colunas reais.
-- Asserts de segurança cobrem: usuário alheio sem acesso privado; viewer sem escrita; editor sem escalonamento ou publicação; comentários não aprovados ocultos; bloqueios; documentos/malas privados; localização de outra viagem recusada; valores negativos recusados; convites expirados, reutilizados, de outro e-mail ou sem e-mail verificado recusados; limite de 30 escritas sociais; cascata de mala e fila de limpeza de arquivos isolada.
+- `npm run test`: **6 testes aprovados**. Dois cenários completos de schema/RLS (text e UUID), normalização dos 195 países, validação de campos/datas do checklist, validação de upload e compatibilidade das projeções/escritas literais existentes com as colunas reais.
+- Asserts de segurança cobrem: usuário alheio sem acesso privado; viewer sem escrita; editor sem escalonamento ou publicação; comentários não aprovados ocultos; bloqueios; documentos/malas/modelos privados; localização de outra viagem recusada; valores negativos recusados; convites expirados, reutilizados, de outro e-mail ou sem e-mail verificado recusados; limite de 30 escritas sociais; cascata de mala e fila de limpeza de arquivos isolada.
 - `npm run typecheck`: **aprovado**.
 - `npm run lint`: **0 erros e 34 warnings** (principalmente imagens, hooks e navegação legados; não foram ocultados).
 - `npm run build`: **aprovado**. Os avisos de renderização dinâmica do SDK no build inicial não representaram falha; configuração ausente agora não usa sessão com segredo placeholder.
-- `node scripts/smoke-api.mjs`: **16 verificações HTTP aprovadas** no build local: 9 rotas protegidas retornam 401/no-store; 5 páginas públicas retornam 200; CSRF retorna 403; dashboard sem sessão redireciona ao login.
+- `node scripts/smoke-api.mjs`: **21 verificações HTTP aprovadas** no build local e no Preview do commit 94b7f5e: 10 rotas protegidas retornam 401/no-store; 5 páginas públicas retornam 200; CSRF retorna 403; dashboard sem sessão redireciona ao login; 4 mutações exigem sessão. Os checks sem sessão no Preview não validam as novas operações autenticadas.
 - Navegador local: login renderizado em desktop e viewport 390×844; sem executar login no navegador do Mac.
 - **Não testados em infraestrutura real:** os 26 fluxos autenticados completos, e-mail de recuperação, upload/download/exclusão remota, sessão após logout/login, câmbio/mapas sob falhas do provedor. Não foram usados mocks para declarar esses fluxos concluídos.
 
@@ -69,6 +69,10 @@ Há dependências legadas fixadas como `latest` no manifest, embora o lockfile p
 3. Executar os 26 fluxos com duas contas e registrar persistência e negativas de autorização.
 4. Finalizar funcionalidades marcadas como parciais/não implementadas.
 5. Somente após aceites completos solicitar autorização explícita de produção; não fazer merge automático.
+
+## Continuação de 09/10/2026
+
+Edição de bagagem e modelos privados reutilizáveis adicionados. Aplicação de modelo é transacional, reutiliza somente nome/quantidade/categoria/notas e mantém o estado inicial pendente. Checklist ganhou edição de campos avançados, recusando datas inexistentes e valores de conclusão não booleanos. Agregação de despesas por categoria agora separa moedas. Produção e schema remoto continuam sem alterações.
 
 ## Commits de implementação
 
@@ -95,6 +99,7 @@ app/api/profile/preferences/route.ts
 app/api/profile/stats/route.ts
 app/api/profile/visited-countries/route.ts
 app/api/social/profile/route.ts
+app/api/trips/[id]/checklist/route.ts
 app/api/trips/[id]/expenses/route.ts
 app/api/trips/[id]/files/route.ts
 app/api/trips/[id]/invitations/route.ts
@@ -118,6 +123,7 @@ app/dashboard/trips/[id]/trip-detail-client.tsx
 app/dashboard/trips/[id]/trip-files.tsx
 app/dashboard/trips/[id]/trip-lifecycle.tsx
 app/dashboard/trips/[id]/trip-packing.tsx
+app/dashboard/trips/[id]/trip-tools.tsx
 app/feed/page.tsx
 app/login/login-form.tsx
 app/login/page.tsx
@@ -126,6 +132,7 @@ db/migrations/001_neon_schema.sql
 db/migrations/002_authorization.sql
 db/migrations/003_integrity_and_services.sql
 eslint.config.mjs
+lib/checklist-validation.ts
 lib/countries.ts
 lib/i18n/dictionaries.ts
 lib/neon/auth.ts

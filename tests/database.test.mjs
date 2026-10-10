@@ -43,6 +43,11 @@ for (const type of ['text','uuid']) test(`schema and authorization with ${type} 
  const [list]=await as(alice,"insert into packing_lists(trip_id,name) values($1,'Backpack') returning id",[trip.id]);
  await as(bob,"insert into packing_items(list_id,name,quantity) values($1,'Shirt',2)",[list.id]);
  assert.equal((await as(eve,'select * from packing_items')).length,0);
+ const [template]=await as(alice,"insert into trip_templates(user_id,name,items) values($1,'Essentials',$2::jsonb) returning id",[alice,JSON.stringify([{name:'Shirt',quantity:2}])]);
+ assert.equal((await as(bob,'select * from trip_templates')).length,0);
+ assert.equal((await as(bob,'delete from trip_templates where id=$1 returning id',[template.id])).length,0);
+ await assert.rejects(as(bob,"insert into trip_templates(user_id,name) values($1,'Forged')",[alice]));
+ assert.equal((await as(alice,'select * from trip_templates')).length,1);
  await assert.rejects(as(bob,"insert into packing_items(list_id,name,quantity) values($1,'Shirt',0)",[list.id]));
  await as(alice,"insert into trip_documents(trip_id,user_id,storage_path,name,mime_type,size_bytes) values($1,$2,'private/path','Ticket','application/pdf',100)",[trip.id,alice]);
  assert.equal((await as(eve,'select * from trip_documents')).length,0);
