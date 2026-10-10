@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { authFeedback } from "@/lib/auth-feedback";
 import Link from "next/link";
 
 export default function LoginForm() {
@@ -21,18 +22,18 @@ export default function LoginForm() {
       const response = await fetch("/api/auth/sign-in/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.message || result.error?.message || "Não foi possível entrar.");
+        setError(authFeedback(result,"login",response.status));
         return;
       }
 
       router.push("/dashboard");
       router.refresh();
-    } catch (err) {
+    } catch {
       setError("Não foi possível conectar ao serviço de login. Tente novamente.");
     } finally {
       setLoading(false);
@@ -44,6 +45,7 @@ export default function LoginForm() {
       <input
         required
         type="email"
+        autoComplete="email" autoCapitalize="none" spellCheck={false}
         aria-label="E-mail" placeholder="E-mail"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -52,7 +54,7 @@ export default function LoginForm() {
       <div>
         <input
           required
-          minLength={6}
+          autoComplete="current-password"
           type="password"
           aria-label="Senha" placeholder="Senha"
           value={password}

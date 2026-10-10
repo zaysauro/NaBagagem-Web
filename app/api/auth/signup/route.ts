@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { authFeedback, signupValidation } from "@/lib/auth-feedback";
 import { auth } from "@/lib/neon/auth";
 
 export async function POST(request: Request) {
@@ -8,9 +9,8 @@ export async function POST(request: Request) {
     const password = String(body.password || "");
     const name = String(body.name || "").trim();
 
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: "Preencha todos os campos." }, { status: 400 });
-    }
+    const invalid = signupValidation(name,email,password);
+    if (invalid) return NextResponse.json({error:invalid},{status:400});
 
     const { data, error } = await auth.signUp.email({
       email,
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       name,
     });
 
-    if (error) return NextResponse.json({ error: "Não foi possível criar a conta. Confira os dados." }, { status: 400 });
+    if (error) return NextResponse.json({ error: authFeedback(error,"signup") }, { status: 400 });
 
     return NextResponse.json({
       authenticated: Boolean(data?.token),
