@@ -1,0 +1,1 @@
+Country coordinates and ISO numeric identifiers: https://github.com/mledoze/countries, revision c2ac0049c14edcf2436c7aa1b2493222a020b462. Extracted 195 supported countries on 2026-10-15, coordinates reordered to longitude/latitude. ODbL 1.0; see countries-LICENSE.txt. Derived database: lib/country-geography.json.
