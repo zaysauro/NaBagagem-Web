@@ -38,6 +38,21 @@ for (const type of ['text','uuid']) test(`schema and authorization with ${type} 
  assert.equal((await as(bob,'update feed_comments set approved=true returning id')).length,0);
  await as(alice,'update feed_comments set approved=true where id=$1',[comment.id]);
  assert.equal((await as(eve,'select * from feed_comments')).length,1);
+ // Country persistence and per-user isolation.
+ await as(alice,"insert into profile_visited_countries(user_id,country,country_code) values($1,'Brasil','BR')",[alice]);
+ await as(alice,"insert into profile_visited_countries(user_id,country,country_code) values($1,'Brasil','BR') on conflict(user_id,country_code) do update set country=excluded.country",[alice]);
+ assert.equal((await as(alice,'select * from profile_visited_countries')).length,1);
+ assert.equal((await as(bob,'select * from profile_visited_countries')).length,0);
+ await as(alice,"delete from profile_visited_countries where country_code='BR'");
+ assert.equal((await as(alice,'select * from profile_visited_countries')).length,0);
+ // Upload reservations are isolated and not due while an upload is in progress.
+ const [reservation]=await as(alice,"select app_private.reserve_upload($1) as id",[alice+'/pending.jpg']);
+ assert.equal((await as(alice,'select * from app_private.pending_storage_deletions()')).length,0);
+ await assert.rejects(as(bob,"select app_private.reserve_upload($1)",[alice+'/foreign.jpg']));
+ await as(alice,'select app_private.complete_storage_deletion($1)',[reservation.id]);
+ for(let i=0;i<5;i++)await as(alice,"insert into feed_post_media(post_id,user_id,storage_path) values($1,$2,$3)",[post.id,alice,alice+'/photo'+i]);
+ await assert.rejects(as(alice,"insert into feed_post_media(post_id,user_id,storage_path) values($1,$2,$3)",[post.id,alice,alice+'/sixth']));
+ assert.equal((await as(alice,'select * from feed_post_media')).length,5);
  await as(alice,'insert into user_blocks(blocker_id,blocked_id) values($1,$2)',[alice,eve]);
  assert.equal((await as(eve,'select * from feed_posts')).length,0);
  const [list]=await as(alice,"insert into packing_lists(trip_id,name) values($1,'Backpack') returning id",[trip.id]);
