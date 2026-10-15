@@ -1,3 +1,4 @@
+import { expenseInput } from "@/lib/expense-validation";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,5 +12,24 @@ async function context(id:string){
  return{supabase,user,trip,canEdit:trip.user_id===user.id||member?.role==="editor"};
 }
 export async function GET(_:Request,{params}:{params:Promise<{id:string}>}){const{id}=await params;const{supabase,user,trip}=await context(id);if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});const{data,error}=await supabase.from("trip_expenses").select("*").eq("trip_id",id).order("expense_date",{ascending:false}).order("created_at",{ascending:false});if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({expenses:data||[]});}
-export async function POST(request:Request,{params}:{params:Promise<{id:string}>}){const{id}=await params;const{supabase,user,trip,canEdit}=await context(id);if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});if(!canEdit)return NextResponse.json({error:"Você não tem permissão para editar esta viagem."},{status:403});const b=await request.json();const title=String(b.title||"").trim();const amount=String(b.amount??"");if(!title||!/^\d{1,10}(\.\d{1,2})?$/.test(amount))return NextResponse.json({error:"Informe título e valor válidos."},{status:400});const{data,error}=await supabase.from("trip_expenses").insert({trip_id:id,title,category:String(b.category||"other"),amount,currency:String(b.currency||"BRL").toUpperCase().slice(0,8),expense_date:b.expense_date||null,notes:String(b.notes||"").trim()||null}).select().single();if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({expense:data},{status:201});}
+async function saveExpense(request: Request, params: Promise<{id:string}>, editing: boolean) {
+ const {id}=await params;
+ const {supabase,user,trip,canEdit}=await context(id);
+ if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});
+ if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});
+ if(!canEdit)return NextResponse.json({error:"Você não tem permissão para editar esta viagem."},{status:403});
+ let body, values;
+ try { body=await request.json(); values=expenseInput(body); }
+ catch(error) { return NextResponse.json({error:error instanceof Error ? error.message : "Despesa inválida."},{status:400}); }
+ if(editing && (typeof body.id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.id))) return NextResponse.json({error:"Despesa inválida."},{status:400});
+ const statement=editing
+  ? supabase.from("trip_expenses").update(values).eq("id",body.id).eq("trip_id",id)
+  : supabase.from("trip_expenses").insert({...values,trip_id:id});
+ const {data,error}=await statement.select().maybeSingle();
+ if(error)return NextResponse.json({error:"Não foi possível salvar a despesa."},{status:400});
+ if(!data)return NextResponse.json({error:"Despesa não encontrada."},{status:404});
+ return NextResponse.json({expense:data},{status:editing?200:201});
+}
+export async function POST(request:Request,{params}:{params:Promise<{id:string}>}) {return saveExpense(request,params,false);}
+export async function PATCH(request:Request,{params}:{params:Promise<{id:string}>}) {return saveExpense(request,params,true);}
 export async function DELETE(request:Request,{params}:{params:Promise<{id:string}>}){const{id}=await params;const{supabase,user,trip,canEdit}=await context(id);if(!user)return NextResponse.json({error:"Não autenticado."},{status:401});if(!trip)return NextResponse.json({error:"Viagem não encontrada."},{status:404});if(!canEdit)return NextResponse.json({error:"Você não tem permissão para editar esta viagem."},{status:403});const expenseId=new URL(request.url).searchParams.get("expenseId");if(!expenseId)return NextResponse.json({error:"Despesa inválida."},{status:400});const{error}=await supabase.from("trip_expenses").delete().eq("id",expenseId).eq("trip_id",id);if(error)return NextResponse.json({error:error.message},{status:400});return NextResponse.json({ok:true});}
