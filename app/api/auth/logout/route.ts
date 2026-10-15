@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/neon/auth";
+import { getAuth } from "@/lib/neon/auth";
 export async function POST(request: Request) {
- await auth.signOut();
+ await getAuth().signOut();
  const response = NextResponse.redirect(new URL("/login", request.url), 303);
  response.headers.set("Clear-Site-Data", '"cache", "storage"');
  return response;

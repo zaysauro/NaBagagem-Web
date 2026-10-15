@@ -1,9 +1,16 @@
-import { auth } from "@/lib/neon/auth";
+import { getAuth } from "@/lib/neon/auth";
 import { signupValidation } from "@/lib/auth-feedback";
 import { NextRequest, NextResponse } from "next/server";
 
-const handlers = auth.handler();
-export const { GET, PUT, DELETE, PATCH } = handlers;
+type Context = { params: Promise<{ path: string[] }> };
+async function handle(method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH", request: NextRequest, context: Context) {
+ try { return await getAuth().handler()[method](request, context); }
+ catch { return NextResponse.json({ message: "Serviço de autenticação indisponível." }, { status: 503 }); }
+}
+export const GET = (request: NextRequest, context: Context) => handle("GET", request, context);
+export const PUT = (request: NextRequest, context: Context) => handle("PUT", request, context);
+export const DELETE = (request: NextRequest, context: Context) => handle("DELETE", request, context);
+export const PATCH = (request: NextRequest, context: Context) => handle("PATCH", request, context);
 export async function POST(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
  const { path } = await context.params;
  if (path.join("/") === "sign-up/email") {
@@ -13,7 +20,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pa
    if (invalid) return NextResponse.json({code:"VALIDATION_ERROR",message:invalid},{status:400});
   } catch { return NextResponse.json({code:"VALIDATION_ERROR",message:"Confira os dados do cadastro."},{status:400}); }
  }
- const response = await handlers.POST(request, context);
+ const response = await handle("POST", request, context);
  if (!response.ok) {
   const result = await response.clone().json().catch(()=>null);
   const code = typeof result?.code === "string" && /^[A-Z_]{1,64}$/.test(result.code) ? result.code : "AUTH_REQUEST_FAILED";

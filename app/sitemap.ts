@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function sitemap():Promise<MetadataRoute.Sitemap>{
- const base=process.env.NEXT_PUBLIC_SITE_URL||"https://nabagagemweb.vercel.app";
+ const base=process.env.NEXT_PUBLIC_SITE_URL||"https://nasbagagens.sistemakumo.com.br";
  const supabase=await createClient();
  const [{data:profiles},{data:trips}]=await Promise.all([
   supabase.from("profiles").select("username,updated_at").not("username","is",null),

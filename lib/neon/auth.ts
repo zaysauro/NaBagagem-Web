@@ -6,18 +6,18 @@ export type AppUser = {
   user_metadata?: { display_name?: string; name?: string };
 };
 
-export const auth = createNeonAuth({
-  baseUrl: process.env.NEON_AUTH_BASE_URL || "https://auth.local.invalid",
-  cookies: {
-    secret:
-      process.env.NEON_AUTH_COOKIE_SECRET ||
-      "build-time-placeholder-cookie-secret-change-in-production",
-  },
-});
+let instance: ReturnType<typeof createNeonAuth> | undefined;
+export function getAuth() {
+  const baseUrl = process.env.NEON_AUTH_BASE_URL;
+  const secret = process.env.NEON_AUTH_COOKIE_SECRET;
+  if (!baseUrl || !secret || secret.length < 32) throw new Error("Serviço de autenticação indisponível.");
+  if (!instance) instance = createNeonAuth({ baseUrl, cookies: { secret } });
+  return instance;
+}
 
 export async function getCurrentUser(): Promise<AppUser | null> {
   if (!process.env.NEON_AUTH_BASE_URL || !process.env.NEON_AUTH_COOKIE_SECRET) return null;
-  const { data } = await auth.getSession();
+  const { data } = await getAuth().getSession();
   const sessionData = data as any;
   const user = sessionData?.session?.user || sessionData?.user;
 
