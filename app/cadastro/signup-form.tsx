@@ -35,17 +35,21 @@ export default function SignupForm() {
     return result;
   }
 
+  async function sendVerificationCode() {
+    await authRequest("email-otp/send-verification-otp", {
+      email: email.trim(),
+      type: "email-verification",
+    });
+    setCode("");
+  }
+
   async function resendVerification() {
-    if (resending || !email.trim()) return;
+    if (resending || loading || !email.trim()) return;
     setResending(true);
     setError("");
     setMsg("");
     try {
-      await authRequest("email-otp/send-verification-otp", {
-        email: email.trim(),
-        type: "email-verification",
-      });
-      setCode("");
+      await sendVerificationCode();
       setMsg("Novo código solicitado. Utilize apenas o código de 6 dígitos do e-mail mais recente.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível reenviar o código.");
@@ -56,7 +60,7 @@ export default function SignupForm() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (loading) return;
+    if (loading || resending) return;
     setError("");
     setMsg("");
     setLoading(true);
@@ -93,7 +97,12 @@ export default function SignupForm() {
       }
       setStep("verify");
       setPassword("");
-      setMsg("Enviamos um código de 6 dígitos para seu e-mail. Digite-o abaixo para ativar sua conta.");
+      try {
+        await sendVerificationCode();
+        setMsg("Enviamos um código de 6 dígitos para seu e-mail. Digite-o abaixo para ativar sua conta.");
+      } catch {
+        setError("Sua conta foi criada, mas não foi possível enviar o código. Use Reenviar código para tentar novamente.");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível concluir a solicitação.");
     } finally {
@@ -113,7 +122,7 @@ export default function SignupForm() {
       ) : (
         <>
           <div className="rounded-xl bg-neutral-50 p-4 text-sm text-neutral-700">
-            Confirme o código enviado para <strong>{email}</strong>.
+            Confirme seu e-mail <strong>{email}</strong> com o código de 6 dígitos.
           </div>
           <label className="block text-sm font-medium">Código de confirmação
             <input
@@ -127,7 +136,7 @@ export default function SignupForm() {
           <button type="button" disabled={resending || loading} onClick={resendVerification} className="w-full rounded-xl border px-4 py-3 font-semibold disabled:opacity-60">
             {resending ? "Reenviando..." : "Reenviar código"}
           </button>
-          <button type="button" disabled={loading} onClick={() => { setStep("signup"); setCode(""); setError(""); setMsg(""); }} className="w-full text-sm text-neutral-600 underline">
+          <button type="button" disabled={loading || resending} onClick={() => { setStep("signup"); setCode(""); setError(""); setMsg(""); }} className="w-full text-sm text-neutral-600 underline">
             Corrigir meus dados
           </button>
         </>

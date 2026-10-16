@@ -5,6 +5,7 @@ import pg from 'pg';
 if (!process.env.MIGRATION_DATABASE_URL || !process.env.MIGRATION_EXPECTED_HOST) throw new Error('Configure MIGRATION_DATABASE_URL and MIGRATION_EXPECTED_HOST for the verified branch.');
 const target = new URL(process.env.MIGRATION_DATABASE_URL);
 if (target.hostname !== process.env.MIGRATION_EXPECTED_HOST || target.pathname !== '/neondb') throw new Error('Migration target mismatch.');
+if (target.hostname.includes('-pooler')) throw new Error('Migrations require the verified direct branch host, not a pooled connection.');
 const pool = new pg.Pool({ connectionString: target.toString() });
 const client = await pool.connect();
 try {

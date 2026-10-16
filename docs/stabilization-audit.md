@@ -243,3 +243,20 @@ A interface real foi servida em localhost:3017 e exercitada por um proxy de test
 - [CI Quality #2](https://github.com/zaysauro/NaBagagem-Web/actions/runs/38826239297), commit ee4d960b119aaeaf63a896bd8194eefb6564f7e7: instalação, 13 testes Node, lint, build, typecheck e 8 testes de navegador concluídos com sucesso. Logs e etapas consultados, não apenas o status geral.
 - [Preview Vercel](https://nabagagemweb-3uhsgr9mr-bruno-02a0.vercel.app), deployment dpl_9rwRhhroubQosUyCkqRzvcadf1vh: HTTPS 200 e 21 verificações HTTP do script scripts/smoke-api.mjs aprovadas em 16/10. Cobrem acesso sem sessão, páginas públicas e rejeição de mutação cross-origin; não cobrem operações autenticadas.
 - Nenhuma promoção para produção. A migration 004 e as credenciais/serviços externos precisam ser validados no ambiente isolado antes da liberação.
+
+## Neon conectado — validação remota em 16/10/2026
+
+O usuário confirmou que o Supabase original não está mais disponível. O histórico antigo não pode ser comprovado nem recuperado sem backup externo; a base disponível no Neon tinha 1 usuário e nenhuma tabela da aplicação.
+
+- Projeto confirmado: NasBagagens, polished-water-63648513, PostgreSQL 18, aws-us-east-2.
+- Origem: production, br-aged-haze-b4ujptch. Snapshot prévio: snap-cold-voice-b4q0j3yd (nabagagem-before-stabilization-2026-10-16).
+- Cópia isolada criada: stabilization-pr-2, br-ancient-star-b4qrex5l. Auth e bucket uploads privado foram herdados. Bucket sem objetos na inspeção inicial.
+- Aplicadas 001–004 somente na cópia isolada: 4 entradas no ledger, 29 tabelas com RLS, role da aplicação sem BYPASSRLS. Mantido o usuário existente e criado seu perfil pelo backfill previsto.
+- O endereço obtido inicialmente era pooled; a transação de migrations terminou com sucesso. A configuração de migrations foi então corrigida para conexão direta, o ledger foi revalidado e o runner agora recusa hosts pooled. Runtime usa pooled.
+- 33 verificações reais no Neon aprovadas via scripts/verify-neon-branch.mjs: países, duplicidade, centavos, edição, feed privado, limite de 5 imagens, reserva de upload e isolamento anônimo/identidade desconhecida. Escritas revertidas e ausência dos registros de teste conferida; Auth não modificado pelo teste.
+- Storage real aprovado: upload, download, link assinado, rejeição de acesso público e limpeza do objeto de teste.
+- Criadas 10 variáveis exclusivamente para Preview/stabilization-launch: banco, Auth e credencial de storage limitada à branch isolada. Nenhuma variável de produção alterada.
+- Config Auth observado: require_email_verification=true, OTP, verify_email_on_sign_up=false, SMTP compartilhado. Corrigida UI para pedir OTP explicitamente, sem afirmar envio antes de sucesso, e manter reenvio após falha.
+- Origem http://localhost:3020 e alias do preview permitidos somente na branch isolada. Login com credenciais inexistentes passou a retornar 401 INVALID_EMAIL_OR_PASSWORD, em vez de 403 INVALID_ORIGIN.
+
+A validação de confirmação/recuperação de e-mail e de sessões reais permanece pendente de uma caixa de teste. SMTP próprio é requisito de produção do Neon; o provedor atual é compartilhado. Não houve instalação de schema ou promoção na produção.
