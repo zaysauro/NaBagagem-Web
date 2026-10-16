@@ -74,20 +74,20 @@ test('failed initial OTP delivery retains verification and can recover through r
   });
 
   await submitSignup(page);
-  await expect(page.getByRole('alert')).toHaveText('Sua conta foi criada, mas não foi possível enviar o código. Use Reenviar código para tentar novamente.');
+  await expect(page.locator('form').getByRole('alert')).toHaveText('Sua conta foi criada, mas não foi possível enviar o código. Use Reenviar código para tentar novamente.');
   await expect(page.getByRole('status')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Criar conta', exact: true })).toHaveCount(0);
   const codeInput = page.getByRole('textbox', { name: 'Código de 6 dígitos' });
   await expect(codeInput).toBeVisible();
   await codeInput.fill('111111');
   await page.getByRole('button', { name: 'Reenviar código', exact: true }).click();
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.locator('form').getByRole('alert')).toHaveCount(0);
   await expect(page.getByRole('status')).toHaveText('Novo código solicitado. Utilize apenas o código de 6 dígitos do e-mail mais recente.');
   await expect(codeInput).toHaveValue('');
 
   await codeInput.fill('222222');
   await page.getByRole('button', { name: 'Confirmar e-mail' }).click();
-  await expect(page.getByRole('alert')).toContainText('Código incorreto ou expirado.');
+  await expect(page.locator('form').getByRole('alert')).toContainText('Código incorreto ou expirado.');
   await expect(codeInput).toBeVisible();
   await codeInput.fill('333333');
   await page.getByRole('button', { name: 'Confirmar e-mail' }).click();
