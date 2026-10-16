@@ -1,4 +1,4 @@
-# Auditoria de estabilização — 15/10/2026
+# Auditoria de estabilização — atualização em 16/10/2026
 
 Base analisada: main 3250353; produção de03cc6 (neon-migration-foundation). Nenhuma alteração remota de banco executada.
 
@@ -215,9 +215,9 @@ Prioridade: corrigir regressões locais (mapa, paginação, entradas), estabiliz
 
 - 13 testes Node/PGlite passaram, incluindo schema/RLS com IDs text e UUID, países persistidos e isolados por usuário, capacidade de mídia, reservas privadas de limpeza, paginação de 137 posts com empates/microssegundos e inserção entre páginas.
 - TypeScript passou; lint sem erros, 34 avisos legados.
-- Build de produção passou localmente. Reexecutar após alterações finais e registrar commit.
+- Build de produção e TypeScript passaram localmente e no CI para ee4d960b119aaeaf63a896bd8194eefb6564f7e7.
 - 21 verificações HTTP sem sessão passaram localmente e no domínio oficial. Isso não comprova fluxos autenticados.
-- Chromium Playwright não iniciou no sandbox macOS (MachPortRendezvousServer: Permission denied). Suíte criada com testes de UI com fixtures explícitas; CI Linux deve executar. Não declarar esses testes como E2E remoto ou aprovados antes do resultado.
+- Chromium local foi bloqueado pelo sandbox macOS. No CI Linux, os 8 testes Playwright passaram em 5,6 s: mapa com fixtures explícitas (9 → 10 → 9 e reload), CSRF de autenticação e páginas públicas em seis larguras. São testes da aplicação local no runner; não comprovam banco, armazenamento ou autenticação remotos.
 - Inspeção do domínio no navegador: landing, login e cadastro sem overflow horizontal nas larguras 320, 375, 390, 430, 768 e 1440. Login/cadastro renderizados; nenhuma conta de produção criada.
 - Domínio verificado na Vercel, HTTPS 200. Produção aponta a de03cc6 da branch neon-migration-foundation. main continua em 3250353. Nenhuma promoção ou alteração de branch de produção realizada.
 - Nenhuma migration aplicada remotamente; nenhum usuário ou histórico excluído ou recriado. Backup, transferência e equivalência dos dados legados ainda NÃO verificados.
@@ -236,3 +236,10 @@ Prioridade: corrigir regressões locais (mapa, paginação, entradas), estabiliz
 ### Validação adicional no navegador
 
 A interface real foi servida em localhost:3017 e exercitada por um proxy de teste local em localhost:3018, com fixtures explícitas somente para as duas APIs do perfil. Confirmados no DOM: 9 pins iniciais; 10 após adicionar Fiji; 9 após excluir Fiji; 9 após reload. Contadores e lista acompanharam as alterações. Evidência visual salva em outputs/mapa-validacao-local.jpg. Isso valida integração React/HTTP no navegador, não banco ou autenticação remotos.
+
+## Evidências de entrega — 16/10/2026
+
+- [PR #2](https://github.com/zaysauro/NaBagagem-Web/pull/2), draft, de stabilization-launch para neon-migration-foundation. Não mesclado; main permanece sem alterações.
+- [CI Quality #2](https://github.com/zaysauro/NaBagagem-Web/actions/runs/38826239297), commit ee4d960b119aaeaf63a896bd8194eefb6564f7e7: instalação, 13 testes Node, lint, build, typecheck e 8 testes de navegador concluídos com sucesso. Logs e etapas consultados, não apenas o status geral.
+- [Preview Vercel](https://nabagagemweb-3uhsgr9mr-bruno-02a0.vercel.app), deployment dpl_9rwRhhroubQosUyCkqRzvcadf1vh: HTTPS 200 e 21 verificações HTTP do script scripts/smoke-api.mjs aprovadas em 16/10. Cobrem acesso sem sessão, páginas públicas e rejeição de mutação cross-origin; não cobrem operações autenticadas.
+- Nenhuma promoção para produção. A migration 004 e as credenciais/serviços externos precisam ser validados no ambiente isolado antes da liberação.
