@@ -7,7 +7,7 @@ type Country = { id: string; country: string };
 
 const suggestions = COUNTRY_CODES.map(code => countryName(code)).sort((a,b) => a.localeCompare(b, "pt-BR"));
 
-export default function VisitedCountries() {
+export default function VisitedCountries({ onChanged }: { onChanged?: () => Promise<void> }) {
   const [items, setItems] = useState<Country[]>([]);
   const [country, setCountry] = useState("");
   const [loading, setLoading] = useState(true);
@@ -15,11 +15,13 @@ export default function VisitedCountries() {
   const [message, setMessage] = useState("");
 
   async function load() {
+    try {
     const r = await fetch("/api/profile/visited-countries", { cache: "no-store" });
     const d = await r.json();
     if (r.ok) setItems(d.countries || []);
     else setMessage(d.error || "Não foi possível carregar.");
-    setLoading(false);
+    } catch { setMessage("Não foi possível carregar os países."); }
+    finally { setLoading(false); }
   }
 
   useEffect(() => { load(); }, []);
@@ -30,6 +32,7 @@ export default function VisitedCountries() {
     if (!value || saving) return;
     setSaving(true);
     setMessage("");
+    try {
     const r = await fetch("/api/profile/visited-countries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,13 +44,23 @@ export default function VisitedCountries() {
     } else {
       setItems(current => current.some(x => x.id === d.country.id) ? current : [...current, d.country].sort((a,b) => a.country.localeCompare(b.country)));
       setCountry("");
+      await onChanged?.();
     }
-    setSaving(false);
+    } catch { setMessage("Não foi possível salvar. Tente novamente."); }
+    finally { setSaving(false); }
   }
 
   async function remove(id: string) {
-    const r = await fetch("/api/profile/visited-countries?id=" + encodeURIComponent(id), { method: "DELETE" });
-    if (r.ok) setItems(current => current.filter(x => x.id !== id));
+    if (saving) return;
+    setSaving(true);
+    setMessage("");
+    try {
+      const r = await fetch("/api/profile/visited-countries?id=" + encodeURIComponent(id), { method: "DELETE" });
+      if (!r.ok) throw new Error("Não foi possível remover o país.");
+      setItems(current => current.filter(x => x.id !== id));
+      await onChanged?.();
+    } catch { setMessage("Não foi possível remover o país. Tente novamente."); }
+    finally { setSaving(false); }
   }
 
   return (
@@ -75,14 +88,14 @@ export default function VisitedCountries() {
         </button>
       </form>
 
-      {message && <p className="mt-2 text-sm text-red-600">{message}</p>}
+      {message && <p role="alert" className="mt-2 text-sm text-red-600">{message}</p>}
 
       {!loading && (
         <div className="mt-5 flex flex-wrap gap-2">
           {items.length ? items.map(item => (
             <span key={item.id} className="flex items-center gap-2 rounded-full bg-neutral-100 px-3 py-1.5 text-sm">
               {item.country}
-              <button type="button" onClick={() => remove(item.id)} className="text-neutral-400 hover:text-red-600" aria-label={"Remover " + item.country}>×</button>
+              <button disabled={saving} type="button" onClick={() => remove(item.id)} className="text-neutral-400 hover:text-red-600" aria-label={"Remover " + item.country}>×</button>
             </span>
           )) : <p className="text-sm text-neutral-500">Nenhum país marcado ainda.</p>}
         </div>

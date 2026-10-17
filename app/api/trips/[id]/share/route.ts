@@ -11,5 +11,5 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { data, error } = await supabase.from("trips").update({ share_token: token }).eq("id", id).eq("user_id", user.id).select("id,share_token").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  return NextResponse.json({ token: data.share_token, url: `/viagem/${data.share_token}` });
+  return NextResponse.json({ token: data.share_token, url: `/compartilhar/${data.share_token}` });
 }

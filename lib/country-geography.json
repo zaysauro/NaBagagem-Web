@@ -1,0 +1,2931 @@
+{
+  "AF": {
+    "numeric": "004",
+    "coordinates": [
+      65,
+      33
+    ],
+    "names": [
+      "Afghanistan",
+      "Islamic Republic of Afghanistan",
+      "AF",
+      "Afġānistān",
+      "República Islâmica do Afeganistão",
+      "Afeganistão"
+    ]
+  },
+  "AO": {
+    "numeric": "024",
+    "coordinates": [
+      18.5,
+      -12.5
+    ],
+    "names": [
+      "Angola",
+      "Republic of Angola",
+      "AO",
+      "República de Angola",
+      "ʁɛpublika de an'ɡɔla"
+    ]
+  },
+  "AL": {
+    "numeric": "008",
+    "coordinates": [
+      20,
+      41
+    ],
+    "names": [
+      "Albania",
+      "Republic of Albania",
+      "AL",
+      "Shqipëri",
+      "Shqipëria",
+      "Shqipnia",
+      "República da Albânia",
+      "Albânia"
+    ]
+  },
+  "AD": {
+    "numeric": "020",
+    "coordinates": [
+      1.5,
+      42.5
+    ],
+    "names": [
+      "Andorra",
+      "Principality of Andorra",
+      "AD",
+      "Principat d'Andorra",
+      "Principado de Andorra"
+    ]
+  },
+  "AE": {
+    "numeric": "784",
+    "coordinates": [
+      54,
+      24
+    ],
+    "names": [
+      "United Arab Emirates",
+      "AE",
+      "UAE",
+      "Emirates",
+      "Emirados Árabes Unidos"
+    ]
+  },
+  "AR": {
+    "numeric": "032",
+    "coordinates": [
+      -64,
+      -34
+    ],
+    "names": [
+      "Argentina",
+      "Argentine Republic",
+      "AR",
+      "República Argentina"
+    ]
+  },
+  "AM": {
+    "numeric": "051",
+    "coordinates": [
+      45,
+      40
+    ],
+    "names": [
+      "Armenia",
+      "Republic of Armenia",
+      "AM",
+      "Hayastan",
+      "Հայաստանի Հանրապետություն",
+      "República da Arménia",
+      "Arménia"
+    ]
+  },
+  "AG": {
+    "numeric": "028",
+    "coordinates": [
+      -61.8,
+      17.05
+    ],
+    "names": [
+      "Antigua and Barbuda",
+      "AG",
+      "Antigua e Barbuda",
+      "Antígua e Barbuda"
+    ]
+  },
+  "AU": {
+    "numeric": "036",
+    "coordinates": [
+      133,
+      -27
+    ],
+    "names": [
+      "Australia",
+      "Commonwealth of Australia",
+      "AU",
+      "Comunidade da Austrália",
+      "Austrália"
+    ]
+  },
+  "AT": {
+    "numeric": "040",
+    "coordinates": [
+      13.33333333,
+      47.33333333
+    ],
+    "names": [
+      "Austria",
+      "Republic of Austria",
+      "AT",
+      "Osterreich",
+      "Oesterreich",
+      "República da Áustria",
+      "Áustria"
+    ]
+  },
+  "AZ": {
+    "numeric": "031",
+    "coordinates": [
+      47.5,
+      40.5
+    ],
+    "names": [
+      "Azerbaijan",
+      "Republic of Azerbaijan",
+      "AZ",
+      "Azərbaycan Respublikası",
+      "República do Azerbaijão",
+      "Azerbeijão"
+    ]
+  },
+  "BI": {
+    "numeric": "108",
+    "coordinates": [
+      30,
+      -3.5
+    ],
+    "names": [
+      "Burundi",
+      "Republic of Burundi",
+      "BI",
+      "Republika y'Uburundi",
+      "République du Burundi",
+      "República do Burundi"
+    ]
+  },
+  "BE": {
+    "numeric": "056",
+    "coordinates": [
+      4,
+      50.83333333
+    ],
+    "names": [
+      "Belgium",
+      "Kingdom of Belgium",
+      "BE",
+      "België",
+      "Belgie",
+      "Belgien",
+      "Belgique",
+      "Koninkrijk België",
+      "Royaume de Belgique",
+      "Königreich Belgien",
+      "Reino da Bélgica",
+      "Bélgica"
+    ]
+  },
+  "BJ": {
+    "numeric": "204",
+    "coordinates": [
+      2.25,
+      9.5
+    ],
+    "names": [
+      "Benin",
+      "Republic of Benin",
+      "BJ",
+      "République du Bénin",
+      "República do Benin"
+    ]
+  },
+  "BF": {
+    "numeric": "854",
+    "coordinates": [
+      -2,
+      13
+    ],
+    "names": [
+      "Burkina Faso",
+      "BF"
+    ]
+  },
+  "BD": {
+    "numeric": "050",
+    "coordinates": [
+      90,
+      24
+    ],
+    "names": [
+      "Bangladesh",
+      "People's Republic of Bangladesh",
+      "BD",
+      "Gônôprôjatôntri Bangladesh",
+      "República Popular do Bangladesh"
+    ]
+  },
+  "BG": {
+    "numeric": "100",
+    "coordinates": [
+      25,
+      43
+    ],
+    "names": [
+      "Bulgaria",
+      "Republic of Bulgaria",
+      "BG",
+      "Република България",
+      "República da Bulgária",
+      "Bulgária"
+    ]
+  },
+  "BH": {
+    "numeric": "048",
+    "coordinates": [
+      50.55,
+      26
+    ],
+    "names": [
+      "Bahrain",
+      "Kingdom of Bahrain",
+      "BH",
+      "Mamlakat al-Baḥrayn",
+      "Reino do Bahrein",
+      "Bahrein"
+    ]
+  },
+  "BS": {
+    "numeric": "044",
+    "coordinates": [
+      -76,
+      24.25
+    ],
+    "names": [
+      "Bahamas",
+      "Commonwealth of the Bahamas",
+      "BS",
+      "Comunidade das Bahamas"
+    ]
+  },
+  "BA": {
+    "numeric": "070",
+    "coordinates": [
+      18,
+      44
+    ],
+    "names": [
+      "Bosnia and Herzegovina",
+      "BA",
+      "Bosnia-Herzegovina",
+      "Босна и Херцеговина",
+      "Bósnia e Herzegovina"
+    ]
+  },
+  "BY": {
+    "numeric": "112",
+    "coordinates": [
+      28,
+      53
+    ],
+    "names": [
+      "Belarus",
+      "Republic of Belarus",
+      "BY",
+      "Bielaruś",
+      "Белоруссия",
+      "Республика Белоруссия",
+      "República da Bielorrússia",
+      "Bielorússia"
+    ]
+  },
+  "BZ": {
+    "numeric": "084",
+    "coordinates": [
+      -88.75,
+      17.25
+    ],
+    "names": [
+      "Belize",
+      "BZ"
+    ]
+  },
+  "BO": {
+    "numeric": "068",
+    "coordinates": [
+      -65,
+      -17
+    ],
+    "names": [
+      "Bolivia",
+      "Plurinational State of Bolivia",
+      "BO",
+      "Buliwya",
+      "Wuliwya",
+      "Bolivia, Plurinational State of",
+      "Estado Plurinacional de Bolivia",
+      "Buliwya Mamallaqta",
+      "Wuliwya Suyu",
+      "Tetã Volívia",
+      "Estado Plurinacional da Bolívia",
+      "Bolívia"
+    ]
+  },
+  "BR": {
+    "numeric": "076",
+    "coordinates": [
+      -55,
+      -10
+    ],
+    "names": [
+      "Brazil",
+      "Federative Republic of Brazil",
+      "BR",
+      "Brasil",
+      "República Federativa do Brasil"
+    ]
+  },
+  "BB": {
+    "numeric": "052",
+    "coordinates": [
+      -59.53333333,
+      13.16666666
+    ],
+    "names": [
+      "Barbados",
+      "BB"
+    ]
+  },
+  "BN": {
+    "numeric": "096",
+    "coordinates": [
+      114.66666666,
+      4.5
+    ],
+    "names": [
+      "Brunei",
+      "Nation of Brunei, Abode of Peace",
+      "BN",
+      "Brunei Darussalam",
+      "Nation of Brunei",
+      "the Abode of Peace",
+      "Nação do Brunei, Morada da Paz"
+    ]
+  },
+  "BT": {
+    "numeric": "064",
+    "coordinates": [
+      90.5,
+      27.5
+    ],
+    "names": [
+      "Bhutan",
+      "Kingdom of Bhutan",
+      "BT",
+      "Reino do Butão",
+      "Butão"
+    ]
+  },
+  "BW": {
+    "numeric": "072",
+    "coordinates": [
+      24,
+      -22
+    ],
+    "names": [
+      "Botswana",
+      "Republic of Botswana",
+      "BW",
+      "Lefatshe la Botswana",
+      "República do Botswana"
+    ]
+  },
+  "CF": {
+    "numeric": "140",
+    "coordinates": [
+      21,
+      7
+    ],
+    "names": [
+      "Central African Republic",
+      "CF",
+      "République centrafricaine",
+      "República Centro-Africano",
+      "República Centro-Africana"
+    ]
+  },
+  "CA": {
+    "numeric": "124",
+    "coordinates": [
+      -95,
+      60
+    ],
+    "names": [
+      "Canada",
+      "CA",
+      "Canadá"
+    ]
+  },
+  "CH": {
+    "numeric": "756",
+    "coordinates": [
+      8,
+      47
+    ],
+    "names": [
+      "Switzerland",
+      "Swiss Confederation",
+      "CH",
+      "Schweiz",
+      "Suisse",
+      "Svizzera",
+      "Svizra",
+      "Confederação Suíça",
+      "Suíça"
+    ]
+  },
+  "CL": {
+    "numeric": "152",
+    "coordinates": [
+      -71,
+      -30
+    ],
+    "names": [
+      "Chile",
+      "Republic of Chile",
+      "CL",
+      "República de Chile",
+      "República do Chile"
+    ]
+  },
+  "CN": {
+    "numeric": "156",
+    "coordinates": [
+      105,
+      35
+    ],
+    "names": [
+      "China",
+      "People's Republic of China",
+      "CN",
+      "Zhōngguó",
+      "Zhongguo",
+      "Zhonghua",
+      "中华人民共和国",
+      "Zhōnghuá Rénmín Gònghéguó",
+      "República Popular da China"
+    ]
+  },
+  "CI": {
+    "numeric": "384",
+    "coordinates": [
+      -5,
+      8
+    ],
+    "names": [
+      "Ivory Coast",
+      "Republic of Côte d'Ivoire",
+      "CI",
+      "Côte d'Ivoire",
+      "Cote d'Ivoire",
+      "République de Côte d'Ivoire",
+      "República da Côte d'Ivoire",
+      "Costa do Marfim"
+    ]
+  },
+  "CM": {
+    "numeric": "120",
+    "coordinates": [
+      12,
+      6
+    ],
+    "names": [
+      "Cameroon",
+      "Republic of Cameroon",
+      "CM",
+      "République du Cameroun",
+      "República dos Camarões",
+      "Camarões"
+    ]
+  },
+  "CD": {
+    "numeric": "180",
+    "coordinates": [
+      25,
+      0
+    ],
+    "names": [
+      "DR Congo",
+      "Democratic Republic of the Congo",
+      "CD",
+      "Congo-Kinshasa",
+      "Congo, the Democratic Republic of the",
+      "Democratic Republic of Congo",
+      "DRC",
+      "República Democrática do Congo"
+    ]
+  },
+  "CG": {
+    "numeric": "178",
+    "coordinates": [
+      15,
+      -1
+    ],
+    "names": [
+      "Congo",
+      "Republic of the Congo",
+      "CG",
+      "Congo-Brazzaville",
+      "República do Congo"
+    ]
+  },
+  "CO": {
+    "numeric": "170",
+    "coordinates": [
+      -72,
+      4
+    ],
+    "names": [
+      "Colombia",
+      "Republic of Colombia",
+      "CO",
+      "República de Colombia",
+      "República da Colômbia",
+      "Colômbia"
+    ]
+  },
+  "KM": {
+    "numeric": "174",
+    "coordinates": [
+      44.25,
+      -12.16666666
+    ],
+    "names": [
+      "Comoros",
+      "Union of the Comoros",
+      "KM",
+      "Union des Comores",
+      "Udzima wa Komori",
+      "al-Ittiḥād al-Qumurī",
+      "União das Comores",
+      "Comores"
+    ]
+  },
+  "CV": {
+    "numeric": "132",
+    "coordinates": [
+      -24,
+      16
+    ],
+    "names": [
+      "Cape Verde",
+      "Republic of Cabo Verde",
+      "CV",
+      "República de Cabo Verde",
+      "Cabo Verde"
+    ]
+  },
+  "CR": {
+    "numeric": "188",
+    "coordinates": [
+      -84,
+      10
+    ],
+    "names": [
+      "Costa Rica",
+      "Republic of Costa Rica",
+      "CR",
+      "República de Costa Rica",
+      "República da Costa Rica"
+    ]
+  },
+  "CU": {
+    "numeric": "192",
+    "coordinates": [
+      -80,
+      21.5
+    ],
+    "names": [
+      "Cuba",
+      "Republic of Cuba",
+      "CU",
+      "República de Cuba"
+    ]
+  },
+  "CY": {
+    "numeric": "196",
+    "coordinates": [
+      33,
+      35
+    ],
+    "names": [
+      "Cyprus",
+      "Republic of Cyprus",
+      "CY",
+      "Kýpros",
+      "Kıbrıs",
+      "Κυπριακή Δημοκρατία",
+      "Kıbrıs Cumhuriyeti",
+      "República de Chipre",
+      "Chipre"
+    ]
+  },
+  "CZ": {
+    "numeric": "203",
+    "coordinates": [
+      15.5,
+      49.75
+    ],
+    "names": [
+      "Czechia",
+      "Czech Republic",
+      "CZ",
+      "Česká republika",
+      "Česko",
+      "República Checa",
+      "Chéquia"
+    ]
+  },
+  "DE": {
+    "numeric": "276",
+    "coordinates": [
+      9,
+      51
+    ],
+    "names": [
+      "Germany",
+      "Federal Republic of Germany",
+      "DE",
+      "Bundesrepublik Deutschland",
+      "República Federal da Alemanha",
+      "Alemanha"
+    ]
+  },
+  "DJ": {
+    "numeric": "262",
+    "coordinates": [
+      43,
+      11.5
+    ],
+    "names": [
+      "Djibouti",
+      "Republic of Djibouti",
+      "DJ",
+      "Jabuuti",
+      "Gabuuti",
+      "République de Djibouti",
+      "Gabuutih Ummuuno",
+      "Jamhuuriyadda Jabuuti",
+      "República do Djibouti"
+    ]
+  },
+  "DM": {
+    "numeric": "212",
+    "coordinates": [
+      -61.33333333,
+      15.41666666
+    ],
+    "names": [
+      "Dominica",
+      "Commonwealth of Dominica",
+      "DM",
+      "Dominique",
+      "Wai‘tu kubuli",
+      "Comunidade da Dominica"
+    ]
+  },
+  "DK": {
+    "numeric": "208",
+    "coordinates": [
+      10,
+      56
+    ],
+    "names": [
+      "Denmark",
+      "Kingdom of Denmark",
+      "DK",
+      "Danmark",
+      "Kongeriget Danmark",
+      "Reino da Dinamarca",
+      "Dinamarca"
+    ]
+  },
+  "DO": {
+    "numeric": "214",
+    "coordinates": [
+      -70.66666666,
+      19
+    ],
+    "names": [
+      "Dominican Republic",
+      "DO",
+      "República Dominicana"
+    ]
+  },
+  "DZ": {
+    "numeric": "012",
+    "coordinates": [
+      3,
+      28
+    ],
+    "names": [
+      "Algeria",
+      "People's Democratic Republic of Algeria",
+      "DZ",
+      "Dzayer",
+      "Algérie",
+      "República Argelina Democrática e Popular",
+      "Argélia"
+    ]
+  },
+  "EC": {
+    "numeric": "218",
+    "coordinates": [
+      -77.5,
+      -2
+    ],
+    "names": [
+      "Ecuador",
+      "Republic of Ecuador",
+      "EC",
+      "República del Ecuador",
+      "República do Equador",
+      "Equador"
+    ]
+  },
+  "EG": {
+    "numeric": "818",
+    "coordinates": [
+      30,
+      27
+    ],
+    "names": [
+      "Egypt",
+      "Arab Republic of Egypt",
+      "EG",
+      "República Árabe do Egipto",
+      "Egito"
+    ]
+  },
+  "ER": {
+    "numeric": "232",
+    "coordinates": [
+      39,
+      15
+    ],
+    "names": [
+      "Eritrea",
+      "State of Eritrea",
+      "ER",
+      "ሃገረ ኤርትራ",
+      "Dawlat Iritriyá",
+      "ʾErtrā",
+      "Iritriyā",
+      "Estado da Eritreia",
+      "Eritreia"
+    ]
+  },
+  "ES": {
+    "numeric": "724",
+    "coordinates": [
+      -4,
+      40
+    ],
+    "names": [
+      "Spain",
+      "Kingdom of Spain",
+      "ES",
+      "Reino de España",
+      "Reino de Espanha",
+      "Espanha"
+    ]
+  },
+  "EE": {
+    "numeric": "233",
+    "coordinates": [
+      26,
+      59
+    ],
+    "names": [
+      "Estonia",
+      "Republic of Estonia",
+      "EE",
+      "Eesti",
+      "Eesti Vabariik",
+      "República da Estónia",
+      "Estónia"
+    ]
+  },
+  "ET": {
+    "numeric": "231",
+    "coordinates": [
+      38,
+      8
+    ],
+    "names": [
+      "Ethiopia",
+      "Federal Democratic Republic of Ethiopia",
+      "ET",
+      "ʾĪtyōṗṗyā",
+      "የኢትዮጵያ ፌዴራላዊ ዲሞክራሲያዊ ሪፐብሊክ",
+      "República Federal Democrática da Etiópia",
+      "Etiópia"
+    ]
+  },
+  "FI": {
+    "numeric": "246",
+    "coordinates": [
+      26,
+      64
+    ],
+    "names": [
+      "Finland",
+      "Republic of Finland",
+      "FI",
+      "Suomi",
+      "Suomen tasavalta",
+      "Republiken Finland",
+      "República da Finlândia",
+      "Finlândia"
+    ]
+  },
+  "FJ": {
+    "numeric": "242",
+    "coordinates": [
+      175,
+      -18
+    ],
+    "names": [
+      "Fiji",
+      "Republic of Fiji",
+      "FJ",
+      "Viti",
+      "Matanitu ko Viti",
+      "Fijī Gaṇarājya",
+      "República de Fiji"
+    ]
+  },
+  "FR": {
+    "numeric": "250",
+    "coordinates": [
+      2,
+      46
+    ],
+    "names": [
+      "France",
+      "French Republic",
+      "FR",
+      "République française",
+      "República Francesa",
+      "França"
+    ]
+  },
+  "FM": {
+    "numeric": "583",
+    "coordinates": [
+      158.25,
+      6.91666666
+    ],
+    "names": [
+      "Micronesia",
+      "Federated States of Micronesia",
+      "FM",
+      "Micronesia, Federated States of",
+      "Estados Federados da Micronésia",
+      "Micronésia"
+    ]
+  },
+  "GA": {
+    "numeric": "266",
+    "coordinates": [
+      11.75,
+      -1
+    ],
+    "names": [
+      "Gabon",
+      "Gabonese Republic",
+      "GA",
+      "République Gabonaise",
+      "República do Gabão",
+      "Gabão"
+    ]
+  },
+  "GB": {
+    "numeric": "826",
+    "coordinates": [
+      -2,
+      54
+    ],
+    "names": [
+      "United Kingdom",
+      "United Kingdom of Great Britain and Northern Ireland",
+      "GB",
+      "UK",
+      "Great Britain",
+      "Reino Unido da Grã-Bretanha e Irlanda do Norte",
+      "Reino Unido"
+    ]
+  },
+  "GE": {
+    "numeric": "268",
+    "coordinates": [
+      43.5,
+      42
+    ],
+    "names": [
+      "Georgia",
+      "GE",
+      "Sakartvelo",
+      "Geórgia"
+    ]
+  },
+  "GH": {
+    "numeric": "288",
+    "coordinates": [
+      -2,
+      8
+    ],
+    "names": [
+      "Ghana",
+      "Republic of Ghana",
+      "GH",
+      "República do Gana",
+      "Gana"
+    ]
+  },
+  "GN": {
+    "numeric": "324",
+    "coordinates": [
+      -10,
+      11
+    ],
+    "names": [
+      "Guinea",
+      "Republic of Guinea",
+      "GN",
+      "République de Guinée",
+      "República da Guiné",
+      "Guiné"
+    ]
+  },
+  "GM": {
+    "numeric": "270",
+    "coordinates": [
+      -16.56666666,
+      13.46666666
+    ],
+    "names": [
+      "Gambia",
+      "Republic of the Gambia",
+      "GM",
+      "República da Gâmbia",
+      "Gâmbia"
+    ]
+  },
+  "GW": {
+    "numeric": "624",
+    "coordinates": [
+      -15,
+      12
+    ],
+    "names": [
+      "Guinea-Bissau",
+      "Republic of Guinea-Bissau",
+      "GW",
+      "República da Guiné-Bissau",
+      "Guiné-Bissau"
+    ]
+  },
+  "GQ": {
+    "numeric": "226",
+    "coordinates": [
+      10,
+      2
+    ],
+    "names": [
+      "Equatorial Guinea",
+      "Republic of Equatorial Guinea",
+      "GQ",
+      "República de Guinea Ecuatorial",
+      "République de Guinée équatoriale",
+      "República da Guiné Equatorial",
+      "Guiné Equatorial"
+    ]
+  },
+  "GR": {
+    "numeric": "300",
+    "coordinates": [
+      22,
+      39
+    ],
+    "names": [
+      "Greece",
+      "Hellenic Republic",
+      "GR",
+      "Elláda",
+      "Ελληνική Δημοκρατία",
+      "República Helénica",
+      "Grécia"
+    ]
+  },
+  "GD": {
+    "numeric": "308",
+    "coordinates": [
+      -61.66666666,
+      12.11666666
+    ],
+    "names": [
+      "Grenada",
+      "GD",
+      "Granada"
+    ]
+  },
+  "GT": {
+    "numeric": "320",
+    "coordinates": [
+      -90.25,
+      15.5
+    ],
+    "names": [
+      "Guatemala",
+      "Republic of Guatemala",
+      "GT",
+      "República da Guatemala"
+    ]
+  },
+  "GY": {
+    "numeric": "328",
+    "coordinates": [
+      -59,
+      5
+    ],
+    "names": [
+      "Guyana",
+      "Co-operative Republic of Guyana",
+      "GY",
+      "Co -operative República da Guiana",
+      "Guiana"
+    ]
+  },
+  "HN": {
+    "numeric": "340",
+    "coordinates": [
+      -86.5,
+      15
+    ],
+    "names": [
+      "Honduras",
+      "Republic of Honduras",
+      "HN",
+      "República de Honduras"
+    ]
+  },
+  "HR": {
+    "numeric": "191",
+    "coordinates": [
+      15.5,
+      45.16666666
+    ],
+    "names": [
+      "Croatia",
+      "Republic of Croatia",
+      "HR",
+      "Hrvatska",
+      "Republika Hrvatska",
+      "República da Croácia",
+      "Croácia"
+    ]
+  },
+  "HT": {
+    "numeric": "332",
+    "coordinates": [
+      -72.41666666,
+      19
+    ],
+    "names": [
+      "Haiti",
+      "Republic of Haiti",
+      "HT",
+      "République d'Haïti",
+      "Repiblik Ayiti",
+      "República do Haiti"
+    ]
+  },
+  "HU": {
+    "numeric": "348",
+    "coordinates": [
+      20,
+      47
+    ],
+    "names": [
+      "Hungary",
+      "HU",
+      "Hungria"
+    ]
+  },
+  "ID": {
+    "numeric": "360",
+    "coordinates": [
+      120,
+      -5
+    ],
+    "names": [
+      "Indonesia",
+      "Republic of Indonesia",
+      "ID",
+      "Republik Indonesia",
+      "República da Indonésia",
+      "Indonésia"
+    ]
+  },
+  "IN": {
+    "numeric": "356",
+    "coordinates": [
+      77,
+      20
+    ],
+    "names": [
+      "India",
+      "Republic of India",
+      "IN",
+      "Bhārat",
+      "Bharat Ganrajya",
+      "இந்தியா",
+      "República da Índia",
+      "Índia"
+    ]
+  },
+  "IE": {
+    "numeric": "372",
+    "coordinates": [
+      -8,
+      53
+    ],
+    "names": [
+      "Ireland",
+      "Republic of Ireland",
+      "IE",
+      "Éire",
+      "Poblacht na hÉireann",
+      "República da Irlanda",
+      "Irlanda"
+    ]
+  },
+  "IR": {
+    "numeric": "364",
+    "coordinates": [
+      53,
+      32
+    ],
+    "names": [
+      "Iran",
+      "Islamic Republic of Iran",
+      "IR",
+      "Iran, Islamic Republic of",
+      "Jomhuri-ye Eslāmi-ye Irān",
+      "República Islâmica do Irã",
+      "Irão"
+    ]
+  },
+  "IQ": {
+    "numeric": "368",
+    "coordinates": [
+      44,
+      33
+    ],
+    "names": [
+      "Iraq",
+      "Republic of Iraq",
+      "IQ",
+      "Jumhūriyyat al-‘Irāq",
+      "República do Iraque",
+      "Iraque"
+    ]
+  },
+  "IS": {
+    "numeric": "352",
+    "coordinates": [
+      -18,
+      65
+    ],
+    "names": [
+      "Iceland",
+      "IS",
+      "Island",
+      "Republic of Iceland",
+      "Lýðveldið Ísland",
+      "Islândia"
+    ]
+  },
+  "IL": {
+    "numeric": "376",
+    "coordinates": [
+      35.13,
+      31.47
+    ],
+    "names": [
+      "Israel",
+      "State of Israel",
+      "IL",
+      "Medīnat Yisrā'el",
+      "Estado de Israel"
+    ]
+  },
+  "IT": {
+    "numeric": "380",
+    "coordinates": [
+      12.83333333,
+      42.83333333
+    ],
+    "names": [
+      "Italy",
+      "Italian Republic",
+      "IT",
+      "Repubblica italiana",
+      "República Italiana",
+      "Itália"
+    ]
+  },
+  "JM": {
+    "numeric": "388",
+    "coordinates": [
+      -77.5,
+      18.25
+    ],
+    "names": [
+      "Jamaica",
+      "JM"
+    ]
+  },
+  "JO": {
+    "numeric": "400",
+    "coordinates": [
+      36,
+      31
+    ],
+    "names": [
+      "Jordan",
+      "Hashemite Kingdom of Jordan",
+      "JO",
+      "al-Mamlakah al-Urdunīyah al-Hāshimīyah",
+      "Reino Hachemita da Jordânia",
+      "Jordânia"
+    ]
+  },
+  "JP": {
+    "numeric": "392",
+    "coordinates": [
+      138,
+      36
+    ],
+    "names": [
+      "Japan",
+      "JP",
+      "Nippon",
+      "Nihon",
+      "Japão"
+    ]
+  },
+  "KZ": {
+    "numeric": "398",
+    "coordinates": [
+      68,
+      48
+    ],
+    "names": [
+      "Kazakhstan",
+      "Republic of Kazakhstan",
+      "KZ",
+      "Qazaqstan",
+      "Казахстан",
+      "Қазақстан Республикасы",
+      "Qazaqstan Respublïkası",
+      "Республика Казахстан",
+      "Respublika Kazakhstan",
+      "República do Cazaquistão",
+      "Cazaquistão"
+    ]
+  },
+  "KE": {
+    "numeric": "404",
+    "coordinates": [
+      38,
+      1
+    ],
+    "names": [
+      "Kenya",
+      "Republic of Kenya",
+      "KE",
+      "Jamhuri ya Kenya",
+      "República do Quénia",
+      "Quénia"
+    ]
+  },
+  "KG": {
+    "numeric": "417",
+    "coordinates": [
+      75,
+      41
+    ],
+    "names": [
+      "Kyrgyzstan",
+      "Kyrgyz Republic",
+      "KG",
+      "Киргизия",
+      "Кыргыз Республикасы",
+      "Kyrgyz Respublikasy",
+      "República do Quirguistão",
+      "Quirguistão"
+    ]
+  },
+  "KH": {
+    "numeric": "116",
+    "coordinates": [
+      105,
+      13
+    ],
+    "names": [
+      "Cambodia",
+      "Kingdom of Cambodia",
+      "KH",
+      "Reino do Camboja",
+      "Camboja"
+    ]
+  },
+  "KI": {
+    "numeric": "296",
+    "coordinates": [
+      173,
+      1.41666666
+    ],
+    "names": [
+      "Kiribati",
+      "Independent and Sovereign Republic of Kiribati",
+      "KI",
+      "Republic of Kiribati",
+      "Ribaberiki Kiribati",
+      "Independente e soberano República de Kiribati"
+    ]
+  },
+  "KN": {
+    "numeric": "659",
+    "coordinates": [
+      -62.75,
+      17.33333333
+    ],
+    "names": [
+      "Saint Kitts and Nevis",
+      "Federation of Saint Christopher and Nevis",
+      "KN",
+      "Federação de São Cristóvão e Nevis",
+      "São Cristóvão e Nevis"
+    ]
+  },
+  "KR": {
+    "numeric": "410",
+    "coordinates": [
+      127.5,
+      37
+    ],
+    "names": [
+      "South Korea",
+      "Republic of Korea",
+      "KR",
+      "Korea, Republic of",
+      "남한",
+      "남조선",
+      "República da Coreia",
+      "Coreia do Sul"
+    ]
+  },
+  "KW": {
+    "numeric": "414",
+    "coordinates": [
+      45.75,
+      29.5
+    ],
+    "names": [
+      "Kuwait",
+      "State of Kuwait",
+      "KW",
+      "Dawlat al-Kuwait",
+      "Estado do Kuwait"
+    ]
+  },
+  "LA": {
+    "numeric": "418",
+    "coordinates": [
+      105,
+      18
+    ],
+    "names": [
+      "Laos",
+      "Lao People's Democratic Republic",
+      "LA",
+      "Lao",
+      "Sathalanalat Paxathipatai Paxaxon Lao",
+      "Laos, República Democrática"
+    ]
+  },
+  "LB": {
+    "numeric": "422",
+    "coordinates": [
+      35.83333333,
+      33.83333333
+    ],
+    "names": [
+      "Lebanon",
+      "Lebanese Republic",
+      "LB",
+      "Al-Jumhūrīyah Al-Libnānīyah",
+      "República Libanesa",
+      "Líbano"
+    ]
+  },
+  "LR": {
+    "numeric": "430",
+    "coordinates": [
+      -9.5,
+      6.5
+    ],
+    "names": [
+      "Liberia",
+      "Republic of Liberia",
+      "LR",
+      "República da Libéria",
+      "Libéria"
+    ]
+  },
+  "LY": {
+    "numeric": "434",
+    "coordinates": [
+      17,
+      25
+    ],
+    "names": [
+      "Libya",
+      "State of Libya",
+      "LY",
+      "Dawlat Libya",
+      "Estado da Líbia",
+      "Líbia"
+    ]
+  },
+  "LC": {
+    "numeric": "662",
+    "coordinates": [
+      -60.96666666,
+      13.88333333
+    ],
+    "names": [
+      "Saint Lucia",
+      "LC",
+      "Santa Lúcia"
+    ]
+  },
+  "LI": {
+    "numeric": "438",
+    "coordinates": [
+      9.53333333,
+      47.26666666
+    ],
+    "names": [
+      "Liechtenstein",
+      "Principality of Liechtenstein",
+      "LI",
+      "Fürstentum Liechtenstein",
+      "Principado de Liechtenstein"
+    ]
+  },
+  "LK": {
+    "numeric": "144",
+    "coordinates": [
+      81,
+      7
+    ],
+    "names": [
+      "Sri Lanka",
+      "Democratic Socialist Republic of Sri Lanka",
+      "LK",
+      "ilaṅkai",
+      "República Democrática Socialista do Sri Lanka"
+    ]
+  },
+  "LS": {
+    "numeric": "426",
+    "coordinates": [
+      28.5,
+      -29.5
+    ],
+    "names": [
+      "Lesotho",
+      "Kingdom of Lesotho",
+      "LS",
+      "Muso oa Lesotho",
+      "Reino do Lesoto",
+      "Lesoto"
+    ]
+  },
+  "LT": {
+    "numeric": "440",
+    "coordinates": [
+      24,
+      56
+    ],
+    "names": [
+      "Lithuania",
+      "Republic of Lithuania",
+      "LT",
+      "Lietuvos Respublika",
+      "República da Lituânia",
+      "Lituânia"
+    ]
+  },
+  "LU": {
+    "numeric": "442",
+    "coordinates": [
+      6.16666666,
+      49.75
+    ],
+    "names": [
+      "Luxembourg",
+      "Grand Duchy of Luxembourg",
+      "LU",
+      "Grand-Duché de Luxembourg",
+      "Großherzogtum Luxemburg",
+      "Groussherzogtum Lëtzebuerg",
+      "Grão-Ducado do Luxemburgo",
+      "Luxemburgo"
+    ]
+  },
+  "LV": {
+    "numeric": "428",
+    "coordinates": [
+      25,
+      57
+    ],
+    "names": [
+      "Latvia",
+      "Republic of Latvia",
+      "LV",
+      "Latvijas Republika",
+      "República da Letónia",
+      "Letónia"
+    ]
+  },
+  "MA": {
+    "numeric": "504",
+    "coordinates": [
+      -5,
+      32
+    ],
+    "names": [
+      "Morocco",
+      "Kingdom of Morocco",
+      "MA",
+      "Al-Mamlakah al-Maġribiyah",
+      "Reino de Marrocos",
+      "Marrocos"
+    ]
+  },
+  "MC": {
+    "numeric": "492",
+    "coordinates": [
+      7.4,
+      43.73333333
+    ],
+    "names": [
+      "Monaco",
+      "Principality of Monaco",
+      "MC",
+      "Principauté de Monaco",
+      "Principado do Mónaco",
+      "Mónaco"
+    ]
+  },
+  "MD": {
+    "numeric": "498",
+    "coordinates": [
+      29,
+      47
+    ],
+    "names": [
+      "Moldova",
+      "Republic of Moldova",
+      "MD",
+      "Moldova, Republic of",
+      "Republica Moldova",
+      "República da Moldávia",
+      "Moldávia"
+    ]
+  },
+  "MG": {
+    "numeric": "450",
+    "coordinates": [
+      47,
+      -20
+    ],
+    "names": [
+      "Madagascar",
+      "Republic of Madagascar",
+      "MG",
+      "Repoblikan'i Madagasikara",
+      "République de Madagascar",
+      "República de Madagáscar",
+      "Madagáscar"
+    ]
+  },
+  "MV": {
+    "numeric": "462",
+    "coordinates": [
+      73,
+      3.25
+    ],
+    "names": [
+      "Maldives",
+      "Republic of the Maldives",
+      "MV",
+      "Maldive Islands",
+      "Dhivehi Raajjeyge Jumhooriyya",
+      "República das Maldivas",
+      "Maldivas"
+    ]
+  },
+  "MX": {
+    "numeric": "484",
+    "coordinates": [
+      -102,
+      23
+    ],
+    "names": [
+      "Mexico",
+      "United Mexican States",
+      "MX",
+      "Mexicanos",
+      "Estados Unidos Mexicanos",
+      "México"
+    ]
+  },
+  "MH": {
+    "numeric": "584",
+    "coordinates": [
+      168,
+      9
+    ],
+    "names": [
+      "Marshall Islands",
+      "Republic of the Marshall Islands",
+      "MH",
+      "Aolepān Aorōkin M̧ajeļ",
+      "República das Ilhas Marshall",
+      "Ilhas Marshall"
+    ]
+  },
+  "MK": {
+    "numeric": "807",
+    "coordinates": [
+      22,
+      41.83333333
+    ],
+    "names": [
+      "North Macedonia",
+      "Republic of North Macedonia",
+      "MK",
+      "The former Yugoslav Republic of Macedonia",
+      "Macedonia, The Former Yugoslav Republic of",
+      "Република Северна Македонија",
+      "Macedonia",
+      "República da Macedônia do Norte",
+      "Macedónia do Norte"
+    ]
+  },
+  "ML": {
+    "numeric": "466",
+    "coordinates": [
+      -4,
+      17
+    ],
+    "names": [
+      "Mali",
+      "Republic of Mali",
+      "ML",
+      "République du Mali",
+      "República do Mali"
+    ]
+  },
+  "MT": {
+    "numeric": "470",
+    "coordinates": [
+      14.58333333,
+      35.83333333
+    ],
+    "names": [
+      "Malta",
+      "Republic of Malta",
+      "MT",
+      "Repubblika ta' Malta",
+      "República de Malta"
+    ]
+  },
+  "MM": {
+    "numeric": "104",
+    "coordinates": [
+      98,
+      22
+    ],
+    "names": [
+      "Myanmar",
+      "Republic of the Union of Myanmar",
+      "MM",
+      "Burma",
+      "Pyidaunzu Thanmăda Myăma Nainngandaw",
+      "República da União de Myanmar"
+    ]
+  },
+  "ME": {
+    "numeric": "499",
+    "coordinates": [
+      19.3,
+      42.5
+    ],
+    "names": [
+      "Montenegro",
+      "ME",
+      "Crna Gora"
+    ]
+  },
+  "MN": {
+    "numeric": "496",
+    "coordinates": [
+      105,
+      46
+    ],
+    "names": [
+      "Mongolia",
+      "MN",
+      "Mongólia"
+    ]
+  },
+  "MZ": {
+    "numeric": "508",
+    "coordinates": [
+      35,
+      -18.25
+    ],
+    "names": [
+      "Mozambique",
+      "Republic of Mozambique",
+      "MZ",
+      "República de Moçambique",
+      "Moçambique"
+    ]
+  },
+  "MR": {
+    "numeric": "478",
+    "coordinates": [
+      -12,
+      20
+    ],
+    "names": [
+      "Mauritania",
+      "Islamic Republic of Mauritania",
+      "MR",
+      "al-Jumhūriyyah al-ʾIslāmiyyah al-Mūrītāniyyah",
+      "República Islâmica da Mauritânia",
+      "Mauritânia"
+    ]
+  },
+  "MU": {
+    "numeric": "480",
+    "coordinates": [
+      57.55,
+      -20.28333333
+    ],
+    "names": [
+      "Mauritius",
+      "Republic of Mauritius",
+      "MU",
+      "République de Maurice",
+      "República das Maurícias",
+      "Maurício"
+    ]
+  },
+  "MW": {
+    "numeric": "454",
+    "coordinates": [
+      34,
+      -13.5
+    ],
+    "names": [
+      "Malawi",
+      "Republic of Malawi",
+      "MW",
+      "República do Malawi"
+    ]
+  },
+  "MY": {
+    "numeric": "458",
+    "coordinates": [
+      112.5,
+      2.5
+    ],
+    "names": [
+      "Malaysia",
+      "MY",
+      "Malásia"
+    ]
+  },
+  "NA": {
+    "numeric": "516",
+    "coordinates": [
+      17,
+      -22
+    ],
+    "names": [
+      "Namibia",
+      "Republic of Namibia",
+      "NA",
+      "Namibië",
+      "República da Namíbia",
+      "Namíbia"
+    ]
+  },
+  "NE": {
+    "numeric": "562",
+    "coordinates": [
+      8,
+      16
+    ],
+    "names": [
+      "Niger",
+      "Republic of Niger",
+      "NE",
+      "Nijar",
+      "República do Níger",
+      "Níger"
+    ]
+  },
+  "NG": {
+    "numeric": "566",
+    "coordinates": [
+      8,
+      10
+    ],
+    "names": [
+      "Nigeria",
+      "Federal Republic of Nigeria",
+      "NG",
+      "Nijeriya",
+      "Naíjíríà",
+      "República Federal da Nigéria",
+      "Nigéria"
+    ]
+  },
+  "NI": {
+    "numeric": "558",
+    "coordinates": [
+      -85,
+      13
+    ],
+    "names": [
+      "Nicaragua",
+      "Republic of Nicaragua",
+      "NI",
+      "República de Nicaragua",
+      "República da Nicarágua",
+      "Nicarágua"
+    ]
+  },
+  "NL": {
+    "numeric": "528",
+    "coordinates": [
+      5.75,
+      52.5
+    ],
+    "names": [
+      "Netherlands",
+      "Kingdom of the Netherlands",
+      "NL",
+      "Holland",
+      "Nederland",
+      "The Netherlands",
+      "Holanda"
+    ]
+  },
+  "NO": {
+    "numeric": "578",
+    "coordinates": [
+      10,
+      62
+    ],
+    "names": [
+      "Norway",
+      "Kingdom of Norway",
+      "NO",
+      "Norge",
+      "Noreg",
+      "Kongeriket Norge",
+      "Kongeriket Noreg",
+      "Reino da Noruega",
+      "Noruega"
+    ]
+  },
+  "NP": {
+    "numeric": "524",
+    "coordinates": [
+      84,
+      28
+    ],
+    "names": [
+      "Nepal",
+      "Federal Democratic Republic of Nepal",
+      "NP",
+      "Loktāntrik Ganatantra Nepāl",
+      "República Democrática Federal do Nepal"
+    ]
+  },
+  "NR": {
+    "numeric": "520",
+    "coordinates": [
+      166.91666666,
+      -0.53333333
+    ],
+    "names": [
+      "Nauru",
+      "Republic of Nauru",
+      "NR",
+      "Naoero",
+      "Pleasant Island",
+      "Ripublik Naoero",
+      "República de Nauru"
+    ]
+  },
+  "NZ": {
+    "numeric": "554",
+    "coordinates": [
+      174,
+      -41
+    ],
+    "names": [
+      "New Zealand",
+      "NZ",
+      "Aotearoa",
+      "nova Zelândia",
+      "Nova Zelândia"
+    ]
+  },
+  "OM": {
+    "numeric": "512",
+    "coordinates": [
+      57,
+      21
+    ],
+    "names": [
+      "Oman",
+      "Sultanate of Oman",
+      "OM",
+      "Salṭanat ʻUmān",
+      "Sultanato de Omã",
+      "Omã"
+    ]
+  },
+  "PK": {
+    "numeric": "586",
+    "coordinates": [
+      70,
+      30
+    ],
+    "names": [
+      "Pakistan",
+      "Islamic Republic of Pakistan",
+      "PK",
+      "Pākistān",
+      "Islāmī Jumhūriya'eh Pākistān",
+      "República Islâmica do Paquistão",
+      "Paquistão"
+    ]
+  },
+  "PA": {
+    "numeric": "591",
+    "coordinates": [
+      -80,
+      9
+    ],
+    "names": [
+      "Panama",
+      "Republic of Panama",
+      "PA",
+      "República de Panamá",
+      "República do Panamá",
+      "Panamá"
+    ]
+  },
+  "PE": {
+    "numeric": "604",
+    "coordinates": [
+      -76,
+      -10
+    ],
+    "names": [
+      "Peru",
+      "Republic of Peru",
+      "PE",
+      "República del Perú",
+      "República do Peru",
+      "Perú"
+    ]
+  },
+  "PH": {
+    "numeric": "608",
+    "coordinates": [
+      122,
+      13
+    ],
+    "names": [
+      "Philippines",
+      "Republic of the Philippines",
+      "PH",
+      "Repúblika ng Pilipinas",
+      "República das Filipinas",
+      "Filipinas"
+    ]
+  },
+  "PW": {
+    "numeric": "585",
+    "coordinates": [
+      134.5,
+      7.5
+    ],
+    "names": [
+      "Palau",
+      "Republic of Palau",
+      "PW",
+      "Beluu er a Belau",
+      "República de Palau"
+    ]
+  },
+  "PG": {
+    "numeric": "598",
+    "coordinates": [
+      147,
+      -6
+    ],
+    "names": [
+      "Papua New Guinea",
+      "Independent State of Papua New Guinea",
+      "PG",
+      "Independen Stet bilong Papua Niugini",
+      "Estado Independente da Papua Nova Guiné",
+      "Papua Nova Guiné"
+    ]
+  },
+  "PL": {
+    "numeric": "616",
+    "coordinates": [
+      20,
+      52
+    ],
+    "names": [
+      "Poland",
+      "Republic of Poland",
+      "PL",
+      "Rzeczpospolita Polska",
+      "República da Polónia",
+      "Polónia"
+    ]
+  },
+  "KP": {
+    "numeric": "408",
+    "coordinates": [
+      127,
+      40
+    ],
+    "names": [
+      "North Korea",
+      "Democratic People's Republic of Korea",
+      "KP",
+      "DPRK",
+      "조선민주주의인민공화국",
+      "Chosŏn Minjujuŭi Inmin Konghwaguk",
+      "Korea, Democratic People's Republic of",
+      "북한",
+      "북조선",
+      "República Popular Democrática da Coreia",
+      "Coreia do Norte"
+    ]
+  },
+  "PT": {
+    "numeric": "620",
+    "coordinates": [
+      -8,
+      39.5
+    ],
+    "names": [
+      "Portugal",
+      "Portuguese Republic",
+      "PT",
+      "Portuguesa",
+      "República Portuguesa",
+      "República português"
+    ]
+  },
+  "PY": {
+    "numeric": "600",
+    "coordinates": [
+      -58,
+      -23
+    ],
+    "names": [
+      "Paraguay",
+      "Republic of Paraguay",
+      "PY",
+      "República del Paraguay",
+      "Tetã Paraguái",
+      "República do Paraguai",
+      "Paraguai"
+    ]
+  },
+  "PS": {
+    "numeric": "275",
+    "coordinates": [
+      35.2,
+      31.9
+    ],
+    "names": [
+      "Palestine",
+      "State of Palestine",
+      "PS",
+      "Palestine, State of",
+      "Dawlat Filasṭin",
+      "Estado da Palestina",
+      "Palestina"
+    ]
+  },
+  "QA": {
+    "numeric": "634",
+    "coordinates": [
+      51.25,
+      25.5
+    ],
+    "names": [
+      "Qatar",
+      "State of Qatar",
+      "QA",
+      "Dawlat Qaṭar",
+      "Estado do Qatar",
+      "Catar"
+    ]
+  },
+  "RO": {
+    "numeric": "642",
+    "coordinates": [
+      25,
+      46
+    ],
+    "names": [
+      "Romania",
+      "RO",
+      "Rumania",
+      "Roumania",
+      "România",
+      "Romênia",
+      "Roménia"
+    ]
+  },
+  "RU": {
+    "numeric": "643",
+    "coordinates": [
+      100,
+      60
+    ],
+    "names": [
+      "Russia",
+      "Russian Federation",
+      "RU",
+      "Российская Федерация",
+      "Federação Russa",
+      "Rússia"
+    ]
+  },
+  "RW": {
+    "numeric": "646",
+    "coordinates": [
+      30,
+      -2
+    ],
+    "names": [
+      "Rwanda",
+      "Republic of Rwanda",
+      "RW",
+      "Repubulika y'u Rwanda",
+      "République du Rwanda",
+      "República do Ruanda",
+      "Ruanda"
+    ]
+  },
+  "SA": {
+    "numeric": "682",
+    "coordinates": [
+      45,
+      25
+    ],
+    "names": [
+      "Saudi Arabia",
+      "Kingdom of Saudi Arabia",
+      "Saudi",
+      "SA",
+      "Al-Mamlakah al-‘Arabiyyah as-Su‘ūdiyyah",
+      "Reino da Arábia Saudita",
+      "Arábia Saudita"
+    ]
+  },
+  "SD": {
+    "numeric": "729",
+    "coordinates": [
+      30,
+      15
+    ],
+    "names": [
+      "Sudan",
+      "Republic of the Sudan",
+      "SD",
+      "Jumhūrīyat as-Sūdān",
+      "República do Sudão",
+      "Sudão"
+    ]
+  },
+  "SN": {
+    "numeric": "686",
+    "coordinates": [
+      -14,
+      14
+    ],
+    "names": [
+      "Senegal",
+      "Republic of Senegal",
+      "SN",
+      "République du Sénégal",
+      "República do Senegal"
+    ]
+  },
+  "SG": {
+    "numeric": "702",
+    "coordinates": [
+      103.8,
+      1.36666666
+    ],
+    "names": [
+      "Singapore",
+      "Republic of Singapore",
+      "SG",
+      "Singapura",
+      "Republik Singapura",
+      "新加坡共和国",
+      "República de Singapura"
+    ]
+  },
+  "SB": {
+    "numeric": "090",
+    "coordinates": [
+      159,
+      -8
+    ],
+    "names": [
+      "Solomon Islands",
+      "SB",
+      "Ilhas Salomão"
+    ]
+  },
+  "SL": {
+    "numeric": "694",
+    "coordinates": [
+      -11.5,
+      8.5
+    ],
+    "names": [
+      "Sierra Leone",
+      "Republic of Sierra Leone",
+      "SL",
+      "República da Serra Leoa",
+      "Serra Leoa"
+    ]
+  },
+  "SV": {
+    "numeric": "222",
+    "coordinates": [
+      -88.91666666,
+      13.83333333
+    ],
+    "names": [
+      "El Salvador",
+      "Republic of El Salvador",
+      "SV",
+      "República de El Salvador"
+    ]
+  },
+  "SM": {
+    "numeric": "674",
+    "coordinates": [
+      12.41666666,
+      43.76666666
+    ],
+    "names": [
+      "San Marino",
+      "Most Serene Republic of San Marino",
+      "SM",
+      "Republic of San Marino",
+      "Repubblica di San Marino",
+      "Sereníssima República de San Marino"
+    ]
+  },
+  "SO": {
+    "numeric": "706",
+    "coordinates": [
+      49,
+      10
+    ],
+    "names": [
+      "Somalia",
+      "Federal Republic of Somalia",
+      "SO",
+      "aṣ-Ṣūmāl",
+      "Jamhuuriyadda Federaalka Soomaaliya",
+      "Jumhūriyyat aṣ-Ṣūmāl al-Fiderāliyya",
+      "República Federal da Somália",
+      "Somália"
+    ]
+  },
+  "RS": {
+    "numeric": "688",
+    "coordinates": [
+      21,
+      44
+    ],
+    "names": [
+      "Serbia",
+      "Republic of Serbia",
+      "RS",
+      "Srbija",
+      "Republika Srbija",
+      "Србија",
+      "Република Србија",
+      "República da Sérvia",
+      "Sérvia"
+    ]
+  },
+  "SS": {
+    "numeric": "728",
+    "coordinates": [
+      30,
+      7
+    ],
+    "names": [
+      "South Sudan",
+      "Republic of South Sudan",
+      "SS",
+      "República do Sudão do Sul",
+      "Sudão do Sul"
+    ]
+  },
+  "ST": {
+    "numeric": "678",
+    "coordinates": [
+      7,
+      1
+    ],
+    "names": [
+      "São Tomé and Príncipe",
+      "Democratic Republic of São Tomé and Príncipe",
+      "ST",
+      "Sao Tome and Principe",
+      "República Democrática de São Tomé e Príncipe",
+      "São Tomé e Príncipe"
+    ]
+  },
+  "SR": {
+    "numeric": "740",
+    "coordinates": [
+      -56,
+      4
+    ],
+    "names": [
+      "Suriname",
+      "Republic of Suriname",
+      "SR",
+      "Sarnam",
+      "Sranangron",
+      "Republiek Suriname",
+      "República do Suriname"
+    ]
+  },
+  "SK": {
+    "numeric": "703",
+    "coordinates": [
+      19.5,
+      48.66666666
+    ],
+    "names": [
+      "Slovakia",
+      "Slovak Republic",
+      "SK",
+      "Slovenská republika",
+      "República Eslovaca",
+      "Eslováquia"
+    ]
+  },
+  "SI": {
+    "numeric": "705",
+    "coordinates": [
+      14.81666666,
+      46.11666666
+    ],
+    "names": [
+      "Slovenia",
+      "Republic of Slovenia",
+      "SI",
+      "Republika Slovenija",
+      "República da Eslovénia",
+      "Eslovénia"
+    ]
+  },
+  "SE": {
+    "numeric": "752",
+    "coordinates": [
+      15,
+      62
+    ],
+    "names": [
+      "Sweden",
+      "Kingdom of Sweden",
+      "SE",
+      "Konungariket Sverige",
+      "Reino da Suécia",
+      "Suécia"
+    ]
+  },
+  "SZ": {
+    "numeric": "748",
+    "coordinates": [
+      31.5,
+      -26.5
+    ],
+    "names": [
+      "Eswatini",
+      "Kingdom of Eswatini",
+      "SZ",
+      "Swaziland",
+      "weSwatini",
+      "Swatini",
+      "Ngwane",
+      "Umbuso weSwatini",
+      "Reino de eSwatini",
+      "Essuatíni"
+    ]
+  },
+  "SC": {
+    "numeric": "690",
+    "coordinates": [
+      55.66666666,
+      -4.58333333
+    ],
+    "names": [
+      "Seychelles",
+      "Republic of Seychelles",
+      "SC",
+      "Repiblik Sesel",
+      "République des Seychelles",
+      "República das Seychelles",
+      "Seicheles"
+    ]
+  },
+  "SY": {
+    "numeric": "760",
+    "coordinates": [
+      38,
+      35
+    ],
+    "names": [
+      "Syria",
+      "Syrian Arab Republic",
+      "SY",
+      "Al-Jumhūrīyah Al-ʻArabīyah As-Sūrīyah",
+      "República Árabe Síria",
+      "Síria"
+    ]
+  },
+  "TD": {
+    "numeric": "148",
+    "coordinates": [
+      19,
+      15
+    ],
+    "names": [
+      "Chad",
+      "Republic of Chad",
+      "TD",
+      "Tchad",
+      "République du Tchad",
+      "República do Chade",
+      "Chade"
+    ]
+  },
+  "TG": {
+    "numeric": "768",
+    "coordinates": [
+      1.16666666,
+      8
+    ],
+    "names": [
+      "Togo",
+      "Togolese Republic",
+      "TG",
+      "Togolese",
+      "République Togolaise",
+      "República do Togo"
+    ]
+  },
+  "TH": {
+    "numeric": "764",
+    "coordinates": [
+      100,
+      15
+    ],
+    "names": [
+      "Thailand",
+      "Kingdom of Thailand",
+      "TH",
+      "Prathet",
+      "Thai",
+      "ราชอาณาจักรไทย",
+      "Ratcha Anachak Thai",
+      "Reino da Tailândia",
+      "Tailândia"
+    ]
+  },
+  "TJ": {
+    "numeric": "762",
+    "coordinates": [
+      71,
+      39
+    ],
+    "names": [
+      "Tajikistan",
+      "Republic of Tajikistan",
+      "TJ",
+      "Toçikiston",
+      "Ҷумҳурии Тоҷикистон",
+      "Çumhuriyi Toçikiston",
+      "República do Tajiquistão",
+      "Tajiquistão"
+    ]
+  },
+  "TM": {
+    "numeric": "795",
+    "coordinates": [
+      60,
+      40
+    ],
+    "names": [
+      "Turkmenistan",
+      "TM",
+      "Turcomenistão",
+      "Turquemenistão"
+    ]
+  },
+  "TL": {
+    "numeric": "626",
+    "coordinates": [
+      125.91666666,
+      -8.83333333
+    ],
+    "names": [
+      "Timor-Leste",
+      "Democratic Republic of Timor-Leste",
+      "TL",
+      "East Timor",
+      "Timor",
+      "República Democrática de Timor-Leste",
+      "Repúblika Demokrátika Timór-Leste",
+      "Timór Lorosa'e",
+      "Timor Lorosae"
+    ]
+  },
+  "TO": {
+    "numeric": "776",
+    "coordinates": [
+      -175,
+      -20
+    ],
+    "names": [
+      "Tonga",
+      "Kingdom of Tonga",
+      "TO",
+      "Reino de Tonga"
+    ]
+  },
+  "TT": {
+    "numeric": "780",
+    "coordinates": [
+      -61,
+      11
+    ],
+    "names": [
+      "Trinidad and Tobago",
+      "Republic of Trinidad and Tobago",
+      "TT",
+      "República de Trinidad e Tobago",
+      "Trinidade e Tobago"
+    ]
+  },
+  "TN": {
+    "numeric": "788",
+    "coordinates": [
+      9,
+      34
+    ],
+    "names": [
+      "Tunisia",
+      "Tunisian Republic",
+      "TN",
+      "Republic of Tunisia",
+      "al-Jumhūriyyah at-Tūnisiyyah",
+      "República da Tunísia",
+      "Tunísia"
+    ]
+  },
+  "TR": {
+    "numeric": "792",
+    "coordinates": [
+      35,
+      39
+    ],
+    "names": [
+      "Türkiye",
+      "Republic of Türkiye",
+      "TR",
+      "Turkiye",
+      "Republic of Turkey",
+      "Türkiye Cumhuriyeti",
+      "República da Turquia",
+      "Turquia"
+    ]
+  },
+  "TV": {
+    "numeric": "798",
+    "coordinates": [
+      178,
+      -8
+    ],
+    "names": [
+      "Tuvalu",
+      "TV"
+    ]
+  },
+  "TZ": {
+    "numeric": "834",
+    "coordinates": [
+      35,
+      -6
+    ],
+    "names": [
+      "Tanzania",
+      "United Republic of Tanzania",
+      "TZ",
+      "Tanzania, United Republic of",
+      "Jamhuri ya Muungano wa Tanzania",
+      "República Unida da Tanzânia",
+      "Tanzânia"
+    ]
+  },
+  "UG": {
+    "numeric": "800",
+    "coordinates": [
+      32,
+      1
+    ],
+    "names": [
+      "Uganda",
+      "Republic of Uganda",
+      "UG",
+      "Jamhuri ya Uganda",
+      "República do Uganda"
+    ]
+  },
+  "UA": {
+    "numeric": "804",
+    "coordinates": [
+      32,
+      49
+    ],
+    "names": [
+      "Ukraine",
+      "UA",
+      "Ukrayina",
+      "Ucrânia"
+    ]
+  },
+  "UY": {
+    "numeric": "858",
+    "coordinates": [
+      -56,
+      -33
+    ],
+    "names": [
+      "Uruguay",
+      "Oriental Republic of Uruguay",
+      "UY",
+      "República Oriental del Uruguay",
+      "República Oriental do Uruguai",
+      "Uruguai"
+    ]
+  },
+  "US": {
+    "numeric": "840",
+    "coordinates": [
+      -97,
+      38
+    ],
+    "names": [
+      "United States",
+      "United States of America",
+      "US",
+      "USA",
+      "Estados Unidos da América",
+      "Estados Unidos"
+    ]
+  },
+  "UZ": {
+    "numeric": "860",
+    "coordinates": [
+      64,
+      41
+    ],
+    "names": [
+      "Uzbekistan",
+      "Republic of Uzbekistan",
+      "UZ",
+      "O‘zbekiston Respublikasi",
+      "Ўзбекистон Республикаси",
+      "República do Usbequistão",
+      "Uzbequistão"
+    ]
+  },
+  "VA": {
+    "numeric": "336",
+    "coordinates": [
+      12.45,
+      41.9
+    ],
+    "names": [
+      "Vatican City",
+      "Vatican City State",
+      "VA",
+      "Holy See (Vatican City State)",
+      "Vatican",
+      "Stato della Città del Vaticano",
+      "Cidade do Vaticano"
+    ]
+  },
+  "VC": {
+    "numeric": "670",
+    "coordinates": [
+      -61.2,
+      13.25
+    ],
+    "names": [
+      "Saint Vincent and the Grenadines",
+      "VC",
+      "São Vicente e Granadinas",
+      "São Vincente e Granadinas"
+    ]
+  },
+  "VE": {
+    "numeric": "862",
+    "coordinates": [
+      -66,
+      8
+    ],
+    "names": [
+      "Venezuela",
+      "Bolivarian Republic of Venezuela",
+      "VE",
+      "Venezuela, Bolivarian Republic of",
+      "República Bolivariana de Venezuela",
+      "República Bolivariana da Venezuela"
+    ]
+  },
+  "VN": {
+    "numeric": "704",
+    "coordinates": [
+      107.83333333,
+      16.16666666
+    ],
+    "names": [
+      "Vietnam",
+      "Socialist Republic of Vietnam",
+      "VN",
+      "Cộng hòa Xã hội chủ nghĩa Việt Nam",
+      "Viet Nam",
+      "República Socialista do Vietname",
+      "Vietname"
+    ]
+  },
+  "VU": {
+    "numeric": "548",
+    "coordinates": [
+      167,
+      -16
+    ],
+    "names": [
+      "Vanuatu",
+      "Republic of Vanuatu",
+      "VU",
+      "Ripablik blong Vanuatu",
+      "République de Vanuatu",
+      "República de Vanuatu"
+    ]
+  },
+  "WS": {
+    "numeric": "882",
+    "coordinates": [
+      -172.33333333,
+      -13.58333333
+    ],
+    "names": [
+      "Samoa",
+      "Independent State of Samoa",
+      "WS",
+      "Malo Saʻoloto Tutoʻatasi o Sāmoa",
+      "Estado Independente de Samoa"
+    ]
+  },
+  "YE": {
+    "numeric": "887",
+    "coordinates": [
+      48,
+      15
+    ],
+    "names": [
+      "Yemen",
+      "Republic of Yemen",
+      "YE",
+      "Yemeni Republic",
+      "al-Jumhūriyyah al-Yamaniyyah",
+      "República do Iêmen",
+      "Iémen"
+    ]
+  },
+  "ZA": {
+    "numeric": "710",
+    "coordinates": [
+      24,
+      -29
+    ],
+    "names": [
+      "South Africa",
+      "Republic of South Africa",
+      "ZA",
+      "RSA",
+      "Suid-Afrika",
+      "República da África do Sul",
+      "África do Sul"
+    ]
+  },
+  "ZM": {
+    "numeric": "894",
+    "coordinates": [
+      30,
+      -15
+    ],
+    "names": [
+      "Zambia",
+      "Republic of Zambia",
+      "ZM",
+      "República da Zâmbia",
+      "Zâmbia"
+    ]
+  },
+  "ZW": {
+    "numeric": "716",
+    "coordinates": [
+      30,
+      -20
+    ],
+    "names": [
+      "Zimbabwe",
+      "Republic of Zimbabwe",
+      "ZW",
+      "República do Zimbabwe"
+    ]
+  }
+}

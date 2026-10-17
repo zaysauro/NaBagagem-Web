@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authFeedback, signupValidation } from "@/lib/auth-feedback";
-import { auth } from "@/lib/neon/auth";
+import { getAuth } from "@/lib/neon/auth";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     const invalid = signupValidation(name,email,password);
     if (invalid) return NextResponse.json({error:invalid},{status:400});
 
-    const { data, error } = await auth.signUp.email({
+    const { data, error } = await getAuth().signUp.email({
       email,
       password,
       name,

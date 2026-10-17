@@ -17,6 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
  const user = await getCurrentUser();
  if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
  let uploaded: string | undefined;
+ let reservation: string | undefined;
  try {
   const { id } = await params;
   if (Number(request.headers.get("content-length")) > 4.5 * 1024 * 1024) return NextResponse.json({ error: "Arquivo muito grande." }, { status: 413 });
@@ -27,11 +28,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const mime = await validateFile(file, !photo);
   const table = tableFor(photo ? "photo" : null); const fileId = crypto.randomUUID();
   const key = `${user.id}/${id}/${fileId}`;
+  reservation = (await query("select app_private.reserve_upload($1) as id", [key])).rows[0].id;
   await privateFiles().upload(key, file, { contentType: mime }); uploaded = key;
-  const result = await query(`insert into ${table}(id,trip_id,user_id,storage_path,name,mime_type,size_bytes) values($1,$2,$3,$4,$5,$6,$7) returning id,name`, [fileId,id,user.id,key,file.name.slice(0,200),mime,file.size]);
-  return NextResponse.json({ file: { ...result.rows[0], url: `/api/media/${fileId}` } }, { status: 201 });
+  const result = await transaction(async client => {
+   const inserted = await client.query(`insert into ${table}(id,trip_id,user_id,storage_path,name,mime_type,size_bytes) values($1,$2,$3,$4,$5,$6,$7) returning id,name`, [fileId,id,user.id,key,file.name.slice(0,200),mime,file.size]);
+   await client.query("select app_private.complete_storage_deletion($1)", [reservation]);
+   return inserted.rows[0];
+  });
+  return NextResponse.json({ file: { ...result, url: `/api/media/${fileId}` } }, { status: 201 });
  } catch {
-  if (uploaded) try { await privateFiles().delete(uploaded); } catch { console.error("file_cleanup_required"); }
+  if (uploaded) try {
+   await privateFiles().delete(uploaded);
+   if (reservation) await query("select app_private.complete_storage_deletion($1)", [reservation]);
+  } catch { console.error("file_cleanup_required"); }
   return NextResponse.json({ error: "Não foi possível salvar. Confira o formato (JPG, PNG, WebP ou PDF), tamanho (até 4 MB) e disponibilidade do armazenamento." }, { status: 400 });
  }
 }

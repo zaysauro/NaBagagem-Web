@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 // Managed Auth validates its own trusted origins. Protect all other mutations here.
 export function proxy(request: NextRequest) {
- if (!["GET","HEAD","OPTIONS"].includes(request.method) && !request.nextUrl.pathname.startsWith("/api/auth/")) {
+ if (!["GET","HEAD","OPTIONS"].includes(request.method)) {
   const origin=request.headers.get("origin");
   if (request.headers.get("sec-fetch-site")==="cross-site" || (origin && origin!==request.nextUrl.origin)) return NextResponse.json({error:"Origem da solicitação inválida."},{status:403});
  }

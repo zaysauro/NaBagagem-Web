@@ -37,7 +37,9 @@ export async function GET() {
   const {data:locations}=ids.length
     ? await supabase.from("trip_locations").select("id,trip_id,city,country,latitude,longitude,visited_at").in("trip_id",ids)
     : {data:[]};
-  const {data:manualCountries}=await supabase.from("profile_visited_countries").select("country").eq("user_id",user.id);
+  const {data:manualCountries,error:countryError}=await supabase.from("profile_visited_countries").select("country").eq("user_id",user.id);
+
+  if(countryError)return NextResponse.json({error:"Não foi possível carregar os países."},{status:503});
 
   const {data:events}=ids.length
     ? await supabase.from("trip_events").select("trip_id,event_date,start_time,end_time").in("trip_id",ids)

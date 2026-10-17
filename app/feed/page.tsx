@@ -54,7 +54,8 @@ export default function FeedPage() {
   const [visibility,setVisibility]=useState("public");
   const [loading,setLoading]=useState(true);
   const [loadingMore,setLoadingMore]=useState(false);
-  const [page,setPage]=useState(0);
+  const [nextCursor,setNextCursor]=useState<string|null>(null);
+  const loadVersion=useRef(0);
   const [hasMore,setHasMore]=useState(false);
   const [message,setMessage]=useState("");
   const [pendingImages,setPendingImages]=useState<File[]>([]);
@@ -67,17 +68,22 @@ export default function FeedPage() {
   const fileRef=useRef<HTMLInputElement>(null);
 
   async function load(reset = true){
-    const targetPage = reset ? 0 : page + 1;
+    const version = ++loadVersion.current;
     if (!reset) setLoadingMore(true);
-    const r=await fetch("/api/feed?page="+targetPage+"&pageSize=20&source="+source,{cache:"no-store"});
-    const d=await r.json();
-    if(r.ok){
-      setPosts(current => reset ? (d.posts||[]) : [...current, ...(d.posts||[])]);
-      setPage(targetPage);
+    try {
+      const cursor = !reset && nextCursor ? "&cursor=" + encodeURIComponent(nextCursor) : "";
+      const r = await fetch("/api/feed?pageSize=20&source=" + source + cursor, { cache: "no-store" });
+      const d = await r.json();
+      if (version !== loadVersion.current) return;
+      if (!r.ok) throw new Error(d.error || "Não foi possível carregar o feed.");
+      setPosts(current => reset ? (d.posts || []) : Array.from(new Map([...current, ...(d.posts || [])].map(post => [post.id, post])).values()));
+      setNextCursor(d.nextCursor || null);
       setHasMore(!!d.hasMore);
-    } else setMessage(d.error||"Não foi possível carregar o feed.");
-    setLoading(false);
-    setLoadingMore(false);
+    } catch {
+      if (version === loadVersion.current) setMessage("Não foi possível carregar o feed. Tente novamente.");
+    } finally {
+      if (version === loadVersion.current) { setLoading(false); setLoadingMore(false); }
+    }
   }
 
   useEffect(()=>{
@@ -102,6 +108,7 @@ export default function FeedPage() {
     }
 
     setPublishing(true);
+    let pendingPostId: string | null = null;
     try {
       const r=await fetch("/api/feed",{
         method:"POST",
@@ -121,6 +128,7 @@ export default function FeedPage() {
         return;
       }
 
+      pendingPostId = d.post.id;
       const images=pendingImages.slice(0,5);
       for(let index=0; index<images.length; index++){
         const form=new FormData();
@@ -138,6 +146,7 @@ export default function FeedPage() {
         }
       }
 
+      pendingPostId = null;
       setTitle("");
       setBody("");
       setVisibility("public");
@@ -147,6 +156,7 @@ export default function FeedPage() {
       await load(true);
       setMessage(images.length ? "Publicação com foto publicada com sucesso." : "Publicação publicada com sucesso.");
     } catch {
+      if (pendingPostId) await fetch("/api/feed/"+encodeURIComponent(pendingPostId),{method:"DELETE"}).catch(()=>{});
       setMessage("Não foi possível publicar agora. Verifique sua conexão e tente novamente.");
     } finally {
       setPublishing(false);
@@ -230,7 +240,7 @@ export default function FeedPage() {
           ["following","Seguindo"],
           ["discover","Descobrir"]
         ] as const).map(([key,label])=>
-          <button key={key} type="button" onClick={()=>{setSource(key);setPage(0);setPosts([]);setLoading(true);}}
+          <button key={key} type="button" onClick={()=>{loadVersion.current++;setSource(key);setNextCursor(null);setPosts([]);setLoading(true);}}
             className={"shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition "+(source===key?"bg-neutral-950 text-white":"border bg-white text-neutral-600 hover:bg-neutral-100")}>
             {label}
           </button>

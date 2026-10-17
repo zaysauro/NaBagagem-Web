@@ -17,7 +17,7 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
     catch { setMessage("Link público gerado."); }
   }
 
-  function exportFile(format: "gpx" | "kml" | "json" | "ics") {
+  function exportFile(format: "gpx" | "kml" | "json" | "ics" | "csv") {
     window.location.href = "/api/trips/" + tripId + "/export?format=" + format;
   }
 
@@ -37,11 +37,12 @@ export default function TripShareTools({ tripId }: { tripId: string }) {
       <button onClick={share} className="min-h-11 rounded-xl bg-neutral-950 px-4 py-2.5 text-sm font-semibold text-white sm:min-h-10">Gerar link público</button>
       <button onClick={() => exportFile("gpx")} className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">Exportar GPX</button>
       <button onClick={() => exportFile("kml")} className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">Exportar KML</button>
+      <button onClick={() => exportFile("csv")} className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">Destinos CSV</button>
       <button onClick={() => exportFile("json")} className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">Backup JSON</button>
       <button onClick={() => exportFile("ics")} className="min-h-11 rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">Calendário .ics</button>
       <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-semibold sm:min-h-10">
-        Importar GPX/KML/JSON
-        <input type="file" accept=".gpx,.kml,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,application/json" className="hidden"
+        Importar GPX/KML/CSV/JSON
+        <input type="file" accept=".gpx,.kml,.csv,.json,application/gpx+xml,application/vnd.google-earth.kml+xml,text/csv,application/json" className="hidden"
           onChange={e => { const file = e.target.files?.[0]; if (file) importFile(file); }} />
       </label>
     </div>

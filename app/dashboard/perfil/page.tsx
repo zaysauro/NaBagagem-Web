@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import WorldMap from "./world-map";
 import { StatsChart } from "./stats-chart";
 import SiteHeader from "@/app/components/site-header";
@@ -33,9 +33,18 @@ export default function ProfilePage(){
   const [data,setData]=useState<Data|null>(null);
   const [error,setError]=useState("");
 
-  useEffect(()=>{fetch("/api/profile/stats").then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error);setData(d)}).catch(e=>setError(e.message))},[]);
+  const refreshStats = useCallback(async () => {
+    try {
+      const response = await fetch("/api/profile/stats", { cache: "no-store" });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Não foi possível atualizar o perfil.");
+      setData(result);
+      setError("");
+    } catch { setError("Não foi possível atualizar o perfil. Tente novamente."); }
+  }, []);
+  useEffect(() => { void refreshStats(); }, [refreshStats]);
 
-  if(error)return <main className="p-8 text-red-600">{error}</main>;
+  if(error && !data)return <main className="p-8 text-red-600">{error}</main>;
   if(!data)return <main className="p-8 text-neutral-500">Carregando estatísticas...</main>;
 
   const percent=data.stats.countryPercent;
@@ -84,7 +93,8 @@ export default function ProfilePage(){
           </section>
         </div>
 
-        <VisitedCountries />
+        {error && <p role="alert">{error}</p>}
+        <VisitedCountries onChanged={refreshStats} />
 
         <ProfileInterests />
 
