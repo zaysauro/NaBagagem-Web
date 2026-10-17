@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { transaction } from "@/lib/neon/db";
+import { optimizeDayEventOrder, type ItineraryEvent } from "@/lib/itinerary-optimization";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -21,71 +23,24 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .eq("trip_id", id).eq("day_index", day).order("order_index", { ascending: true });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
-  const usable = (events || []).filter((e: any) => Number.isFinite(e.latitude) && Number.isFinite(e.longitude));
-  if (usable.length < 2) return NextResponse.json({ error: "O dia precisa ter pelo menos 2 atividades com localização." }, { status: 400 });
-
-  const distance=(a:any,b:any)=>{const dLat=a.latitude-b.latitude;const dLng=(a.longitude-b.longitude)*Math.cos(a.latitude*Math.PI/180);return dLat*dLat+dLng*dLng;};
-  const scheduled=usable.filter((event:any)=>event.start_time).sort((a:any,b:any)=>(a.start_time||"").localeCompare(b.start_time||""));
-  const reserved=usable.filter((event:any)=>!event.start_time&&(event.reservation_name||event.confirmation_code));
-  const anchors=[...scheduled,...reserved.filter((event:any)=>!scheduled.some((x:any)=>x.id===event.id))];
-  const flexible=usable.filter((event:any)=>!anchors.some((x:any)=>x.id===event.id));
-
-  if (anchors.length <= 1) {
-    const fixedStart=anchors[0]||usable[0];
-    const remaining=usable.filter((event:any)=>event.id!==fixedStart.id);
-    const ordered:any[]=[fixedStart];
-    while(remaining.length){
-      const current=ordered[ordered.length-1]; let best=0; let bestDistance=Number.POSITIVE_INFINITY;
-      remaining.forEach((candidate:any,index:number)=>{const d=distance(current,candidate);if(d<bestDistance){bestDistance=d;best=index;}});
-      ordered.push(remaining.splice(best,1)[0]);
-    }
-    for(let i=1;i<ordered.length-2;i++){
-      for(let k=i+1;k<ordered.length-1;k++){
-        const before=distance(ordered[i-1],ordered[i])+distance(ordered[k],ordered[k+1]);
-        const after=distance(ordered[i-1],ordered[k])+distance(ordered[i],ordered[k+1]);
-        if(after+1e-12<before) ordered.splice(i,k-i+1,...ordered.slice(i,k+1).reverse());
+  const dayEvents: ItineraryEvent[] = events || [];
+  const locationIds = [...new Set(dayEvents.flatMap(event => event.location_id ? [event.location_id] : []))];
+  const { data: locations, error: locationError } = locationIds.length
+    ? await supabase.from("trip_locations").select("id,latitude,longitude").eq("trip_id", id).in("id", locationIds)
+    : { data: [], error: null };
+  if (locationError) return NextResponse.json({ error: "Não foi possível carregar os locais das atividades." }, { status: 503 });
+  let order: string[];
+  try { order = optimizeDayEventOrder(dayEvents, locations || []); }
+  catch { return NextResponse.json({ error: "O dia precisa ter pelo menos 2 atividades com localização." }, { status: 400 }); }
+  try {
+    await transaction(async client => {
+      for (const [index, eventId] of order.entries()) {
+        const result = await client.query("update trip_events set order_index=$1 where id=$2 and trip_id=$3 and day_index=$4 returning id", [index,eventId,id,day]);
+        if (result.rows.length !== 1) throw new Error("Itinerário alterado durante a otimização.");
       }
-    }
-    anchors.splice(0,anchors.length,...ordered);
+    });
+  } catch {
+    return NextResponse.json({ error: "Não foi possível salvar a ordem. Recarregue o itinerário e tente novamente." }, { status: 409 });
   }
-
-  const ordered:any[]=[];
-  const nearest=(from:any,pool:any[])=>{
-    if(!pool.length)return null;
-    let bestIndex=0,bestDistance=Number.POSITIVE_INFINITY;
-    pool.forEach((candidate:any,index:number)=>{const d=distance(from,candidate);if(d<bestDistance){bestDistance=d;bestIndex=index;}});
-    return pool.splice(bestIndex,1)[0];
-  };
-
-  // Horários marcados funcionam como âncoras: atividades flexíveis são inseridas
-  // no espaço disponível entre duas âncoras, sem atravessar uma reserva agendada.
-  const remainingFlexible=[...flexible];
-  for(let i=0;i<anchors.length;i++){
-    const anchor=anchors[i];
-    ordered.push(anchor);
-    const nextAnchor=anchors[i+1];
-    if(!nextAnchor) {
-      let current=anchor;
-      while(remainingFlexible.length){const next=nearest(current,remainingFlexible);if(!next)break;ordered.push(next);current=next;}
-      break;
-    }
-    while(remainingFlexible.length){
-      const candidate=remainingFlexible.reduce((best:any,item:any)=>!best||distance(anchor,item)<distance(anchor,best)?item:best,null);
-      if(!candidate)break;
-      const beforeCandidate=distance(anchor,candidate)+distance(candidate,nextAnchor);
-      const direct=distance(anchor,nextAnchor);
-      // Insert only when the detour is reasonably small; this keeps the route compact
-      // while preserving every scheduled/reserved anchor in its original order.
-      if(beforeCandidate <= direct*1.85){
-        remainingFlexible.splice(remainingFlexible.findIndex((x:any)=>x.id===candidate.id),1);
-        ordered.push(candidate);
-      } else break;
-    }
-  }
-  for (let index = 0; index < ordered.length; index++) {
-    const { error: updateError } = await supabase.from("trip_events").update({ order_index: index }).eq("id", ordered[index].id).eq("trip_id", id);
-    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
-  }
-
-  return NextResponse.json({ ok: true, order: ordered.map((event) => event.id) });
+  return NextResponse.json({ ok: true, order });
 }

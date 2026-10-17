@@ -20,6 +20,7 @@
     "@neon/config": "1.8.4",
     "@neondatabase/auth": "0.5.0-beta",
     "@vercel/functions": "3.9.11",
+    "fast-xml-parser": "5.11.2",
     "files-sdk": "2.6.2",
     "leaflet": "1.9.4",
     "lucide-react": "1.52.0",

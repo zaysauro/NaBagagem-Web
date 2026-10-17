@@ -6,7 +6,7 @@ types.setTypeParser(1082, value => value);
 let pool: Pool | undefined;
 function getPool() {
   if (!pool) {
-    const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+    const connectionString = process.env.NEON_DATABASE_URL || process.env.POSTGRES_URL || process.env.DATABASE_URL;
     if (!connectionString) throw new Error("Serviço de dados indisponível.");
     const target = new URL(connectionString);
     if (!process.env.NEON_DATABASE_HOST || target.hostname !== process.env.NEON_DATABASE_HOST) throw new Error("Destino do banco não validado.");
